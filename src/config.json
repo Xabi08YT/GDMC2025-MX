@@ -1,0 +1,6 @@
+{
+  "distributed": false,
+  "nodeAgents": [4,3,3],
+  "houseGenIP": null,
+  "GDMC_HTTP_URL": null,
+}
