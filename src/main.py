@@ -11,10 +11,22 @@ with open("config.json", mode="r") as cfg:
 editor = Editor(buffering=True)
 buildArea = editor.getBuildArea()
 
+#def getMcMap():
+#    size = (buildArea.end[0] - buildArea.begin[0], buildArea.end[1] - buildArea.begin[1], buildArea.end[2] - buildArea.begin[2])
+#    blocks = interface.getBlocks(buildArea.begin,size)
+#    return blocks
+
 def getMcMap():
-    size = (buildArea.end[0] - buildArea.begin[0], buildArea.end[1] - buildArea.begin[1], buildArea.end[2] - buildArea.begin[2])
-    blocks = interface.getBlocks(buildArea.begin,size)
-    return blocks
+    size = (buildArea.end[0] - buildArea.begin[0], buildArea.end[1] - buildArea.begin[1],
+            buildArea.end[2] - buildArea.begin[2])
+    for i in range(size[0]//16+1):
+        for j in range(size[2]//16+1):
+            interface.getBlocks(
+                (buildArea.begin[0] + i*16,-64, buildArea.begin[2] + j*16),
+                (16,385,16)
+            )
+
+    return
 
 mcmap = Map(getMcMap())
 print(mcmap.get_block(1,1,1))
