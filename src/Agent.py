@@ -1,16 +1,16 @@
 from uuid import uuid4
 from time import sleep
-from Map import Map
 from buildings import *
 from utils import *
+import utils
 import random
 import buildings
 from Job import JobType, Job
 
 class Agent:
-    def __init__(self, mcmap: Map | None, x: int = 0, y: int = 100, z: int=0):
+    def __init__(self, x: int = 0, y: int = 100, z: int=0):
         self.id: str = str(uuid4())
-        self.map: Map = mcmap
+        #self.map: Map = mcmap
         self.x: float = x
         self.y: float = y
         self.z: float = z

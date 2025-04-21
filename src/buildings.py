@@ -1,6 +1,7 @@
 import Agent
 from gdpc.vector_tools import ivec3
 from gdpc import Block, Editor
+from utils import current_editor
 import Job
 
 class Building():
@@ -10,7 +11,9 @@ class Building():
         self.center_point = center_point
         self.agent = agent
 
-    def build(self, editor: Editor):
+    def build(self):
+        if self.center_point is None:
+            return
         print(f"Building at x={self.center_point.x}, y={self.center_point.y}, z={self.center_point.z}!")
 
     def __repr__(self):
@@ -28,8 +31,10 @@ class House(Building):
     def __init__(self, center_point: ivec3 | None, agent: Agent, orientation: str = "south", built: bool = False):
         super().__init__(center_point, agent, orientation, built)
 
-    def build(self, editor: Editor):
-        super().build(editor)
+    def build(self):
+        if self.center_point is None:
+            return
+        super().build()
         center_x = self.center_point.x
         center_y = self.center_point.y
         center_z = self.center_point.z
@@ -48,8 +53,8 @@ class House(Building):
         top_y = center_y + height
         for dx in range(width):
             for dz in range(depth):
-                editor.placeBlock((start_x + dx, center_y, start_z + dz), floor)
-                editor.placeBlock((start_x + dx, top_y, start_z + dz), floor)
+                current_editor.placeBlock((start_x + dx, center_y, start_z + dz), floor)
+                current_editor.placeBlock((start_x + dx, top_y, start_z + dz), floor)
 
         for dy in range(1, height):
             for dx in range(width):
@@ -57,9 +62,9 @@ class House(Building):
                     is_edge = dx == 0 or dx == width - 1 or dz == 0 or dz == depth - 1
                     is_corner = (dx in (0, width - 1)) and (dz in (0, depth - 1))
                     if is_corner:
-                        editor.placeBlock((start_x + dx, center_y + dy, start_z + dz), log)
+                        current_editor.placeBlock((start_x + dx, center_y + dy, start_z + dz), log)
                     elif is_edge:
-                        editor.placeBlock((start_x + dx, center_y + dy, start_z + dz), wall)
+                        current_editor.placeBlock((start_x + dx, center_y + dy, start_z + dz), wall)
 
         door_x = center_x
         door_z = start_z + depth - 1
@@ -78,8 +83,8 @@ class House(Building):
             torch_pos = (door_x + 1, center_y + 3, door_z)
             bed_pos = (center_x, center_y + 1, center_z - 1)
 
-        editor.placeBlock((door_x, center_y + 1, door_z), door)
-        editor.placeBlock(torch_pos, torch)
-        editor.placeBlock(bed_pos, Block(f"red_bed[facing={bed_facing}]"))
+        current_editor.placeBlock((door_x, center_y + 1, door_z), door)
+        current_editor.placeBlock(torch_pos, torch)
+        current_editor.placeBlock(bed_pos, Block(f"red_bed[facing={bed_facing}]"))
 
         self.built = True

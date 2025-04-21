@@ -1,43 +1,39 @@
-import json
-import os
 from json import load
-
+from time import sleep
+from gdpc import Editor
 from Agent import Agent
-from Map import Map
-from gdpc import Editor, interface, vector_tools
+import utils
+import threading
 
 with open("config.json", mode="r") as cfg:
     config = load(cfg)
     cfg.close()
 
-editor = Editor(buffering=True)
-buildArea = editor.getBuildArea()
+utils.current_editor = Editor(buffering=True)
+buildArea = utils.current_editor.getBuildArea()
 
-#def getMcMap():
-#    size = (buildArea.end[0] - buildArea.begin[0], buildArea.end[1] - buildArea.begin[1], buildArea.end[2] - buildArea.begin[2])
-#    blocks = interface.getBlocks(buildArea.begin,size)
-#    return blocks
+#get_mc_map(buildArea, interface)
 
-def getMcMap():
-    size = (buildArea.end[0] - buildArea.begin[0], buildArea.end[1] - buildArea.begin[1],
-            buildArea.end[2] - buildArea.begin[2])
-    for i in range(size[0]//16+1):
-        for j in range(size[2]//16+1):
-            tmp = interface.getBlocks(
-                (buildArea.begin[0] + i*16,-64, buildArea.begin[2] + j*16),
-                (16,385,16)
-            )
+agents = []
+for i in range(config["nodeAgents"][0]):
+    agents.append(Agent())
 
-            chunkVertSlice = {}
-            for coord,block in tmp:
-                if str((coord[0],coord[2])) not in chunkVertSlice:
-                    chunkVertSlice[str((coord[0],coord[2]))] = {}
-                chunkVertSlice[str((coord[0],coord[2]))][coord[1]] = (block.id,block.states,block.data)
 
-            if not os.path.exists(os.path.join(os.getcwd(), "data")):
-                os.mkdir(os.path.join(os.getcwd(), "data"))
-            with open(file=f"data/{i}_{j}.json", mode="w+") as out:
-                json.dump(chunkVertSlice, out)
-                out.close()
+threads = []
+for agent in agents:
+    thread = threading.Thread(target=agent.tick)
+    threads.append(thread)
+    print("Agent " + agent.name + " started")
+    thread.start()
 
-getMcMap()
+sleep(10)
+
+for agent in agents:
+    agent.tickEnable = False
+
+for thread in threads:
+    thread.join()
+
+#set_mc_map(map, interface)
+
+print("Simulation stopped, let's see the modifications in Minecraft")
