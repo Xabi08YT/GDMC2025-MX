@@ -4,44 +4,52 @@ from gdpc import Block, Editor
 import Job
 
 class Building():
-    def __init__(self, center_point: ivec3 | None, agent: Agent, existing: bool = False):
-        self.existing = existing
+    def __init__(self, center_point: ivec3 | None, agent: Agent, orientation: str = "south", built: bool = False):
+        self.built = built
+        self.orientation = orientation
         self.center_point = center_point
         self.agent = agent
 
-    def build(self):
+    def build(self, editor: Editor):
         print(f"Building at x={self.center_point.x}, y={self.center_point.y}, z={self.center_point.z}!")
 
-class JobHouse():
-    def __init__(self, building: Building, job: Job):
-        self.building = building
+    def __repr__(self):
+        return "Building(center_point={}, agent={})".format(self.center_point, self.agent)
+
+    def __str__(self):
+        return "Building at x={}, y={}, z={} owned by {}".format(self.center_point.x, self.center_point.y, self.center_point.z, self.agent.name)
+
+class JobHouse(Building):
+    def __init__(self, job: Job, center_point: ivec3 | None, agent: Agent, orientation: str = "south", built: bool = False):
+        super().__init__(center_point, agent, orientation, built)
         self.job = job
 
-class House():
-    def __init__(self, building: Building):
-        self.building = building
+class House(Building):
+    def __init__(self, center_point: ivec3 | None, agent: Agent, orientation: str = "south", built: bool = False):
+        super().__init__(center_point, agent, orientation, built)
 
-    def build_small_house_centered(self, editor: Editor, center_x: int, center_y: int, center_z: int):
-        # A refaire
+    def build(self, editor: Editor):
+        super().build(editor)
+        center_x = self.center_point.x
+        center_y = self.center_point.y
+        center_z = self.center_point.z
         width, depth, height = 5, 5, 4
         half_w, half_d = width // 2, depth // 2
-
+        bed_facing = {"north": "south", "south": "north", "east": "west", "west": "east"}[self.orientation]
         floor = Block("oak_planks")
         wall = Block("cobblestone")
         log = Block("oak_log")
-        roof = Block("oak_stairs[facing=south,half=top]")
-        door_bottom = Block("oak_door[facing=south,half=lower]")
-        door_top = Block("oak_door[facing=south,half=upper]")
-        torch = Block("torch")
-        bed_head = Block("red_bed[facing=south,part=head]")
-        bed_foot = Block("red_bed[facing=south,part=foot]")
+        door = Block(f"oak_door[facing={bed_facing}]")
+        torch = Block(f"wall_torch[facing={bed_facing}]")
 
         start_x = center_x - half_w
         start_z = center_z - half_d
 
+        top_y = center_y + height
         for dx in range(width):
             for dz in range(depth):
                 editor.placeBlock((start_x + dx, center_y, start_z + dz), floor)
+                editor.placeBlock((start_x + dx, top_y, start_z + dz), floor)
 
         for dy in range(1, height):
             for dx in range(width):
@@ -53,16 +61,25 @@ class House():
                     elif is_edge:
                         editor.placeBlock((start_x + dx, center_y + dy, start_z + dz), wall)
 
-        for dx in range(-1, width + 1):
-            for dz in range(-1, depth + 1):
-                editor.placeBlock((start_x + dx, center_y + height, start_z + dz), roof)
-
         door_x = center_x
         door_z = start_z + depth - 1
-        editor.placeBlock((door_x, center_y + 1, door_z), door_bottom)
-        editor.placeBlock((door_x, center_y + 2, door_z), door_top)
+        door_x, door_z = center_x, start_z
+        torch_pos = (door_x, center_y + 3, door_z + 1)
+        bed_pos = (center_x - 1, center_y + 1, center_z)
+        if self.orientation == "south":
+            door_x, door_z = center_x, start_z + depth - 1
+            torch_pos = (door_x, center_y + 3, door_z - 1)
+        elif self.orientation == "east":
+            door_x, door_z = start_x + width - 1, center_z
+            torch_pos = (door_x - 1, center_y + 3, door_z)
+            bed_pos = (center_x, center_y + 1, center_z - 1)
+        elif self.orientation == "west":
+            door_x, door_z = start_x, center_z
+            torch_pos = (door_x + 1, center_y + 3, door_z)
+            bed_pos = (center_x, center_y + 1, center_z - 1)
 
-        editor.placeBlock((door_x, center_y + 3, door_z - 1), torch)
+        editor.placeBlock((door_x, center_y + 1, door_z), door)
+        editor.placeBlock(torch_pos, torch)
+        editor.placeBlock(bed_pos, Block(f"red_bed[facing={bed_facing}]"))
 
-        editor.placeBlock((center_x - 1, center_y + 1, center_z - 1), bed_head)
-        editor.placeBlock((center_x - 1, center_y + 1, center_z), bed_foot)
+        self.built = True

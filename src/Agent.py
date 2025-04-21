@@ -21,11 +21,11 @@ class Agent:
             "flatspace": random.uniform(-1, 1)
         }
         self.attributes = {
-            "house": buildings.House(Building(None, self)),
-            "jobhouse": buildings.JobHouse(Building(None, self), Job(JobType.UNEMPLOYED, self))
+            "house": buildings.House(None, self),
+            "jobhouse": buildings.JobHouse(Job(JobType.UNEMPLOYED, self), None, self),
         }
         self.actions = {
-            "buildhouse": self.attributes["house"].building.build()
+            "buildhouse": self.attributes["house"].build()
         }
         self.observations = {}
 
