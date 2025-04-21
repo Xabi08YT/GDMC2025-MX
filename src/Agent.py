@@ -5,6 +5,7 @@ from src.buildings import Building
 from utils import *
 import random
 import buildings
+from Job import JobType, Job
 
 class Agent:
     def __init__(self, mcmap: Map | None, x: int = 0, y: int = 100, z: int=0):
@@ -20,10 +21,11 @@ class Agent:
             "flatspace": random.uniform(-1, 1)
         }
         self.attributes = {
-            "jobhouse": None
+            "house": buildings.House(Building(None, self)),
+            "jobhouse": buildings.JobHouse(Building(None, self), Job(JobType.UNEMPLOYED, self))
         }
         self.actions = {
-            "buildhouse": None
+            "buildhouse": self.attributes["house"].building.build()
         }
         self.observations = {}
 
