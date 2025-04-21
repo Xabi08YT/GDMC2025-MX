@@ -1,3 +1,5 @@
+import json
+import os
 from json import load
 
 from Agent import Agent
@@ -21,17 +23,21 @@ def getMcMap():
             buildArea.end[2] - buildArea.begin[2])
     for i in range(size[0]//16+1):
         for j in range(size[2]//16+1):
-            interface.getBlocks(
+            tmp = interface.getBlocks(
                 (buildArea.begin[0] + i*16,-64, buildArea.begin[2] + j*16),
                 (16,385,16)
             )
 
-    return
+            chunkVertSlice = {}
+            for coord,block in tmp:
+                if str((coord[0],coord[2])) not in chunkVertSlice:
+                    chunkVertSlice[str((coord[0],coord[2]))] = {}
+                chunkVertSlice[str((coord[0],coord[2]))][coord[1]] = (block.id,block.states,block.data)
 
-mcmap = Map(getMcMap())
-print(mcmap.get_block(1,1,1))
-print(mcmap.get_blocks(1,1,1,4,4,4))
-agents = []
-for i in cfg:
-    for j in range(i):
-        agents.append(Agent(mcmap))
+            if not os.path.exists(os.path.join(os.getcwd(), "data")):
+                os.mkdir(os.path.join(os.getcwd(), "data"))
+            with open(file=f"data/{i}_{j}.json", mode="w+") as out:
+                json.dump(chunkVertSlice, out)
+                out.close()
+
+getMcMap()
