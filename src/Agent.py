@@ -1,7 +1,7 @@
 from uuid import uuid4
 from time import sleep
 from Map import Map
-from src.buildings import Building
+from buildings import *
 from utils import *
 import random
 import buildings
