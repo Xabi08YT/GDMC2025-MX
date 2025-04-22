@@ -3,7 +3,7 @@ import json
 from json import JSONDecodeError
 
 import Map
-from gdpc import interface, Editor
+from gdpc import interface, Editor, Block
 
 current_editor = None
 
@@ -44,33 +44,40 @@ def get_mc_map(buildArea, forceReload=False):
                 (16,385,16)
             )
 
-            chunkVertSlice = {}
+            chunk = {}
             for coord,block in tmp:
-                chunkVertSlice[str((coord[0],coord[1],coord[2]))] = (block.id,block.states,block.data)
+                chunk[str((coord[0],coord[1],coord[2]))] = (block.id,block.states,block.data)
 
             with open(file=f"data/{i}_{j}.json", mode="w+") as out:
-                json.dump(chunkVertSlice, out)
+                json.dump(chunk, out)
                 out.close()
 
     with open(os.path.join(os.getcwd(), "data", "areaData.json"), "w+") as f:
         json.dump({"begin": buildArea.begin.to_list(), "end": buildArea.end.to_list()}, f)
         f.close()
 
-def set_mc_map(map: Map, interface):
-    for i in range(map.size[0]//16+1):
-        for j in range(map.size[2]//16+1):
-            with open(file=f"data/{i}_{j}.json", mode="r") as inFile:
-                chunkVertSlice = json.load(inFile)
-                inFile.close()
+def set_mc_map():
+    for file in os.listdir(os.path.join(os.getcwd(), "data")):
+        fpath = os.path.join(os.getcwd(), "data", file)
+        if (not os.path.isdir(fpath)
+                and file.endswith(".json")
+                and not "areaData" in file):
 
-            for coord,block in chunkVertSlice.items():
-                for y,blockData in block.items():
-                    interface.setBlock(
-                        (int(coord[0]),int(y),int(coord[2])),
-                        blockData[0],
-                        blockData[1],
-                        blockData[2]
-                    )
+            print(f"Pushing {file} to minecraft world...")
+            with open(fpath, mode="r") as data:
+                chunk = json.load(data)
+                data.close()
+
+            formatted = [
+                (
+                    coord.replace("(","").replace(")","").split(","),
+                    Block(block[0],block[1],block[2])
+                ) for coord, block in chunk.items()
+            ]
+
+            interface.placeBlocks(formatted, doBlockUpdates=False)
+
+    print("World pushed.")
 
 
 if __name__ == "__main__":
@@ -78,3 +85,4 @@ if __name__ == "__main__":
     buildArea = current_editor.getBuildArea()
 
     get_mc_map(buildArea)
+    set_mc_map()
