@@ -1,12 +1,14 @@
+import itertools
 import os
 import json
 import random
 from json import JSONDecodeError
 
 from multiprocessing import Pool, cpu_count
-from gdpc import interface, Editor
-from time import sleep
+from gdpc import interface, Editor, Block
+from time import sleep, time
 
+excluded_files = ["config.json","areaData.json"]
 current_editor = None
 
 def distance_xz(ax: float, az: float, bx: float, bz: float)-> float:
@@ -18,7 +20,25 @@ def is_flat():
 def same_point(p1,p2):
     return p1[0] == p2[0] and p1[1] == p2[1] and p1[2] == p2[2]
 
+def get_chunk(args):
+    tmp = interface.getBlocks(
+        (args[0].begin[0] + args[1] * 16, -64, buildArea.begin[2] + args[2] * 16),
+        (16, 385, 16)
+    )
+
+    chunk = {}
+    for coord, block in tmp:
+        if buildArea.contains(coord):
+            chunk[str((coord[0], coord[1], coord[2]))] = (block.id, block.states, block.data)
+
+    with open(file=f"data/{args[1]}_{args[2]}.json", mode="w+") as out:
+        print(f"Saving {args[1]}_{args[2]}.json")
+        json.dump(chunk, out)
+        out.close()
+
 def get_mc_map(buildArea, forceReload=False):
+    start = time()
+    print("Pulling minecraft world...")
     size = (buildArea.end[0] - buildArea.begin[0], buildArea.end[1] - buildArea.begin[1],
             buildArea.end[2] - buildArea.begin[2])
     if os.path.exists(os.path.join(os.getcwd(), "data", "areaData.json")) and not forceReload:
@@ -27,6 +47,7 @@ def get_mc_map(buildArea, forceReload=False):
                 data = json.load(f)
                 f.close()
             if same_point(buildArea.begin, data["begin"]) and same_point(buildArea.end, data["end"]):
+                print("Same area, skipping world pulling... If you want to pull it, remove the folder.")
                 return
         except JSONDecodeError:
             print("Invalid JSON, loading everything...")
@@ -39,40 +60,51 @@ def get_mc_map(buildArea, forceReload=False):
         os.rmdir(os.path.join(os.getcwd(), "data"))
     os.mkdir(os.path.join(os.getcwd(), "data"))
 
-    for i in range(size[0]//16+1):
-        for j in range(size[2]//16+1):
-            tmp = interface.getBlocks(
-                (buildArea.begin[0] + i*16,-64, buildArea.begin[2] + j*16),
-                (16,385,16)
-            )
+    chunks_grid = [(buildArea, x,y) for x in range(size[0]//16+1) for y in range(size[1]//16+1)]
 
-            chunk = {}
-            for coord,block in tmp:
-                chunk[str((coord[0],coord[1],coord[2]))] = (block.id,block.states,block.data)
-
-            with open(file=f"data/{i}_{j}.json", mode="w+") as out:
-                json.dump(chunk, out)
-                out.close()
+    p = Pool(cpu_count())
+    p.map_async(get_chunk, chunks_grid)
+    p.close()
+    p.join()
 
     with open(os.path.join(os.getcwd(), "data", "areaData.json"), "w+") as f:
         json.dump({"begin": buildArea.begin.to_list(), "end": buildArea.end.to_list()}, f)
         f.close()
+    end = time()
+    print("Minecraft world pulled in {:.2f} seconds.".format(end - start))
 
-def exec_push_chunk(file):
-    os.system(f"python pushChunk.py {file}")
+def push_chunk(file):
+    print(f"Pushing {file[0]} to minecraft world...")
+    with open(file[1], mode="r") as data:
+        chunk = json.load(data)
+        data.close()
+
+    formatted = [
+        (
+            coord[1:-1].split(","),
+            Block(block[0], block[1], block[2])
+        ) for coord, block in chunk.items()
+    ]
+
+    interface.placeBlocks(formatted, doBlockUpdates=False)
 
 def set_mc_map():
-    files = [file
+    start = time()
+    files = [(file,os.path.join(os.getcwd(), "data", file))
              for file in os.listdir(os.path.join(os.getcwd(), "data"))
              if
                 (not os.path.isdir(os.path.join(os.getcwd(), "data", file))
                 and file.endswith(".json")
-                and not "areaData" in file
-                and not "config" in file)
+                and not file in excluded_files)
              ]
 
     p = Pool(cpu_count())
-    p.map(exec_push_chunk,files)
+    p.map_async(push_chunk, files)
+
+    p.close()
+    p.join()
+    end = time()
+    print("Minecraft world pushed in {:.2f} seconds".format(end - start))
 
 
 if __name__ == "__main__":
