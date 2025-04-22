@@ -51,5 +51,3 @@ class Agent:
 
     def min_distance_to_others(self, others):
         return min([distance_xz(self.x, self.z, otherx, otherz) for otherx, otherz in others])
-
-    
