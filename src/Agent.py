@@ -10,7 +10,6 @@ from Job import JobType, Job
 class Agent:
     def __init__(self, x: int = 0, y: int = 100, z: int=0):
         self.id: str = str(uuid4())
-        #self.map: Map = mcmap
         self.x: float = x
         self.y: float = y
         self.z: float = z
@@ -28,7 +27,8 @@ class Agent:
             "buildhouse": self.attributes["house"].build()
         }
         self.observations = {}
-
+        self.best_house_score = 0
+        self.current_phase = "exploring"
         with open("./txt/agent_names.txt", "r") as f:
             self.name = random.choice(f.readlines()).strip()
 

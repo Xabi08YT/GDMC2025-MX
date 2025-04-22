@@ -1,5 +1,6 @@
 import os
 import json
+import time
 from json import JSONDecodeError
 
 import Map
@@ -10,13 +11,28 @@ current_editor = None
 def distance_xz(ax: float, az: float, bx: float, bz: float)-> float:
     return (ax-bx)**2 + (az-bz)**2
 
-def is_flat():
-    pass
+def get_ground_height(x: int, y_start: int, z: int) -> int:
+    for y in range(y_start, 0, -1):
+        block = [] # block = getBlock from JSON
+        if block[0] != "minecraft:air" and not block[0].endswith("leaves"):
+            return y
+    return 100
+
+
+def is_flat(x: int, y: int, z: int, radius: int = 2) -> float:
+    heights = []
+    for dx in range(-radius, radius + 1):
+        for dz in range(-radius, radius + 1):
+            ny = get_ground_height(x + dx, y + 10, z + dz)
+            heights.append(ny)
+    variation = max(heights) - min(heights)
+    return 1 - min(variation / 5, 1)
 
 def same_point(p1,p2):
     return p1[0] == p2[0] and p1[1] == p2[1] and p1[2] == p2[2]
 
 def get_mc_map(buildArea, forceReload=False):
+    start_time = time.time()
     size = (buildArea.end[0] - buildArea.begin[0], buildArea.end[1] - buildArea.begin[1],
             buildArea.end[2] - buildArea.begin[2])
     if os.path.exists(os.path.join(os.getcwd(), "data", "areaData.json")) and not forceReload:
@@ -55,6 +71,8 @@ def get_mc_map(buildArea, forceReload=False):
     with open(os.path.join(os.getcwd(), "data", "areaData.json"), "w+") as f:
         json.dump({"begin": buildArea.begin.to_list(), "end": buildArea.end.to_list()}, f)
         f.close()
+    end_time = time.time()
+    print(f"Map loaded in {end_time - start_time:.2f} seconds")
 
 def set_mc_map():
     for file in os.listdir(os.path.join(os.getcwd(), "data")):
@@ -85,4 +103,4 @@ if __name__ == "__main__":
     buildArea = current_editor.getBuildArea()
 
     get_mc_map(buildArea)
-    set_mc_map()
+    #set_mc_map()
