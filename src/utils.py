@@ -1,9 +1,11 @@
 import os
 import json
+import random
 from json import JSONDecodeError
 
-import Map
-from gdpc import interface, Editor, Block
+from multiprocessing import Pool, cpu_count
+from gdpc import interface, Editor
+from time import sleep
 
 current_editor = None
 
@@ -56,28 +58,21 @@ def get_mc_map(buildArea, forceReload=False):
         json.dump({"begin": buildArea.begin.to_list(), "end": buildArea.end.to_list()}, f)
         f.close()
 
+def exec_push_chunk(file):
+    os.system(f"python pushChunk.py {file}")
+
 def set_mc_map():
-    for file in os.listdir(os.path.join(os.getcwd(), "data")):
-        fpath = os.path.join(os.getcwd(), "data", file)
-        if (not os.path.isdir(fpath)
+    files = [file
+             for file in os.listdir(os.path.join(os.getcwd(), "data"))
+             if
+                (not os.path.isdir(os.path.join(os.getcwd(), "data", file))
                 and file.endswith(".json")
-                and not "areaData" in file):
+                and not "areaData" in file
+                and not "config" in file)
+             ]
 
-            print(f"Pushing {file} to minecraft world...")
-            with open(fpath, mode="r") as data:
-                chunk = json.load(data)
-                data.close()
-
-            formatted = [
-                (
-                    coord.replace("(","").replace(")","").split(","),
-                    Block(block[0],block[1],block[2])
-                ) for coord, block in chunk.items()
-            ]
-
-            interface.placeBlocks(formatted, doBlockUpdates=False)
-
-    print("World pushed.")
+    p = Pool(cpu_count())
+    p.map(exec_push_chunk,files)
 
 
 if __name__ == "__main__":
