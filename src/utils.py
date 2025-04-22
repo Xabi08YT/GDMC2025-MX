@@ -22,9 +22,7 @@ def get_mc_map(buildArea, interface):
 
             chunkVertSlice = {}
             for coord,block in tmp:
-                if str((coord[0],coord[2])) not in chunkVertSlice:
-                    chunkVertSlice[str((coord[0],coord[2]))] = {}
-                chunkVertSlice[str((coord[0],coord[2]))][coord[1]] = (block.id,block.states,block.data)
+                chunkVertSlice[str((coord[0],coord[1],coord[2]))] = (block.id,block.states,block.data)
 
             if not os.path.exists(os.path.join(os.getcwd(), "data")):
                 os.mkdir(os.path.join(os.getcwd(), "data"))
