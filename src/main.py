@@ -14,13 +14,12 @@ buildArea = utils.current_editor.getBuildArea()
 
 #get_mc_map(buildArea, interface)
 
-agents = []
 for i in range(config["nodeAgents"][0]):
-    agents.append(Agent())
+    utils.agents.append(Agent())
 
 
 threads = []
-for agent in agents:
+for agent in utils.agents:
     thread = threading.Thread(target=agent.tick)
     threads.append(thread)
     print("Agent " + agent.name + " started")
@@ -28,7 +27,7 @@ for agent in agents:
 
 sleep(10)
 
-for agent in agents:
+for agent in utils.agents:
     agent.tickEnable = False
 
 for thread in threads:

@@ -1,8 +1,6 @@
 from uuid import uuid4
-from time import sleep
 from buildings import *
 from utils import *
-import utils
 import random
 import buildings
 from Job import JobType, Job
@@ -27,7 +25,7 @@ class Agent:
             "buildhouse": self.attributes["house"].build()
         }
         self.observations = {}
-        self.best_house_score = 0
+        self.best_house_score = {"score": 0, "pos": (0, 0, 0)}
         self.current_phase = "exploring"
         with open("./txt/agent_names.txt", "r") as f:
             self.name = random.choice(f.readlines()).strip()
@@ -48,6 +46,15 @@ class Agent:
         while self.tickEnable:
             # TODO: Make agent take decisions
             sleep(0.1)
+
+    def explore(self, turns: int = 5):
+        potential_spots = [(0,0)] #get random pos in buildarea
+        for i in range(turns):
+            tmp_score = evaluate_spot(self, potential_spots[i][0], potential_spots[i][1])
+            if tmp_score > self.best_house_score["score"]:
+                y = get_ground_height(potential_spots[i][0], 300, potential_spots[i][1])
+                self.best_house_score = {"score": tmp_score, "pos": (potential_spots[i][0], y, potential_spots[i][1])}
+        self.attributes["house"].center_point = ivec3(self.best_house_score["pos"][0], 0, self.best_house_score["pos"][1])
 
     def min_distance_to_others(self, others):
         return min([distance_xz(self.x, self.z, otherx, otherz) for otherx, otherz in others])
