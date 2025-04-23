@@ -3,7 +3,7 @@ from gdpc.vector_tools import ivec3
 from gdpc import Block, Editor
 import utils
 import Job
-from src.chunk import set_block
+from chunk import set_block
 
 
 class Building:

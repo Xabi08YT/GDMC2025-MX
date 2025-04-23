@@ -51,13 +51,10 @@ for agent in utils.agents:
     agent.tickEnable = False
     print("Agent " + agent.name + " is " + agent.current_phase)
 
-for thread in threads:
-    thread.join()
-
 utils.connect_houses_to_center()
 
 utils.current_editor.runCommand('tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Pushing new map. It may tell several minutes.","color":"white"}]')
 print("Simulation stopped, pusing new to map to Minecraft..")
 push_mc_map()
-utils.current_editor.runCommand('tellraw @a [{"text":"GDMC","color":"cyan"},{"text":" - Map pushed. The program has now ended.","color":"white"}]')
+utils.current_editor.runCommand('tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Map pushed. The program has now ended.","color":"white"}]')
 print("Simulation finished, let's see the modifications in Minecraft")

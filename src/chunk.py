@@ -15,7 +15,6 @@ files = {}
 def format_chunk(ci):
     chunk = {}
     for coord, block in ci.items():
-        print(block)
         try:
             chunk[coord] = (block.id, block.states, block.data)
         except AttributeError:
@@ -117,7 +116,6 @@ def load_all_files():
 def scan(x, y, z, radius, buildArea):
     load_all_files()
     chunk = ((x-buildArea.begin[0])//16, (z-buildArea.begin[2])//16)
-    print(x,y,z)
     chunkdata = json.load(files[f"{chunk[0]}_{chunk[1]}"])
     relatives = [(-1,-1),(-1,0),(-1,1),
                  (0,-1), (0,1),
