@@ -22,11 +22,12 @@ def get_ground_height(x: int, y_start: int, z: int) -> int:
         try:
             if blocks[str((x,currentY,z))].id in params["ground"]:
                 found = True
+                break
         except:
             pass
         currentY -= 1
 
-    return currentY - 1
+    return currentY
 
 def is_flat(x: int, z: int, radius: int = 2) -> float:
     heights = []

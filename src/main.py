@@ -23,7 +23,7 @@ pull_mc_map()
 
 
 villageCenter = (random.randint(buildArea.begin[0],buildArea.end[0]), random.randint(buildArea.begin[2],buildArea.end[2]))
-center_pos = (villageCenter[0], utils.get_ground_height(villageCenter[0], 200, villageCenter[1]), villageCenter[1])
+center_pos = (villageCenter[0], utils.get_ground_height(villageCenter[0], 200, villageCenter[1])+1, villageCenter[1])
 utils.current_editor.placeBlock(center_pos, Block("minecraft:campfire"))
 utils.current_editor.runCommand('tellraw @a "GDMC - Map extraction done, simulation started..."')
 

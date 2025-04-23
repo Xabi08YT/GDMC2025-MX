@@ -28,7 +28,7 @@ class Agent:
             "buildhouse": self.attributes["house"].build
         }
         self.observations = {}
-        self.best_house_score = {"score": 0, "pos": (0, 0, 0)}
+        self.best_house_score = {"score": -1, "pos": (0, 0, 0)}
         self.current_phase = "starting"
         with open("./txt/agent_names.txt", "r") as f:
             self.name = random.choice(f.readlines()).strip()
@@ -65,12 +65,12 @@ class Agent:
              random.randint(current_editor.getBuildArea().begin[2], current_editor.getBuildArea().end[2]))
             for _ in range(turns)]
         for i in range(len(potential_spots)):
-            time.sleep(random.randint(1, 2)) # for realism
+            time.sleep(random.randint(0, 1)) # for realism
             tmp_score = evaluate_spot(self, potential_spots[i][0], potential_spots[i][1])
             if tmp_score > self.best_house_score["score"]:
                 y = get_ground_height(potential_spots[i][0], 300, potential_spots[i][1])
                 self.best_house_score = {"score": tmp_score, "pos": (potential_spots[i][0], y, potential_spots[i][1])}
-        self.attributes["house"].center_point = ivec3(self.best_house_score["pos"][0], 0, self.best_house_score["pos"][1])
+        self.attributes["house"].center_point = ivec3(self.best_house_score["pos"][0], self.best_house_score["pos"][1], self.best_house_score["pos"][2])
         self.current_phase = "building"
 
     def min_distance_to_others(self, others):
