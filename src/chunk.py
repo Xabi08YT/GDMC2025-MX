@@ -12,6 +12,16 @@ excluded_files = ["areaData.json", "config.json"]
 
 files = {}
 
+def format_chunk(ci):
+    chunk = {}
+    for coord, block in ci.items():
+        print(block)
+        try:
+            chunk[coord] = (block.id, block.states, block.data)
+        except AttributeError:
+            chunk[coord] = block
+    return chunk
+
 def pull_chunk(args):
     tmp = interface.getBlocks(
         (args[0].begin[0] + args[1] * 16, -64, args[0].begin[2] + args[2] * 16),
@@ -150,6 +160,22 @@ def get_chunk(cx, cy):
 def get_chunk_from_block_coordinates(x, z, buildArea):
     chunk = ((x - buildArea.begin[0]) // 16, (z - buildArea.begin[2]) // 16)
     return get_chunk(chunk[0], chunk[1])
+
+def get_chunk_name_from_block_coordinates(x, z, buildArea):
+    return (x - buildArea.begin[0]) // 16, (z - buildArea.begin[2]) // 16
+
+def set_block(x, y, z, buildArea, block):
+    load_all_files()
+    chunk = get_chunk_from_block_coordinates(x, z, buildArea)
+    chunk[str((x,y,z))] = (block.id, block.states, block.data)
+    chunk = format_chunk(chunk)
+    chunkID = get_chunk_name_from_block_coordinates(x, z, buildArea)
+    with open(os.path.join(os.getcwd(), "data", f"{chunkID[0]}_{chunkID[1]}.json"), "w+") as f:
+        json.dump(chunk, f)
+        f.close()
+    close_all_files()
+    load_all_files()
+    return
 
 if __name__ == "__main__":
     pull_mc_map()

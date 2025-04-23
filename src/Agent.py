@@ -46,18 +46,13 @@ class Agent:
         return self.x, self.y, self.z
 
     def tick(self):
-        while self.tickEnable:
-            if self.current_phase == "starting":
-                self.current_phase = "exploring"
-                self.explore()
-            elif self.current_phase == "building":
-                print("Agent " + self.name + " is building his house")
-                self.attributes["house"].set_orientation_towards_center(self)
-                self.actions["buildhouse"]()
-                self.current_phase = "chilling"
-            elif self.current_phase == "chilling":
-                continue
-            sleep(0.1)
+        if self.current_phase == "starting":
+            self.current_phase = "exploring"
+            self.explore()
+        elif self.current_phase == "building":
+            print("Agent " + self.name + " is building his house")
+            self.actions["buildhouse"]()
+            self.current_phase = "chilling"
 
     def explore(self, turns: int = 5):
         print("Agent " + self.name + " is exploring for his house")
