@@ -137,7 +137,7 @@ if __name__ == "__main__":
     current_editor = Editor(buffering=True)
     buildArea = current_editor.getBuildArea()
 
-    pull_mc_map(True)
+    pull_mc_map()
     #load_all_files()
     #print(scan(31, 66, 142,1))
     #push_mc_map()

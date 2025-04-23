@@ -35,7 +35,7 @@ def evaluate_spot(agent: Agent, x: int, z: int) -> float:
     else:
         score += (1 / max(1, min_dist)) * abs(agent.needs["farfromothers"])
 
-    dist_from_center = distance_xz(x, z, 0, 0) # edit center to the village
+    dist_from_center = distance_xz(x, z, agent.center_village[0], agent.center_village[1])
     if agent.needs["farfromcenter"] > 0:
         score += dist_from_center * agent.needs["farfromcenter"]
     else:

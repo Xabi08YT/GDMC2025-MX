@@ -6,7 +6,7 @@ from Agent import Agent
 import utils
 import threading
 
-from src.chunk import pull_mc_map, push_mc_map
+from chunk import pull_mc_map, push_mc_map
 
 with open("config.json", mode="r") as cfg:
     config = load(cfg)
@@ -14,14 +14,14 @@ with open("config.json", mode="r") as cfg:
 
 utils.current_editor = Editor(buffering=True)
 buildArea = utils.current_editor.getBuildArea()
-
 pull_mc_map(buildArea)
 
 villageCenter = (random.randint(buildArea.begin[0],buildArea.end[0]), random.randint(buildArea.begin[2],buildArea.end[2]))
 
-for i in range(config["nodeAgents"][0]):
-    utils.agents.append(Agent())
+utils.current_editor.runCommand('tellraw @a "GDMC - Map extraction done, simulation started..."')
 
+for i in range(config["nodeAgents"][0]):
+    utils.agents.append(Agent(center_village=villageCenter))
 
 threads = []
 for agent in utils.agents:
@@ -32,6 +32,8 @@ for agent in utils.agents:
 
 sleep(10)
 
+print("Simulation stopped, let's see the progress of the agents")
+
 for agent in utils.agents:
     agent.tickEnable = False
     print("Agent " + agent.name + " is " + agent.current_phase)
@@ -39,6 +41,7 @@ for agent in utils.agents:
 for thread in threads:
     thread.join()
 
+utils.current_editor.runCommand('tellraw @a "GDMC - Simulation stopped, pushing new map to Minecraft..."')
 push_mc_map()
-
-print("Simulation stopped, let's see the modifications in Minecraft")
+utils.current_editor.runCommand('tellraw @a "GDMC - Map pushed, simulation finished"')
+print("Simulation finished, let's see the modifications in Minecraft")

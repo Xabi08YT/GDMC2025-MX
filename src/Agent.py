@@ -8,11 +8,12 @@ import buildings
 from Job import JobType, Job
 
 class Agent:
-    def __init__(self, x: int = 0, y: int = 100, z: int=0):
+    def __init__(self, x: int = 0, y: int = 100, z: int=0, center_village: tuple = (0, 0)):
         self.id: str = str(uuid4())
         self.x: float = x
         self.y: float = y
         self.z: float = z
+        self.center_village: tuple = center_village
         self.tickEnable = True
         self.needs = {
             "farfromothers": random.uniform(-1, 1),
