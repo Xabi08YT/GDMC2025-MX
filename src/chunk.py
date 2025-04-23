@@ -12,7 +12,6 @@ excluded_files = ["areaData.json", "config.json"]
 files = {}
 
 def pull_chunk(args):
-    buildArea = utils.current_editor.buildArea()
     tmp = interface.getBlocks(
         (args[0].begin[0] + args[1] * 16, -64, args[0].begin[2] + args[2] * 16),
         (16, 385, 16)
@@ -124,7 +123,6 @@ def scan(x, y, z, radius):
     for i in range(x-radius,x+radius+1):
         for j in range(y-radius,y+radius+1):
             for k in range(z-radius,z+radius+1):
-                print(chunkdata)
                 b = chunkdata[str((i,j,k))]
                 res[str((i,j,k))] = Block(b[0], b[1], b[2])
     return res
@@ -135,14 +133,7 @@ def close_all_files():
 
 
 if __name__ == "__main__":
-    current_editor = Editor(buffering=True)
-    ba = current_editor.getBuildArea()
-
-    pull_mc_map(ba)
-    load_all_files()
-    print(scan(-538,6,123,1,ba))
     pull_mc_map()
-    #load_all_files()
-    #print(scan(31, 66, 142,1))
-    #push_mc_map()
+    load_all_files()
+    #pull_mc_map()
     #close_all_files()

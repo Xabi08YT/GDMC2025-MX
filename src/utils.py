@@ -9,7 +9,7 @@ def distance_xz(ax: float, az: float, bx: float, bz: float)-> float:
     return (ax-bx)**2 + (az-bz)**2
 
 def get_ground_height(x: int, y_start: int, z: int) -> int:
-    for y in range(y_start, 0, -1):
+    for y in range(y_start+1, 0, -1):
         block = chunk.scan(x, y, z, 1)
         print(block)
         #if block[0] != "minecraft:air" and not block[0].endswith("leaves"):
@@ -49,6 +49,5 @@ def same_point(p1,p2):
     return p1[0] == p2[0] and p1[1] == p2[1] and p1[2] == p2[2]
 
 if __name__ == "__main__":
-
     block = get_ground_height(31, 66, 142)
     print(block)

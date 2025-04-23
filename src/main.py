@@ -14,7 +14,7 @@ with open("config.json", mode="r") as cfg:
 
 utils.current_editor = Editor(buffering=True)
 buildArea = utils.current_editor.getBuildArea()
-pull_mc_map(buildArea)
+pull_mc_map()
 
 villageCenter = (random.randint(buildArea.begin[0],buildArea.end[0]), random.randint(buildArea.begin[2],buildArea.end[2]))
 
@@ -41,7 +41,8 @@ for agent in utils.agents:
 for thread in threads:
     thread.join()
 
-utils.current_editor.runCommand('tellraw @a "GDMC - Simulation stopped, pushing new map to Minecraft..."')
+utils.current_editor.runCommand('tellraw @a "GDMC - Simulation stopped, pushing new map to Minecraft.."')
+print("Simulation stopped, pusing new to map to Minecraft..")
 push_mc_map()
 utils.current_editor.runCommand('tellraw @a "GDMC - Map pushed, simulation finished"')
 print("Simulation finished, let's see the modifications in Minecraft")
