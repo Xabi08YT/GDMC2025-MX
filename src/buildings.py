@@ -4,7 +4,7 @@ from gdpc import Block, Editor
 import utils
 import Job
 
-class Building():
+class Building:
     def __init__(self, center_point: ivec3 | None, agent: Agent, orientation: str = "south", built: bool = False):
         self.built = built
         self.orientation = orientation
@@ -15,6 +15,27 @@ class Building():
         if self.built is not True:
             return
         print(f"Building at x={self.center_point.x}, y={self.center_point.y}, z={self.center_point.z} done!")
+
+    def set_orientation_towards_center(self, agent: Agent = None):
+        if agent is None:
+            agent = self.agent
+
+        if self.center_point is None:
+            return
+
+        dx = self.center_point.x - agent.center_village[0]
+        dz = self.center_point.z - agent.center_village[1]
+
+        if abs(dx) > abs(dz):
+            if dx > 0:
+                self.orientation = "west"
+            else:
+                self.orientation = "east"
+        else:
+            if dz > 0:
+                self.orientation = "north"
+            else:
+                self.orientation = "south"
 
     def __repr__(self):
         return "Building(center_point={}, agent={})".format(self.center_point, self.agent)
@@ -39,7 +60,8 @@ class House(Building):
         center_z = self.center_point.z
         width, depth, height = 5, 5, 4
         half_w, half_d = width // 2, depth // 2
-        bed_facing = {"north": "south", "south": "north", "east": "west", "west": "east"}[self.orientation]
+        orientation = self.orientation
+        bed_facing = {"north": "south", "south": "north", "east": "west", "west": "east"}[orientation]
         floor = Block("oak_planks")
         wall = Block("cobblestone")
         log = Block("oak_log")
@@ -65,19 +87,18 @@ class House(Building):
                     elif is_edge:
                         utils.current_editor.placeBlock((start_x + dx, center_y + dy, start_z + dz), wall)
 
-        door_x = center_x
-        door_z = start_z + depth - 1
         door_x, door_z = center_x, start_z
         torch_pos = (door_x, center_y + 3, door_z + 1)
         bed_pos = (center_x - 1, center_y + 1, center_z)
-        if self.orientation == "south":
+
+        if orientation == "south":
             door_x, door_z = center_x, start_z + depth - 1
             torch_pos = (door_x, center_y + 3, door_z - 1)
-        elif self.orientation == "east":
+        elif orientation == "east":
             door_x, door_z = start_x + width - 1, center_z
             torch_pos = (door_x - 1, center_y + 3, door_z)
             bed_pos = (center_x, center_y + 1, center_z - 1)
-        elif self.orientation == "west":
+        elif orientation == "west":
             door_x, door_z = start_x, center_z
             torch_pos = (door_x + 1, center_y + 3, door_z)
             bed_pos = (center_x, center_y + 1, center_z - 1)

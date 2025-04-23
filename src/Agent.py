@@ -52,6 +52,8 @@ class Agent:
                 self.explore()
             elif self.current_phase == "building":
                 print("Agent " + self.name + " is building his house")
+                self.attributes["house"].set_orientation_towards_center(self)
+                print(self.attributes["house"].orientation)
                 self.actions["buildhouse"]()
                 self.current_phase = "chilling"
             elif self.current_phase == "chilling":
@@ -65,7 +67,7 @@ class Agent:
              random.randint(current_editor.getBuildArea().begin[2], current_editor.getBuildArea().end[2]))
             for _ in range(turns)]
         for i in range(len(potential_spots)):
-            time.sleep(random.randint(0, 1)) # for realism
+            #time.sleep(random.randint(0, 1)) # for realism
             tmp_score = evaluate_spot(self, potential_spots[i][0], potential_spots[i][1])
             if tmp_score > self.best_house_score["score"]:
                 y = get_ground_height(potential_spots[i][0], 300, potential_spots[i][1])
