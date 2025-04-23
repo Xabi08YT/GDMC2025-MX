@@ -17,9 +17,9 @@ with open("config.json", mode="r") as cfg:
 utils.current_editor = Editor(buffering=True)
 buildArea = utils.current_editor.getBuildArea()
 print("GDMC 2025 MX - Prototype")
-utils.current_editor.runCommand('tellraw @a [{"text":"GDMC","color":"cyan"},{"text":" - Prototype","color":"white"}]')
+utils.current_editor.runCommand('tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Prototype","color":"white"}]')
 print("Fetching map from Minecraft...")
-utils.current_editor.runCommand('tellraw @a [{"text":"GDMC","color":"cyan"},{"text":" - Map extraction started. It may take several minutes.","color":"white"}]')
+utils.current_editor.runCommand('tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Map extraction started. It may take several minutes.","color":"white"}]')
 pull_mc_map()
 
 
@@ -27,7 +27,7 @@ pull_mc_map()
 villageCenter = (random.randint(buildArea.begin[0],buildArea.end[0]), random.randint(buildArea.begin[2],buildArea.end[2]))
 center_pos = (villageCenter[0], utils.get_ground_height(villageCenter[0], 200, villageCenter[1])+1, villageCenter[1])
 utils.current_editor.placeBlock(center_pos, Block("minecraft:campfire"))
-utils.current_editor.runCommand('tellraw @a [{"text":"GDMC","color":"cyan"},{"text":" - Map extraction done, simulation started.","color":"white"}]')
+utils.current_editor.runCommand('tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Map extraction done, simulation started.","color":"white"}]')
 
 for i in range(config["nodeAgents"][0]):
     utils.agents.append(Agent(center_pos[0], center_pos[1], center_pos[2], villageCenter))
@@ -47,7 +47,7 @@ p.join()
 
 print("Simulation stopped, let's see the progress of the agents")
 
-utils.current_editor.runCommand('tellraw @a [{"text":"GDMC","color":"cyan"},{"text":" - Pushing new map. It may tell several minutes.","color":"white"}]')
+utils.current_editor.runCommand('tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Pushing new map. It may tell several minutes.","color":"white"}]')
 print("Simulation stopped, pusing new to map to Minecraft..")
 push_mc_map()
 utils.current_editor.runCommand('tellraw @a [{"text":"GDMC","color":"cyan"},{"text":" - Map pushed. The program has now ended.","color":"white"}]')

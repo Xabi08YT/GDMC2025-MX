@@ -16,9 +16,9 @@ def format_chunk(ci):
     chunk = {}
     for coord, block in ci.items():
         print(block)
-        if type(ci[coord]) is not tuple or list:
+        try:
             chunk[coord] = (block.id, block.states, block.data)
-        else:
+        except AttributeError:
             chunk[coord] = block
     return chunk
 
