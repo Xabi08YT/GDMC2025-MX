@@ -12,11 +12,8 @@ with open("config.json", mode="r") as cfg:
 utils.current_editor = Editor(buffering=True)
 buildArea = utils.current_editor.getBuildArea()
 
-#get_mc_map(buildArea, interface)
-
 for i in range(config["nodeAgents"][0]):
     utils.agents.append(Agent())
-
 
 threads = []
 for agent in utils.agents:
@@ -29,10 +26,9 @@ sleep(10)
 
 for agent in utils.agents:
     agent.tickEnable = False
+    print("Agent " + agent.name + " is " + agent.current_phase)
 
 for thread in threads:
     thread.join()
-
-#set_mc_map(map, interface)
 
 print("Simulation stopped, let's see the modifications in Minecraft")

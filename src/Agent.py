@@ -1,3 +1,5 @@
+import time
+from time import sleep
 from uuid import uuid4
 from buildings import *
 from utils import *
@@ -26,7 +28,7 @@ class Agent:
         }
         self.observations = {}
         self.best_house_score = {"score": 0, "pos": (0, 0, 0)}
-        self.current_phase = "exploring"
+        self.current_phase = "starting"
         with open("./txt/agent_names.txt", "r") as f:
             self.name = random.choice(f.readlines()).strip()
 
@@ -44,17 +46,32 @@ class Agent:
 
     def tick(self):
         while self.tickEnable:
-            # TODO: Make agent take decisions
+            if self.current_phase == "starting":
+                self.explore()
+                self.current_phase = "exploring"
+            elif self.current_phase == "building":
+                print("Agent " + self.name + " is building his house")
+                self.attributes["house"].build()
+                self.current_phase = "chilling"
+            elif self.current_phase == "chilling":
+                continue
             sleep(0.1)
 
     def explore(self, turns: int = 5):
-        potential_spots = [(0,0)] #get random pos in buildarea
-        for i in range(turns):
+        print("Agent " + self.name + " is exploring for his house")
+        potential_spots = [
+            (random.randint(current_editor.getBuildArea().begin[0], current_editor.getBuildArea().end[0]),
+             random.randint(current_editor.getBuildArea().begin[2], current_editor.getBuildArea().end[2]))
+            for _ in range(turns)]
+        for i in range(len(potential_spots)):
+            time.sleep(random.randint(1, 5)) # for realism
             tmp_score = evaluate_spot(self, potential_spots[i][0], potential_spots[i][1])
             if tmp_score > self.best_house_score["score"]:
                 y = get_ground_height(potential_spots[i][0], 300, potential_spots[i][1])
                 self.best_house_score = {"score": tmp_score, "pos": (potential_spots[i][0], y, potential_spots[i][1])}
         self.attributes["house"].center_point = ivec3(self.best_house_score["pos"][0], 0, self.best_house_score["pos"][1])
+        self.current_phase = "building"
 
     def min_distance_to_others(self, others):
         return min([distance_xz(self.x, self.z, otherx, otherz) for otherx, otherz in others])
+
