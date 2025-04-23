@@ -14,13 +14,13 @@ files = {}
 def pull_chunk(args):
     buildArea = utils.current_editor.buildArea()
     tmp = interface.getBlocks(
-        (args[0].begin[0] + args[1] * 16, -64, buildArea.begin[2] + args[2] * 16),
+        (args[0].begin[0] + args[1] * 16, -64, args[0].begin[2] + args[2] * 16),
         (16, 385, 16)
     )
 
     chunk = {}
     for coord, block in tmp:
-        if buildArea.contains(coord):
+        if args[0].contains(coord):
             chunk[str((coord[0], coord[1], coord[2]))] = (block.id, block.states, block.data)
 
     with open(file=f"data/{args[1]}_{args[2]}.json", mode="w+") as out:
@@ -56,6 +56,7 @@ def pull_mc_map(forceReload=False):
     chunks_grid = [(buildArea, x,y) for x in range(size[0]//16+1) for y in range(size[2]//16+1)]
 
     p = Pool(cpu_count())
+    print(chunks_grid)
     p.map_async(pull_chunk, chunks_grid)
     p.close()
     p.join()
@@ -135,8 +136,11 @@ def close_all_files():
 
 if __name__ == "__main__":
     current_editor = Editor(buffering=True)
-    buildArea = current_editor.getBuildArea()
+    ba = current_editor.getBuildArea()
 
+    pull_mc_map(ba)
+    load_all_files()
+    print(scan(-538,6,123,1,ba))
     pull_mc_map()
     #load_all_files()
     #print(scan(31, 66, 142,1))
