@@ -134,12 +134,15 @@ def close_all_files():
         files[f].close()
 
 def get_chunk(cx,cy):
+    load_all_files()
     chunkData = json.load(files[f"{cx}_{cy}"])
+    for k,v in chunkData.items():
+        chunkData[k] = Block(v[0], v[1], v[2])
     return chunkData
 
 def get_chunk_from_block_coordinates(x, z, buildArea):
     chunk = ((x - buildArea.begin[0]) // 16, (z - buildArea.begin[2]) // 16)
-    return get_chunk_from_block_coordinates(chunk[0], chunk[1])
+    return get_chunk(chunk[0], chunk[1])
 
 if __name__ == "__main__":
     pull_mc_map()

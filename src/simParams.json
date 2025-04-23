@@ -1,0 +1,31 @@
+{
+  "ground": [
+    "minecraft:stone",
+    "minecraft:grass_block",
+    "minecraft:podzol",
+    "minecraft:dirt_path",
+    "minecraft:mycelium",
+    "minecraft:dirt",
+    "minecraft:coarse_dirt",
+    "minecraft:rooted_dirt",
+    "minecraft:farmland",
+    "minecraft:mud",
+    "minecraft:clay",
+    "minecraft:gravel",
+    "minecraft:sand",
+    "minecraft:sandstone",
+    "minecraft:red_sand",
+    "minecraft:red_sandstone",
+    "minecraft:ice",
+    "minecraft:packed_ice",
+    "minecraft:blue_ice",
+    "minecraft:snow_block",
+    "minecraft:moss",
+    "minecraft:pale_moss_block",
+    "minecraft:granite",
+    "minecraft:andesite",
+    "minecraft:diorite",
+    "minecraft:tuff",
+    "minecraft:water"
+  ]
+}

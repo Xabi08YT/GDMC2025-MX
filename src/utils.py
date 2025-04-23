@@ -1,6 +1,10 @@
+import json
+
 import Agent
 import chunk
 import gdpc
+
+from src.chunk import get_chunk_from_block_coordinates
 
 current_editor = gdpc.Editor(buffering=True)
 agents = []
@@ -9,12 +13,16 @@ def distance_xz(ax: float, az: float, bx: float, bz: float)-> float:
     return (ax-bx)**2 + (az-bz)**2
 
 def get_ground_height(x: int, y_start: int, z: int) -> int:
-    for y in range(y_start+1, 0, -1):
-        block = chunk.scan(x, y, z, 1, buildArea=current_editor.getBuildArea())
-        print(block)
-        #if block[0] != "minecraft:air" and not block[0].endswith("leaves"):
-        #    return y;
-    return 100
+    blocks = get_chunk_from_block_coordinates(x,z,current_editor.getBuildArea())
+    currentY = y_start
+    found = False
+    with open("simParams.json", "r") as file:
+        params = json.load(file)
+    while currentY > -64 and not found:
+        if blocks[str((x,currentY,z))].id in params["ground"]:
+            found = True
+        currentY -= 1
+    return currentY - 1
 
 def is_flat(x: int, z: int, radius: int = 2) -> float:
     heights = []
