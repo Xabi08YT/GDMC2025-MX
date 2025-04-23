@@ -51,7 +51,7 @@ def pull_mc_map(buildArea, forceReload=False):
         os.rmdir(os.path.join(os.getcwd(), "data"))
     os.mkdir(os.path.join(os.getcwd(), "data"))
 
-    chunks_grid = [(buildArea, x,y) for x in range(size[0]//16+1) for y in range(size[1]//16+1)]
+    chunks_grid = [(buildArea, x,y) for x in range(size[0]//16+1) for y in range(size[2]//16+1)]
 
     p = Pool(cpu_count())
     p.map_async(pull_chunk, chunks_grid)

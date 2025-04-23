@@ -1,9 +1,12 @@
 from json import load
+import random
 from time import sleep
 from gdpc import Editor
 from Agent import Agent
 import utils
 import threading
+
+from src.chunk import pull_mc_map, push_mc_map
 
 with open("config.json", mode="r") as cfg:
     config = load(cfg)
@@ -12,7 +15,9 @@ with open("config.json", mode="r") as cfg:
 utils.current_editor = Editor(buffering=True)
 buildArea = utils.current_editor.getBuildArea()
 
-#get_mc_map(buildArea, interface)
+pull_mc_map(buildArea)
+
+villageCenter = (random.randint(buildArea.begin[0],buildArea.end[0]), random.randint(buildArea.begin[2],buildArea.end[2]))
 
 for i in range(config["nodeAgents"][0]):
     utils.agents.append(Agent())
@@ -33,6 +38,6 @@ for agent in utils.agents:
 for thread in threads:
     thread.join()
 
-#set_mc_map(map, interface)
+push_mc_map()
 
 print("Simulation stopped, let's see the modifications in Minecraft")
