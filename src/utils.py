@@ -2,6 +2,7 @@ import json
 
 import Agent
 import chunk
+import random
 import gdpc
 from gdpc import Block
 
@@ -19,7 +20,7 @@ def get_ground_height(x: int, y_start: int, z: int) -> int:
     found = False
     with open("simParams.json", "r") as file:
         params = json.load(file)
-    while currentY > -64 and not found:
+    while currentY > 0 and not found:
         try:
             if blocks[str((x,currentY,z))].id in params["ground"]:
                 found = True
@@ -78,15 +79,7 @@ def create_path(start, end):
     while (x != end_x or z != end_z):
         y = get_ground_height(x, 200, z) + 1
 
-        # place the block with y-1
-
-        if random.random() < 0.1:
-            if random.random() < 0.5:
-                if random.random() < 0.5:
-                    x += sx
-                else:
-                    z += sz
-            continue
+        current_editor.placeBlock((x, y-1, z), path_block)
 
         e2 = 2 * err
         if e2 > -dz:

@@ -53,7 +53,6 @@ class Agent:
             elif self.current_phase == "building":
                 print("Agent " + self.name + " is building his house")
                 self.attributes["house"].set_orientation_towards_center(self)
-                print(self.attributes["house"].orientation)
                 self.actions["buildhouse"]()
                 self.current_phase = "chilling"
             elif self.current_phase == "chilling":
