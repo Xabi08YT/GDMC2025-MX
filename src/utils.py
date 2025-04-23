@@ -19,9 +19,13 @@ def get_ground_height(x: int, y_start: int, z: int) -> int:
     with open("simParams.json", "r") as file:
         params = json.load(file)
     while currentY > -64 and not found:
-        if blocks[str((x,currentY,z))].id in params["ground"]:
-            found = True
+        try:
+            if blocks[str((x,currentY,z))].id in params["ground"]:
+                found = True
+        except:
+            pass
         currentY -= 1
+
     return currentY - 1
 
 def is_flat(x: int, z: int, radius: int = 2) -> float:

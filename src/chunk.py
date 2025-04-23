@@ -132,10 +132,18 @@ def close_all_files():
     for f in files:
         files[f].close()
 
-def get_chunk(cx,cy):
+def get_chunk(cx, cy):
     load_all_files()
-    chunkData = json.load(files[f"{cx}_{cy}"])
-    for k,v in chunkData.items():
+    chunk_key = f"{cx}_{cy}"
+    if chunk_key not in files:
+        return {}
+
+    try:
+        chunkData = json.load(files[chunk_key])
+    except json.JSONDecodeError:
+        chunkData = {}
+
+    for k, v in chunkData.items():
         chunkData[k] = Block(v[0], v[1], v[2])
     return chunkData
 
