@@ -10,10 +10,10 @@ def distance_xz(ax: float, az: float, bx: float, bz: float)-> float:
 
 def get_ground_height(x: int, y_start: int, z: int) -> int:
     for y in range(y_start+1, 0, -1):
-        block = chunk.scan(x, y, z, 1)
+        block = chunk.scan(x, y, z, 1, buildArea=current_editor.getBuildArea())
         print(block)
         #if block[0] != "minecraft:air" and not block[0].endswith("leaves"):
-        #    return y
+        #    return y;
     return 100
 
 def is_flat(x: int, z: int, radius: int = 2) -> float:

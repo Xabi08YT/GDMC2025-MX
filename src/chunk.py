@@ -1,5 +1,6 @@
 import json
 import os
+from json import JSONDecodeError
 from multiprocessing import Pool, cpu_count
 from time import time
 
@@ -104,11 +105,10 @@ def load_all_files():
     for f,fp in tmp:
         files[f.split(".")[0]] = open(fp, mode="r")
 
-def scan(x, y, z, radius):
-    if len(files.keys()) == 0:
-        load_all_files()
-    buildArea = utils.current_editor.getBuildArea()
+def scan(x, y, z, radius, buildArea):
+    load_all_files()
     chunk = ((x-buildArea.begin[0])//16, (z-buildArea.begin[2])//16)
+    print(x,y,z)
     chunkdata = json.load(files[f"{chunk[0]}_{chunk[1]}"])
     relatives = [(-1,-1),(-1,0),(-1,1),
                  (0,-1), (0,1),
@@ -118,6 +118,8 @@ def scan(x, y, z, radius):
             tmp = json.load(files[f"{chunk[0]+r[0]}_{chunk[1]+r[1]}"])
             chunkdata.update(tmp)
         except KeyError:
+            pass
+        except JSONDecodeError:
             pass
     res = {}
     for i in range(x-radius,x+radius+1):
@@ -131,6 +133,13 @@ def close_all_files():
     for f in files:
         files[f].close()
 
+def get_chunk(cx,cy):
+    chunkData = json.load(files[f"{cx}_{cy}"])
+    return chunkData
+
+def get_chunk_from_block_coordinates(x, z, buildArea):
+    chunk = ((x - buildArea.begin[0]) // 16, (z - buildArea.begin[2]) // 16)
+    return get_chunk_from_block_coordinates(chunk[0], chunk[1])
 
 if __name__ == "__main__":
     pull_mc_map()
