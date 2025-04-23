@@ -109,3 +109,27 @@ class House(Building):
 
         self.built = True
         super().build()
+
+    def get_door_position(self):
+        if self.center_point is None:
+            return None
+
+        center_x = self.center_point.x
+        center_y = self.center_point.y
+        center_z = self.center_point.z
+        width, depth = 5, 5
+        half_w, half_d = width // 2, depth // 2
+
+        start_x = center_x - half_w
+        start_z = center_z - half_d
+
+        door_x, door_z = center_x, start_z
+
+        if self.orientation == "south":
+            door_x, door_z = center_x, start_z + depth - 1
+        elif self.orientation == "east":
+            door_x, door_z = start_x + width - 1, center_z
+        elif self.orientation == "west":
+            door_x, door_z = start_x, center_z
+
+        return (door_x, center_y, door_z)

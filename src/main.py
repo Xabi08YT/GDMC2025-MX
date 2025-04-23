@@ -48,6 +48,8 @@ for agent in utils.agents:
 for thread in threads:
     thread.join()
 
+utils.connect_houses_to_center()
+
 utils.current_editor.runCommand('tellraw @a "GDMC - Simulation stopped, pushing new map to Minecraft.."')
 print("Simulation stopped, pusing new to map to Minecraft..")
 push_mc_map()
