@@ -4,7 +4,7 @@ import Agent
 import chunk
 import gdpc
 
-from src.chunk import get_chunk_from_block_coordinates
+from chunk import get_chunk_from_block_coordinates
 
 current_editor = gdpc.Editor(buffering=True)
 agents = []

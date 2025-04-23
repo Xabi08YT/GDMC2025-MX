@@ -25,7 +25,7 @@ class Agent:
             "jobhouse": buildings.JobHouse(Job(JobType.UNEMPLOYED, self), None, self),
         }
         self.actions = {
-            "buildhouse": self.attributes["house"].build()
+            "buildhouse": self.attributes["house"].build
         }
         self.observations = {}
         self.best_house_score = {"score": 0, "pos": (0, 0, 0)}
@@ -48,11 +48,11 @@ class Agent:
     def tick(self):
         while self.tickEnable:
             if self.current_phase == "starting":
-                self.explore()
                 self.current_phase = "exploring"
+                self.explore()
             elif self.current_phase == "building":
                 print("Agent " + self.name + " is building his house")
-                self.attributes["house"].build()
+                self.actions["buildhouse"]()
                 self.current_phase = "chilling"
             elif self.current_phase == "chilling":
                 continue
@@ -65,7 +65,7 @@ class Agent:
              random.randint(current_editor.getBuildArea().begin[2], current_editor.getBuildArea().end[2]))
             for _ in range(turns)]
         for i in range(len(potential_spots)):
-            time.sleep(random.randint(1, 5)) # for realism
+            time.sleep(random.randint(1, 2)) # for realism
             tmp_score = evaluate_spot(self, potential_spots[i][0], potential_spots[i][1])
             if tmp_score > self.best_house_score["score"]:
                 y = get_ground_height(potential_spots[i][0], 300, potential_spots[i][1])

@@ -1,7 +1,7 @@
 from json import load
 import random
 from time import sleep
-from gdpc import Editor
+from gdpc import Editor, Block
 from Agent import Agent
 import utils
 import threading
@@ -14,14 +14,21 @@ with open("config.json", mode="r") as cfg:
 
 utils.current_editor = Editor(buffering=True)
 buildArea = utils.current_editor.getBuildArea()
+print("GDMC 2025 MX - Prototype")
+utils.current_editor.runCommand('tellraw @a "GDMC - Prototype"')
+print("Fetching map from Minecraft...")
+utils.current_editor.runCommand('tellraw @a "GDMC - Map extraction started..."')
 pull_mc_map()
 
-villageCenter = (random.randint(buildArea.begin[0],buildArea.end[0]), random.randint(buildArea.begin[2],buildArea.end[2]))
 
+
+villageCenter = (random.randint(buildArea.begin[0],buildArea.end[0]), random.randint(buildArea.begin[2],buildArea.end[2]))
+center_pos = (villageCenter[0], utils.get_ground_height(villageCenter[0], 200, villageCenter[1]), villageCenter[1])
+utils.current_editor.placeBlock(center_pos, Block("minecraft:campfire"))
 utils.current_editor.runCommand('tellraw @a "GDMC - Map extraction done, simulation started..."')
 
 for i in range(config["nodeAgents"][0]):
-    utils.agents.append(Agent(center_village=villageCenter))
+    utils.agents.append(Agent(center_pos[0], center_pos[1], center_pos[2], villageCenter))
 
 threads = []
 for agent in utils.agents:

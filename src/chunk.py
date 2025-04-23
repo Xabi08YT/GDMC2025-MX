@@ -56,7 +56,6 @@ def pull_mc_map(forceReload=False):
     chunks_grid = [(buildArea, x,y) for x in range(size[0]//16+1) for y in range(size[2]//16+1)]
 
     p = Pool(cpu_count())
-    print(chunks_grid)
     p.map_async(pull_chunk, chunks_grid)
     p.close()
     p.join()
