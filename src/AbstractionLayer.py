@@ -70,6 +70,8 @@ class AbstractionLayer:
     def save_all(self):
         for chunk in Chunk.LOADED_CHUNKS.keys():
             Chunk.LOADED_CHUNKS[chunk].to_file(filename=f"{chunk.name}.json", path=chunk.path)
+        Chunk.LOADED_CHUNKS.flush()
+        Chunk.LOADED_CHUNKS.clear()
 
     def push(self, folder="generated"):
         self.save_all()
