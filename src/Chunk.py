@@ -72,6 +72,7 @@ class Chunk:
     def to_file(self, filename: str = None, path: str = "data"):
         if filename is None:
             filename = self.name + ".json"
+        print(f"Saving Chunk {self.name} to: {filename}")
         with open(os.path.join(os.getcwd(), path, filename),"w+") as f:
             json.dump(self.deserialize(self), f)
             f.close()

@@ -22,9 +22,9 @@ class AbstractionLayer:
             (16, 385, 16)
         )
 
-        chunk = Chunk.from_gdmc(tmp, f"{args[1]}_{args[2]}.json")
+        chunk = Chunk.from_gdmc(tmp, f"{args[1]}_{args[2]}")
 
-        chunk.to_file(f"{chunk.name}.json")
+        chunk.to_file()
 
     def pull(self, forceReload:bool =False):
         start = time()
