@@ -14,6 +14,9 @@ agents = []
 def distance_xz(ax: float, az: float, bx: float, bz: float)-> float:
     return (ax-bx)**2 + (az-bz)**2
 
+def min_distance_to_others(agent, others):
+    return min([distance_xz(agent.x, agent.z, otherx, otherz) for otherx, otherz in others])
+
 def get_ground_height(x: int, y_start: int, z: int) -> int:
     blocks = get_chunk_from_block_coordinates(x,z,current_editor.getBuildArea())
     currentY = y_start
@@ -81,6 +84,7 @@ def create_path(start, end):
 
         current_editor.placeBlock((x, y-1, z), path_block)
 
+        #Bresenham
         e2 = 2 * err
         if e2 > -dz:
             err -= dz
