@@ -29,8 +29,7 @@ class AbstractionLayer:
     def pull(self, forceReload:bool =False):
         start = time()
         print("Pulling minecraft world...")
-        size = (self.buildArea.end[0] - self.buildArea.begin[0], self.buildArea.end[1] - self.buildArea.begin[1],
-                self.buildArea.end[2] - self.buildArea.begin[2])
+        size = self.buildArea.size
         if os.path.exists(os.path.join(os.getcwd(), "data", "areaData.json")) and not forceReload:
             try:
                 with open(os.path.join(os.getcwd(), "data", "areaData.json"), "r") as f:
