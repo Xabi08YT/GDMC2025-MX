@@ -84,7 +84,7 @@ class Agent:
         self.move(dx, 0, dz)
 
         if distance_xz(self.x, self.z, other_agent.x, other_agent.z) > 5:
-            pass
+            return
 
         if other_agent.name not in self.relationships:
             self.relationships.append(other_agent.name)
@@ -137,4 +137,4 @@ class Agent:
             self.move(random.randint(-5, 5), 0, random.randint(-5, 5))
         else:
             self.move(random.randint(-5, 5), 0, random.randint(-5, 5))
-        print(self.name + " is " + self.current_phase)
+        print(f"Agent {self.name} is {self.current_phase}")
