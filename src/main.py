@@ -61,11 +61,11 @@ for agent in agents:
     print("Relationships: " + str(agent.relationships))
 
 print("Simulation done")
-print("Beginning build test...")
-h = House((-326,79,60),agents[0],"MaisonTest", orientation="north")
-res = h.build()
-print(res)
 print("Saving results...")
 abl.save_all()
 print("Pushing results...")
 abl.push()
+print("Cleaning up...")
+for file in os.listdir("generated"):
+    os.remove(os.path.join("generated", file))
+print("Goodbye world !")

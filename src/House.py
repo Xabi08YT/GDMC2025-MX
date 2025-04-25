@@ -98,3 +98,19 @@ class House(Building):
             door_x, door_z = start_x, center_z
 
         return door_x, center_y, door_z
+
+if __name__ == "__main__":
+    from gdpc import interface
+    from AbstractionLayer import AbstractionLayer
+    from Agent import Agent
+    from Chunk import Chunk
+    from random import randint
+
+
+    abl = AbstractionLayer(interface.getBuildArea())
+    abl.save_all()
+    abl.push()
+
+    print("Beginning build test...")
+    h = House((-326, 79, 60), Agent(abl, Chunk.LOADED_CHUNKS, radius=5, x=randint(-5, 5), z=randint(-5, 5)), "MaisonTest", orientation="north")
+    h.build()
