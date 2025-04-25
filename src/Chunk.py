@@ -5,6 +5,7 @@ from gdpc import Block, interface
 from pyglm.glm import ivec3
 from uuid import uuid4
 
+
 class Chunk:
 
     CHUNK_SIZE = 16

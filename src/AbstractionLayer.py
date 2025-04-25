@@ -1,4 +1,4 @@
-from Chunk import Chunk
+from src.Chunk import Chunk
 from time import time
 from gdpc import interface, Editor
 from multiprocessing import Pool, cpu_count
@@ -29,7 +29,8 @@ class AbstractionLayer:
     def pull(self, forceReload:bool =False):
         start = time()
         print("Pulling minecraft world...")
-        size = self.buildArea.size
+        size = (self.buildArea.end[0] - self.buildArea.begin[0], self.buildArea.end[1] - self.buildArea.begin[1],
+                self.buildArea.end[2] - self.buildArea.begin[2])
         if os.path.exists(os.path.join(os.getcwd(), "data", "areaData.json")) and not forceReload:
             try:
                 with open(os.path.join(os.getcwd(), "data", "areaData.json"), "r") as f:
@@ -69,6 +70,7 @@ class AbstractionLayer:
     def save_all(self):
         for chunk in Chunk.LOADED_CHUNKS.keys():
             Chunk.LOADED_CHUNKS[chunk].to_file(filename=f"{chunk.name}.json", path=chunk.path)
+        Chunk.LOADED_CHUNKS.flush()
         Chunk.LOADED_CHUNKS.clear()
 
     def push(self, folder="generated"):

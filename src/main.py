@@ -1,53 +1,40 @@
-import os
 from concurrent.futures import ThreadPoolExecutor
 from json import load
 from time import sleep
-from gdpc import Editor
+from gdpc import interface
 from Agent import Agent
-from AbstractionLayer import AbstractionLayer
-from Chunk import Chunk
 from utils import agents
 from random import randint
-import sys
 
 with open("config.json", mode="r") as cfg:
     config = load(cfg)
     cfg.close()
 
-print("GDMC 2025 MX")
-if not os.path.exists("generated"):
-    os.mkdir("generated")
-
+print("GDMC 2025 MX - Prototype")
 print("Fetching map from Minecraft...")
-editor = Editor(buffering=True)
-ba = editor.getBuildArea()
-abl = AbstractionLayer(ba)
-try:
-    abl.pull(sys.argv[2] == "--force-reload")
-except:
-    pass
+ba = interface.getBuildArea()
+offset, size = ba.offset, ba.size
+map = interface.getBlocks(offset, size, "overworld", True)
 radius = config["radius"]
-
-data = []
 
 for i in range(config["nodeAgents"][0]):
     x = randint(-radius, radius)
     z = randint(-radius, radius)
-    data.append((Agent(abl, Chunk.LOADED_CHUNKS, radius=radius, x=x, z=z),config))
+    agents.append(Agent(world=map, radius=radius, x=x, z=z))
 
-def processAgent(args: tuple[Agent, dict]):
-    print("Starting agent " + args[0].name)
-    for _ in range(0,args[1]["nbTurns"]):
-        args[0].tick()
+def processAgent(agent: Agent):
+    print("Starting agent " + agent.name)
+    for _ in range(100):
+        agent.tick()
         sleep(0.1)
     return
 
 with ThreadPoolExecutor() as executor:
-    executor.map(processAgent, data)
+    executor.map(processAgent, agents)
 
 print("Simulation stopped, let's see the progress of the agents")
 
-for agent,cfg in data:
+for agent in agents:
     agent.tickEnable = False
     print("----")
     print(agent.__str__())
@@ -60,7 +47,3 @@ for agent,cfg in data:
     print("Relationships: " + str(agent.relationships))
 
 print("Simulation done")
-print("Saving results...")
-abl.save_all()
-print("Pushing results...")
-abl.push()

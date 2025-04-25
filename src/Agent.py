@@ -2,14 +2,14 @@ import random
 from uuid import uuid4
 from random import choice
 from Job import JobType, Job
-import AbstractionLayer
+from gdpc import Block
+from gdpc.vector_tools import ivec3
 from utils import distance_xz, agents
 
 class Agent:
-    def __init__(self,  abl: AbstractionLayer, loaded_chunks: dict, radius: int = 20, x: int = 0, y: int = 100, z: int=0, center_village: tuple[int,int] = (0, 0), job: JobType = JobType.UNEMPLOYED):
+    def __init__(self, world: list[tuple[ivec3, Block]], radius: int = 20, x: int = 0, y: int = 100, z: int=0, center_village: tuple[int,int] = (0, 0), job: JobType = JobType.UNEMPLOYED):
         self.id: str = str(uuid4())
-        self.abl = abl
-        self.loaded_chunks = loaded_chunks
+        self.world: list[tuple[ivec3, Block]] = world
         self.radius = radius
         self.x: float = x
         self.y: float = y
