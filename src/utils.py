@@ -1,9 +1,6 @@
 from gdpc import Editor
 import math
 
-current_editor = Editor(buffering=True)
-agents = []
-
 def distance_xz(ax: float, az: float, bx: float, bz: float)-> float:
     return math.sqrt((ax-bx)**2 + (az-bz)**2)
 

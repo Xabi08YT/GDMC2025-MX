@@ -6,7 +6,6 @@ from gdpc import Editor
 from Agent import Agent
 from AbstractionLayer import AbstractionLayer
 from Chunk import Chunk
-from utils import agents
 from random import randint
 import sys
 
@@ -28,15 +27,12 @@ except:
     pass
 radius = config["radius"]
 
-data = []
+agents = [Agent(abl, Chunk.LOADED_CHUNKS, radius=radius, x=randint(-radius, radius), z=randint(-radius, radius)) for i in range(config["nodeAgents"][0])]
+data = [(agent,config,agents) for agent in agents]
 
-for i in range(config["nodeAgents"][0]):
-    x = randint(-radius, radius)
-    z = randint(-radius, radius)
-    data.append((Agent(abl, Chunk.LOADED_CHUNKS, radius=radius, x=x, z=z),config))
-
-def processAgent(args: tuple[Agent, dict]):
+def processAgent(args: tuple[Agent, dict,list[Agent]]):
     print("Starting agent " + args[0].name)
+    args[0].all_agents = agents
     for _ in range(0,args[1]["nbTurns"]):
         args[0].tick()
         sleep(0.1)
@@ -47,7 +43,7 @@ with ThreadPoolExecutor() as executor:
 
 print("Simulation stopped, let's see the progress of the agents")
 
-for agent,cfg in data:
+for agent in agents:
     agent.tickEnable = False
     print("----")
     print(agent.__str__())

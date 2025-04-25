@@ -3,7 +3,7 @@ from uuid import uuid4
 from random import choice
 from Job import JobType, Job
 import AbstractionLayer
-from utils import distance_xz, agents
+from utils import distance_xz
 
 class Agent:
     def __init__(self,  abl: AbstractionLayer, loaded_chunks: dict, radius: int = 20, x: int = 0, y: int = 100, z: int=0, center_village: tuple[int,int] = (0, 0), job: JobType = JobType.UNEMPLOYED):
@@ -36,6 +36,7 @@ class Agent:
         self.actions = {}
         self.observations = {}
         self.current_phase = "starting"
+        self.all_agents = []
         with open("./txt/agent_names.txt", "r") as f:
             self.name = choice(f.readlines()).strip()
 
@@ -72,7 +73,7 @@ class Agent:
         self.increment_need("hunger", -self.needs_decay["hunger"])
         self.increment_need("social", self.needs_decay["social"])
 
-        other_agent = min([agent for agent in agents if agent.id != self.id], key=lambda agent: distance_xz(self.x, self.z, agent.x, agent.z))
+        other_agent = min([agent for agent in self.all_agents if agent.id != self.id], key=lambda agent: distance_xz(self.x, self.z, agent.x, agent.z))
 
         dx = (other_agent.x - self.x) * 0.5
         dz = (other_agent.z - self.z) * 0.5
