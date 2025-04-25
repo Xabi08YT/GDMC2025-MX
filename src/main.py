@@ -37,12 +37,13 @@ print("Simulation stopped, let's see the progress of the agents")
 for agent in agents:
     agent.tickEnable = False
     print("----")
-    print("Agent " + agent.name + " - " + agent.current_phase)
-    print("Position: " + str(agent.x) + ", " + str(agent.y) + ", " + str(agent.z))
+    print(agent.__str__())
+    print(agent.job.__str__())
     print("Hunger: " + str(agent.needs["hunger"]) + "(" + str(agent.needs_decay["hunger"]) + ")")
     print("Energy: " + str(agent.needs["energy"]) + "(" + str(agent.needs_decay["energy"]) + ")")
     print("Social: " + str(agent.needs["social"]) + "(" + str(agent.needs_decay["social"]) + ")")
     print("Health: " + str(agent.needs["health"]) + "(" + str(agent.needs_decay["health"]) + ")")
+    print("Muscular: " + str(agent.attributes["muscular"]))
     print("Relationships: " + str(agent.relationships))
 
 print("Simulation done")

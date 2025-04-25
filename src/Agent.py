@@ -7,7 +7,7 @@ from gdpc.vector_tools import ivec3
 from utils import distance_xz, agents
 
 class Agent:
-    def __init__(self, world: list[tuple[ivec3, Block]], radius: int = 20, x: int = 0, y: int = 100, z: int=0, center_village: tuple[int,int] = (0, 0), job: Job = JobType.UNEMPLOYED):
+    def __init__(self, world: list[tuple[ivec3, Block]], radius: int = 20, x: int = 0, y: int = 100, z: int=0, center_village: tuple[int,int] = (0, 0), job: JobType = JobType.UNEMPLOYED):
         self.id: str = str(uuid4())
         self.world: list[tuple[ivec3, Block]] = world
         self.radius = radius
@@ -15,15 +15,8 @@ class Agent:
         self.y: float = y
         self.z: float = z
         self.center_village: tuple[int,int] = center_village
-        self.job = job
+        self.job = Job(job)
         self.tickEnable = True
-        self.basics_needs = {
-            "hunger": 1.0,
-            "social": 0.8,
-            "energy": 1.0,
-            "health": 1.0,
-            "chill": 0.5,
-        }
         self.needs = {
             "hunger": 1.0,
             "social": 0.8,
@@ -36,7 +29,9 @@ class Agent:
             "social": round(random.uniform(0.00, 0.1), 2),
             "health": round(random.uniform(0.00, 0.1), 2),
         }
-        self.attributes = {}
+        self.attributes = {
+            "muscular": round(random.uniform(0.00, 0.7), 2),
+        }
         self.relationships = []
         self.actions = {}
         self.observations = {}
@@ -44,8 +39,8 @@ class Agent:
         with open("./txt/agent_names.txt", "r") as f:
             self.name = choice(f.readlines()).strip()
 
-    def __repr__(self):
-        return "Agent(id={}, x={}, y={}, z={})".format(self.id, self.x, self.y, self.z)
+    def __str__(self):
+        return "Agent(name={}, x={}, y={}, z={}) is {}".format(self.name, round(self.x,2), round(self.y,2), round(self.z,2), self.current_phase)
 
     def get_id(self) -> str:
         return self.id
@@ -124,6 +119,10 @@ class Agent:
     def tick(self):
         if not self.tickEnable:
             return
+
+        if self.job.job_type == JobType.UNEMPLOYED and random.uniform(0, 1) < 0.5:
+            self.job.get_new_job(self)
+            print(f"{self.name} got a new job: {self.job.job_type}")
 
         priority_need = min(self.needs, key=self.needs.get)
 
