@@ -10,6 +10,8 @@ from Chunk import Chunk
 from random import randint
 import sys
 
+from House import House
+
 with open("config.json", mode="r") as cfg:
     config = load(cfg)
     cfg.close()
@@ -59,6 +61,10 @@ for agent in agents:
     print("Relationships: " + str(agent.relationships))
 
 print("Simulation done")
+print("Beginning build test...")
+h = House((-326,79,60),agents[0],"MaisonTest", orientation="north")
+res = h.build()
+print(res)
 print("Saving results...")
 abl.save_all()
 print("Pushing results...")

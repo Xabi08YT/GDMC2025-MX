@@ -1,4 +1,4 @@
-from pyglm import ivec3
+from gdpc.interface import ivec3
 
 from Agent import Agent
 from src.Chunk import Chunk
@@ -17,7 +17,7 @@ class Building:
     def build(self):
         if self.built is not True:
             return
-        print(f"Building at x={self.center_point.x}, y={self.center_point.y}, z={self.center_point.z} done!")
+        print(f"Building at x={self.center_point[0]}, y={self.center_point[1]}, z={self.center_point[2]} done!")
 
     def set_orientation_towards_center(self, agent: Agent = None):
         if agent is None:

@@ -77,7 +77,10 @@ class Chunk:
         with open(os.path.join(os.getcwd(), path, filename),"w+") as f:
             json.dump(self.deserialize(self), f)
             f.close()
-        Chunk.LOADED_CHUNKS.pop(self.name)
+        try:
+            Chunk.LOADED_CHUNKS.pop(self.name)
+        except KeyError:
+            pass
         return
 
     @staticmethod

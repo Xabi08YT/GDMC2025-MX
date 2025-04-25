@@ -83,3 +83,4 @@ if __name__ == "__main__":
     abl = AbstractionLayer(editor.getBuildArea())
     abl.pull()
     abl.save_all()
+    abl.push()

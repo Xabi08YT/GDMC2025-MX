@@ -11,17 +11,19 @@ class House(Building):
     def build(self):
         if self.center_point is None:
             return
-        center_x = self.center_point.x
-        center_y = self.center_point.y
-        center_z = self.center_point.z
+        center_x = self.center_point[0]
+        center_y = self.center_point[1]
+        center_z = self.center_point[2]
         width, depth, height = 5, 5, 4
         half_w, half_d = width // 2, depth // 2
         orientation = self.orientation
         bed_facing = {"north": "south", "south": "north", "east": "west", "west": "east"}[orientation]
+        relatives = {"north": (0,-1), "south": (0,1), "east": (1,0), "west": (-1,0)}
         floor = Block("oak_planks")
         wall = Block("cobblestone")
         log = Block("oak_log")
-        door = Block(f"oak_door[facing={bed_facing}]")
+        doorlower = Block(f"oak_door[facing={bed_facing}]")
+        doorupper = Block(f"oak_door[facing={bed_facing},half=upper]")
         torch = Block(f"wall_torch[facing={bed_facing}]")
 
         start_x = center_x - half_w
@@ -59,9 +61,15 @@ class House(Building):
             torch_pos = (door_x + 1, center_y + 3, door_z)
             bed_pos = (center_x, center_y + 1, center_z - 1)
 
-        self.chunk.set_block(door_x, center_y + 1, door_z, door)
+        self.chunk.set_block(door_x, center_y + 1, door_z, doorlower)
+        self.chunk.set_block(door_x, center_y + 2, door_z, doorupper)
         self.chunk.set_block(torch_pos[0], torch_pos[1], torch_pos[2], torch)
         self.chunk.set_block(bed_pos[0], bed_pos[1], bed_pos[2], Block(f"red_bed[facing={bed_facing}]"))
+        self.chunk.set_block(bed_pos[0]-relatives[orientation][0],
+                             bed_pos[1],
+                             bed_pos[2]-relatives[orientation][1],
+                             Block(f"red_bed[part=head,facing={bed_facing}]")
+                             )
 
         self.built = True
         self.chunk.to_file()
