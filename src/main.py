@@ -1,6 +1,7 @@
 import os
-from concurrent.futures import ThreadPoolExecutor
 from json import load
+from multiprocessing import Pool
+from os import cpu_count
 from time import sleep
 from gdpc import Editor
 from Agent import Agent
@@ -38,8 +39,10 @@ def processAgent(args: tuple[Agent, dict,list[Agent]]):
         sleep(0.1)
     return
 
-with ThreadPoolExecutor() as executor:
-    executor.map(processAgent, data)
+p = Pool(cpu_count())
+print(p.map_async(processAgent, data))
+p.close()
+p.join()
 
 print("Simulation stopped, let's see the progress of the agents")
 
