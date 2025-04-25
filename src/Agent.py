@@ -1,4 +1,5 @@
 import random
+from Relationship import Relationship, RelationShipType
 from uuid import uuid4
 from random import choice
 from Job import JobType, Job
@@ -32,7 +33,7 @@ class Agent:
         self.attributes = {
             "muscular": round(random.uniform(0.00, 0.7), 2),
         }
-        self.relationships = []
+        self.relationships = {}
         self.actions = {}
         self.observations = {}
         self.current_phase = "starting"
@@ -40,7 +41,7 @@ class Agent:
             self.name = choice(f.readlines()).strip()
 
     def __str__(self):
-        return "Agent(name={}, x={}, y={}, z={}) is {}".format(self.name, round(self.x,2), round(self.y,2), round(self.z,2), self.current_phase)
+        return "Agent {} ({}, {}, {}) is {}".format(self.name, round(self.x,2), round(self.y,2), round(self.z,2), self.current_phase)
 
     def get_id(self) -> str:
         return self.id
@@ -53,7 +54,7 @@ class Agent:
 
     def increment_need(self, need: str, increment: float):
         new_need = self.needs[need] + increment
-        if (new_need >= 0 and new_need <= 1):
+        if new_need >= 0 and new_need <= 1:
             self.needs[need] = new_need
 
     # -- ACTIONS --
@@ -82,9 +83,11 @@ class Agent:
             return
 
         if other_agent.name not in self.relationships:
-            self.relationships.append(other_agent.name)
+            self.init_relationship(other_agent)
+        else:
+            self.update_relationship(other_agent)
 
-        print(f"{self.name} talked with {other_agent.name}")
+        print(f"{self.name} talked with {other_agent.name} ({self.get_relationship_type(other_agent).value})")
 
     def sleep(self):
         self.current_phase = "sleeping"
@@ -114,6 +117,49 @@ class Agent:
         self.increment_need("social", -self.needs_decay["social"])
         print(f"{self.name}'s pos = {self.x}, {self.z}")
 
+    # -- RELATIONSHIPS --
+
+    def init_relationship(self, other_agent: 'Agent'):
+        self.relationships[other_agent.name] = Relationship()
+
+    def set_relationship(self, other_agent: 'Agent', rel_type: RelationShipType):
+        if other_agent.name in self.relationships:
+            self.relationships[other_agent.name].type = rel_type
+        else:
+            self.relationships[other_agent.name] = Relationship(rel_type)
+        
+    def get_relationship_type(self, other_agent: 'Agent') -> RelationShipType:
+        if other_agent.name in self.relationships:
+            return self.relationships[other_agent.name].type
+        return RelationShipType.NEUTRAL
+        
+    def get_relationship(self, other_agent: 'Agent') -> Relationship:
+        if other_agent.name in self.relationships:
+            return self.relationships[other_agent.name]
+        return Relationship()
+        
+    def update_relationship(self, other_agent: 'Agent'):
+        if other_agent.name not in self.relationships:
+            self.init_relationship(other_agent)
+            
+        relationship = self.relationships[other_agent.name]
+
+        if random.random() < 0.6:
+            relationship.improve(random.uniform(0.05, 0.15))
+        else:
+            relationship.deteriorate(random.uniform(0.03, 0.10))
+
+        if self.name in other_agent.relationships:
+            if random.random() < 0.8:
+                if random.random() < 0.7:
+                    other_agent.relationships[self.name].improve(random.uniform(0.03, 0.10))
+                else:
+                    other_agent.relationships[self.name].deteriorate(random.uniform(0.02, 0.08))
+        else:
+            other_agent.init_relationship(self)
+            
+        return relationship.type
+
     # -- TICK --
 
     def tick(self):
@@ -136,4 +182,3 @@ class Agent:
             self.move(random.randint(-5, 5), 0, random.randint(-5, 5))
         else:
             self.move(random.randint(-5, 5), 0, random.randint(-5, 5))
-        print(f"Agent {self.name} is {self.current_phase}")

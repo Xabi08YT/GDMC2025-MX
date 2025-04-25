@@ -10,7 +10,7 @@ with open("config.json", mode="r") as cfg:
     config = load(cfg)
     cfg.close()
 
-print("GDMC 2025 MX - Prototype")
+print("GDMC 2025 MX")
 print("Fetching map from Minecraft...")
 ba = interface.getBuildArea()
 offset, size = ba.offset, ba.size
@@ -44,6 +44,8 @@ for agent in agents:
     print("Social: " + str(agent.needs["social"]) + "(" + str(agent.needs_decay["social"]) + ")")
     print("Health: " + str(agent.needs["health"]) + "(" + str(agent.needs_decay["health"]) + ")")
     print("Muscular: " + str(agent.attributes["muscular"]))
-    print("Relationships: " + str(agent.relationships))
+    print("Relationships:")
+    for relationship, details in agent.relationships.items():
+        print(f"\t-{relationship}: {details.__str__()}")
 
 print("Simulation done")
