@@ -7,14 +7,14 @@ from gdpc.vector_tools import ivec3
 from utils import distance_xz, agents
 
 class Agent:
-    def __init__(self, world: list[tuple[ivec3, Block]], radius: int = 20, x: int = 0, y: int = 100, z: int=0, center_village: tuple = (0, 0), job: Job = JobType.UNEMPLOYED):
+    def __init__(self, world: list[tuple[ivec3, Block]], radius: int = 20, x: int = 0, y: int = 100, z: int=0, center_village: tuple[int,int] = (0, 0), job: Job = JobType.UNEMPLOYED):
         self.id: str = str(uuid4())
         self.world: list[tuple[ivec3, Block]] = world
         self.radius = radius
         self.x: float = x
         self.y: float = y
         self.z: float = z
-        self.center_village: tuple = center_village
+        self.center_village: tuple[int,int] = center_village
         self.job = job
         self.tickEnable = True
         self.basics_needs = {
@@ -56,7 +56,7 @@ class Agent:
     def get_position(self) -> tuple:
         return self.x, self.y, self.z
 
-    def set_need(self, need: str, increment: float):
+    def increment_need(self, need: str, increment: float):
         new_need = self.needs[need] + increment
         if (new_need >= 0 and new_need <= 1):
             self.needs[need] = new_need
@@ -65,17 +65,17 @@ class Agent:
 
     def eat(self):
         self.current_phase = "eating"
-        self.set_need("energy", -self.needs_decay["energy"])
-        self.set_need("health", -self.needs_decay["health"])
-        self.set_need("hunger", round(random.uniform(0.8, 1.0), 2))
-        self.set_need("social", -self.needs_decay["social"])
+        self.increment_need("energy", -self.needs_decay["energy"])
+        self.increment_need("health", -self.needs_decay["health"])
+        self.increment_need("hunger", round(random.uniform(0.8, 1.0), 2))
+        self.increment_need("social", -self.needs_decay["social"])
 
     def social(self):
         self.current_phase = "socializing"
-        self.set_need("energy", -self.needs_decay["energy"])
-        self.set_need("health", self.needs_decay["health"])
-        self.set_need("hunger", -self.needs_decay["hunger"])
-        self.set_need("social", self.needs_decay["social"])
+        self.increment_need("energy", -self.needs_decay["energy"])
+        self.increment_need("health", self.needs_decay["health"])
+        self.increment_need("hunger", -self.needs_decay["hunger"])
+        self.increment_need("social", self.needs_decay["social"])
 
         other_agent = min([agent for agent in agents if agent.id != self.id], key=lambda agent: distance_xz(self.x, self.z, agent.x, agent.z))
 
@@ -89,21 +89,21 @@ class Agent:
         if other_agent.name not in self.relationships:
             self.relationships.append(other_agent.name)
 
-        print(f"{self.name} socialized with {other_agent.name}")
+        print(f"{self.name} talked with {other_agent.name}")
 
     def sleep(self):
         self.current_phase = "sleeping"
-        self.set_need("energy", round(random.uniform(0.8, 1.0), 2))
-        self.set_need("health", round(random.uniform(0.15, 0.4), 2))
-        self.set_need("hunger", -self.needs_decay["hunger"])
-        self.set_need("social", -self.needs_decay["social"])
+        self.increment_need("energy", round(random.uniform(0.8, 1.0), 2))
+        self.increment_need("health", round(random.uniform(0.15, 0.4), 2))
+        self.increment_need("hunger", -self.needs_decay["hunger"])
+        self.increment_need("social", -self.needs_decay["social"])
 
     def rest(self):
         self.current_phase = "resting"
-        self.set_need("energy", round(random.uniform(0.3, 0.5), 2))
-        self.set_need("health", round(random.uniform(0.1, 0.3), 2))
-        self.set_need("hunger", -self.needs_decay["hunger"])
-        self.set_need("social", -self.needs_decay["social"])
+        self.increment_need("energy", round(random.uniform(0.3, 0.5), 2))
+        self.increment_need("health", round(random.uniform(0.1, 0.3), 2))
+        self.increment_need("hunger", -self.needs_decay["hunger"])
+        self.increment_need("social", -self.needs_decay["social"])
 
     def move(self, increment_x: float, increment_y: float, increment_z: float):
         self.current_phase = "moving"
@@ -113,10 +113,10 @@ class Agent:
             self.x = new_x
         if (new_z <= self.radius and new_z >= -self.radius):
             self.z = new_z
-        self.set_need("hunger", -self.needs_decay["hunger"])
-        self.set_need("energy", -self.needs_decay["energy"])
-        self.set_need("health", self.needs_decay["health"])
-        self.set_need("social", -self.needs_decay["social"])
+        self.increment_need("hunger", -self.needs_decay["hunger"])
+        self.increment_need("energy", -self.needs_decay["energy"])
+        self.increment_need("health", self.needs_decay["health"])
+        self.increment_need("social", -self.needs_decay["social"])
         print(f"{self.name}'s pos = {self.x}, {self.z}")
 
     # -- TICK --
