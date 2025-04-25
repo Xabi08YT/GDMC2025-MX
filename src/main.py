@@ -1,36 +1,50 @@
-from concurrent.futures import ThreadPoolExecutor
+import os
+import sys
 from json import load
 from time import sleep
-from gdpc import interface
+from gdpc import Editor
 from Agent import Agent
-from utils import agents
+from AbstractionLayer import AbstractionLayer
+from Chunk import Chunk
 from random import randint
 
 with open("config.json", mode="r") as cfg:
-    config = load(cfg)
+    config: dict = load(cfg)
     cfg.close()
 
 print("GDMC 2025 MX")
+if not os.path.exists("generated"):
+    os.mkdir("generated")
+
 print("Fetching map from Minecraft...")
-ba = interface.getBuildArea()
-offset, size = ba.offset, ba.size
-map = interface.getBlocks(offset, size, "overworld", True)
+editor = Editor(buffering=True)
+ba = editor.getBuildArea()
+abl = AbstractionLayer(ba)
+try:
+    abl.pull(sys.argv[2] == "--force-reload")
+except:
+    pass
 radius = config["radius"]
 
+agents = []
 for i in range(config["nodeAgents"][0]):
-    x = randint(-radius, radius)
-    z = randint(-radius, radius)
-    agents.append(Agent(world=map, radius=radius, x=x, z=z))
+    x = randint(-radius//2, radius//2)
+    z = randint(-radius//2, radius//2)
+    agent = Agent(abl, Chunk.LOADED_CHUNKS, radius=radius, x=x, z=z, center_village=(0, 0))
+    agents.append(agent)
 
-def processAgent(agent: Agent):
-    print("Starting agent " + agent.name)
-    for _ in range(100):
+data = [(agent, config, agents) for agent in agents]
+
+def processAgent(args: tuple[Agent, dict, list[Agent]]):
+    agent, config_data, all_agents = args
+    agent.all_agents = all_agents
+    for _ in range(0, config_data["nbTurns"]):
         agent.tick()
-        sleep(0.1)
+        sleep(0.05)
     return
 
-with ThreadPoolExecutor() as executor:
-    executor.map(processAgent, agents)
+for data_item in data:
+    processAgent(data_item)
 
 print("Simulation stopped, let's see the progress of the agents")
 
@@ -49,3 +63,11 @@ for agent in agents:
         print(f"\t-{relationship}: {details.__str__()}")
 
 print("Simulation done")
+print("Saving results...")
+abl.save_all()
+print("Pushing results...")
+abl.push()
+print("Cleaning up...")
+for file in os.listdir("generated"):
+    os.remove(os.path.join("generated", file))
+print("Goodbye world !")

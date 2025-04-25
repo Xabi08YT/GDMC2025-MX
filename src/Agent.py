@@ -3,14 +3,14 @@ from Relationship import Relationship, RelationShipType
 from uuid import uuid4
 from random import choice
 from Job import JobType, Job
-from gdpc import Block
-from gdpc.vector_tools import ivec3
-from utils import distance_xz, agents
+import AbstractionLayer
+from utils import distance_xz
 
 class Agent:
-    def __init__(self, world: list[tuple[ivec3, Block]], radius: int = 20, x: int = 0, y: int = 100, z: int=0, center_village: tuple[int,int] = (0, 0), job: JobType = JobType.UNEMPLOYED):
+    def __init__(self,  abl: AbstractionLayer, loaded_chunks: dict, radius: int = 20, x: int = 0, y: int = 100, z: int=0, center_village: tuple[int,int] = (0, 0), job: JobType = JobType.UNEMPLOYED):
         self.id: str = str(uuid4())
-        self.world: list[tuple[ivec3, Block]] = world
+        self.abl = abl
+        self.loaded_chunks = loaded_chunks
         self.radius = radius
         self.x: float = x
         self.y: float = y
@@ -37,6 +37,7 @@ class Agent:
         self.actions = {}
         self.observations = {}
         self.current_phase = "starting"
+        self.all_agents = []
         with open("./txt/agent_names.txt", "r") as f:
             self.name = choice(f.readlines()).strip()
 
@@ -73,7 +74,7 @@ class Agent:
         self.increment_need("hunger", -self.needs_decay["hunger"])
         self.increment_need("social", self.needs_decay["social"])
 
-        other_agent = min([agent for agent in agents if agent.id != self.id], key=lambda agent: distance_xz(self.x, self.z, agent.x, agent.z))
+        other_agent = min([agent for agent in self.all_agents if agent.id != self.id], key=lambda agent: distance_xz(self.x, self.z, agent.x, agent.z))
 
         dx = (other_agent.x - self.x) * 0.5
         dz = (other_agent.z - self.z) * 0.5
@@ -127,21 +128,21 @@ class Agent:
             self.relationships[other_agent.name].type = rel_type
         else:
             self.relationships[other_agent.name] = Relationship(rel_type)
-        
+
     def get_relationship_type(self, other_agent: 'Agent') -> RelationShipType:
         if other_agent.name in self.relationships:
             return self.relationships[other_agent.name].type
         return RelationShipType.NEUTRAL
-        
+
     def get_relationship(self, other_agent: 'Agent') -> Relationship:
         if other_agent.name in self.relationships:
             return self.relationships[other_agent.name]
         return Relationship()
-        
+
     def update_relationship(self, other_agent: 'Agent'):
         if other_agent.name not in self.relationships:
             self.init_relationship(other_agent)
-            
+
         relationship = self.relationships[other_agent.name]
 
         if random.random() < 0.6:
@@ -157,7 +158,7 @@ class Agent:
                     other_agent.relationships[self.name].deteriorate(random.uniform(0.02, 0.08))
         else:
             other_agent.init_relationship(self)
-            
+
         return relationship.type
 
     # -- TICK --

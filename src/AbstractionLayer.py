@@ -1,4 +1,4 @@
-from src.Chunk import Chunk
+from Chunk import Chunk
 from time import time
 from gdpc import interface, Editor
 from multiprocessing import Pool, cpu_count
@@ -70,7 +70,6 @@ class AbstractionLayer:
     def save_all(self):
         for chunk in Chunk.LOADED_CHUNKS.keys():
             Chunk.LOADED_CHUNKS[chunk].to_file(filename=f"{chunk.name}.json", path=chunk.path)
-        Chunk.LOADED_CHUNKS.flush()
         Chunk.LOADED_CHUNKS.clear()
 
     def push(self, folder="generated"):
@@ -85,3 +84,4 @@ if __name__ == "__main__":
     abl = AbstractionLayer(editor.getBuildArea())
     abl.pull()
     abl.save_all()
+    abl.push()
