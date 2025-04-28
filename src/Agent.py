@@ -121,16 +121,9 @@ class Agent:
 
     def observe_environment(self):
         x, y, z = int(self.x), int(self.y), int(self.z)
-        observation_range = self.observation_range
-        for dx in range(-observation_range, observation_range + 1):
-            for dz in range(-observation_range, observation_range + 1):
-                for dy in range(-observation_range, observation_range + 1):
-                    tmp_x, tmp_y, tmp_z = x + dx, y + dy, z + dz
-                    chunk_x, chunk_z = tmp_x // 16, tmp_z // 16
-                    try:
-                        chunk = self.abl.get_chunk(tmp_x, tmp_z)
-                    except:
-                        pass
+
+        chunk = self.abl.get_chunk(x,z)
+        scan_results = chunk.scan(x,y,z)
 
         self.analyze_observations()
 

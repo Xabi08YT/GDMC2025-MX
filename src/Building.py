@@ -1,8 +1,13 @@
 from gdpc.interface import ivec3
 import Agent
 from Chunk import Chunk
+import utils
+
 
 class Building:
+
+    BUILDINGS = []
+
     def __init__(self, center_point: ivec3 | None, agent: Agent, name:str, orientation: str = "south", built: bool = False, folder="generated"):
         self.built = built
         self.orientation = orientation
@@ -11,6 +16,8 @@ class Building:
         self.name = name
         self.folder = folder
         self.chunk = Chunk({}, name, folder)
+        self.radius = 20
+        Building.BUILDINGS.append(self)
 
     def built(self):
         self.built = True
@@ -42,3 +49,13 @@ class Building:
 
     def __str__(self):
         return " at x={}, y={}, z={} owned by {}".format(self.center_point.x, self.center_point.y, self.center_point.z, self.agent.name)
+
+    def detect_conflict(self,x,z):
+        return utils.distance_xz(self.center_point[0], self.center_point[2], x,z) <= self.radius
+
+    def detect_all_conflict(self,x,z):
+        conflicts = []
+        for b in self.BUILDINGS:
+            if b.detect_conflict(x,z):
+                conflicts.append(b)
+        return conflicts
