@@ -79,6 +79,10 @@ class AbstractionLayer:
                 c = Chunk.from_file(file,folder)
                 interface.placeBlocks(c.to_gdmc(), doBlockUpdates=False)
 
+    @staticmethod
+    def get_abstraction_layer_instance():
+        return AbstractionLayer._AbstractionLayerInstance
+
 if __name__ == "__main__":
     editor = Editor(buffering=True)
     abl = AbstractionLayer(editor.getBuildArea())

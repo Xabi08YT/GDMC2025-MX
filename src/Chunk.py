@@ -5,6 +5,8 @@ from gdpc import Block, interface
 from pyglm.glm import ivec3
 from uuid import uuid4
 
+from src.AbstractionLayer import AbstractionLayer
+
 
 class Chunk:
 
@@ -26,6 +28,20 @@ class Chunk:
 
     def is_in_chunk(self, x:int, y:int, z:int) -> bool:
         return Chunk.coord_to_key(x,y,z) in self.chunk.keys()
+
+    def scan(self, x:int ,y:int ,z:int, radius:int) -> list[tuple[tuple[int,int,int],Block]]:
+        allBlocks = []
+        min = (x-radius, y-radius, z-radius)
+        for xs in range(2*radius+1):
+            for ys in range(2*radius+1):
+                for zs in range(2*radius+1):
+                    coords = (min[0] + xs, min[1] + ys, min[2] + zs)
+                    if self.is_in_chunk(xs,ys,zs):
+                        allBlocks.append((coords,self.get_block(coords[0],coords[1],coords[2])))
+                    else:
+                        tmp = AbstractionLayer.get_abstraction_layer_instance().get_chunk(coords[0],coords[2])
+                        allBlocks.append((coords,tmp.get_block(coords[0],coords[1],coords[2])))
+        return allBlocks
 
     @staticmethod
     def serialize(data: dict[str, tuple[str,dict,any]]):
