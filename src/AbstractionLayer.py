@@ -23,7 +23,6 @@ class AbstractionLayer:
         )
 
         chunk = Chunk.from_gdmc(tmp, f"{args[1]}_{args[2]}")
-
         chunk.to_file()
 
     def pull(self, forceReload:bool =False):
@@ -78,6 +77,10 @@ class AbstractionLayer:
             if file.endswith(".json"):
                 c = Chunk.from_file(file,folder)
                 interface.placeBlocks(c.to_gdmc(), doBlockUpdates=False)
+
+    @staticmethod
+    def get_abstraction_layer_instance():
+        return AbstractionLayer._AbstractionLayerInstance
 
 if __name__ == "__main__":
     editor = Editor(buffering=True)

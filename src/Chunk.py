@@ -5,11 +5,17 @@ from gdpc import Block, interface
 from pyglm.glm import ivec3
 from uuid import uuid4
 
+from src.AbstractionLayer import AbstractionLayer
+
 
 class Chunk:
 
     CHUNK_SIZE = 16
     LOADED_CHUNKS = {}
+    with open("simParams.json", "r") as f:
+        params = json.load(f)
+        f.close()
+
 
     def __init__(self,chunk: dict[str,Block], name: str = str(uuid4()), folder:str = "data"):
         if chunk is None:
@@ -26,6 +32,29 @@ class Chunk:
 
     def is_in_chunk(self, x:int, y:int, z:int) -> bool:
         return Chunk.coord_to_key(x,y,z) in self.chunk.keys()
+
+    def scan(self, x:int ,y:int ,z:int, radius:int) -> list[tuple[tuple[int,int,int],Block]]:
+        allBlocks = []
+        min = (x-radius, y-radius, z-radius)
+        for xs in range(2*radius+1):
+            for ys in range(2*radius+1):
+                for zs in range(2*radius+1):
+                    coords = (min[0] + xs, min[1] + ys, min[2] + zs)
+                    if self.is_in_chunk(xs,ys,zs):
+                        allBlocks.append((coords,self.get_block(coords[0],coords[1],coords[2])))
+                    else:
+                        tmp = AbstractionLayer.get_abstraction_layer_instance().get_chunk(coords[0],coords[2])
+                        allBlocks.append((coords,tmp.get_block(coords[0],coords[1],coords[2])))
+        return allBlocks
+
+    def getGroundHeight(self,x,z) -> int:
+        y = 320
+        found = False
+        while y > -64 and not found:
+            if self.get_block(x,y,z).id in Chunk.params["ground"]:
+                found = True
+            y-=1
+        return y+1
 
     @staticmethod
     def serialize(data: dict[str, tuple[str,dict,any]]):
