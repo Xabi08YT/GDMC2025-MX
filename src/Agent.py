@@ -9,8 +9,11 @@ import Building
 import House
 from gdpc.vector_tools import ivec3
 
+
 class Agent:
-    def __init__(self,  abl: AbstractionLayer, loaded_chunks: dict, radius: int = 20, x: int = 0, y: int = 100, z: int=0, center_village: tuple[int,int] = (0, 0), job: JobType = JobType.UNEMPLOYED, observation_range: int = 5):
+    def __init__(self, abl: AbstractionLayer, loaded_chunks: dict, radius: int = 20, x: int = 0, y: int = 100,
+                 z: int = 0, center_village: tuple[int, int] = (0, 0), job: JobType = JobType.UNEMPLOYED,
+                 observation_range: int = 5):
         self.id: str = str(uuid4())
         with open("./txt/agent_names.txt", "r") as f:
             self.name = choice(f.readlines()).strip()
@@ -20,7 +23,7 @@ class Agent:
         self.x: float = x
         self.y: float = y
         self.z: float = z
-        self.center_village: tuple[int,int] = center_village
+        self.center_village: tuple[int, int] = center_village
         self.job: Job = Job(job)
         self.observation_range: int = observation_range
         self.tickEnable: bool = True
@@ -30,7 +33,7 @@ class Agent:
             "energy": 1.0,
             "health": 1.0,
         }
-        self.home : Building = Building.Building(None, self, self.name + "'s Home")
+        self.home: Building = Building.Building(None, self, self.name + "'s Home")
         self.needs_decay = {
             "hunger": round(random.uniform(0.00, 0.1), 2),
             "energy": round(random.uniform(0.00, 0.1), 2),
@@ -52,7 +55,8 @@ class Agent:
         self.all_agents = []
 
     def __str__(self):
-        return "Agent {} ({}, {}, {}) is {}".format(self.name, round(self.x,2), round(self.y,2), round(self.z,2), self.current_phase)
+        return "Agent {} ({}, {}, {}) is {}".format(self.name, round(self.x, 2), round(self.y, 2), round(self.z, 2),
+                                                    self.current_phase)
 
     def get_id(self) -> str:
         return self.id
@@ -84,7 +88,8 @@ class Agent:
         self.increment_need("hunger", -self.needs_decay["hunger"])
         self.increment_need("social", self.needs_decay["social"])
 
-        other_agent = min([agent for agent in self.all_agents if agent.id != self.id], key=lambda agent: distance_xz(self.x, self.z, agent.x, agent.z))
+        other_agent = min([agent for agent in self.all_agents if agent.id != self.id],
+                          key=lambda agent: distance_xz(self.x, self.z, agent.x, agent.z))
 
         dx = (other_agent.x - self.x) * 0.5
         dz = (other_agent.z - self.z) * 0.5
@@ -117,9 +122,9 @@ class Agent:
     def observe_environment(self):
         x, y, z = int(self.x), int(self.y), int(self.z)
         observation_range = self.observation_range
-        for dx in range(-observation_range, observation_range+1):
-            for dz in range(-observation_range, observation_range+1):
-                for dy in range(-observation_range, observation_range+1):
+        for dx in range(-observation_range, observation_range + 1):
+            for dz in range(-observation_range, observation_range + 1):
+                for dy in range(-observation_range, observation_range + 1):
                     tmp_x, tmp_y, tmp_z = x + dx, y + dy, z + dz
                     chunk_x, chunk_z = tmp_x // 16, tmp_z // 16
                     try:
@@ -127,9 +132,8 @@ class Agent:
                     except:
                         pass
 
-
         self.analyze_observations()
-        
+
     def analyze_observations(self):
         # make conclusions
         pass
@@ -146,9 +150,9 @@ class Agent:
         self.increment_need("energy", -self.needs_decay["energy"])
         self.increment_need("health", self.needs_decay["health"])
         self.increment_need("social", -self.needs_decay["social"])
-        
+
         self.observe_environment()
-        
+
         print(f"{self.name}'s pos = {self.x}, {self.z}")
 
     def place_house(self):
