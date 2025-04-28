@@ -12,6 +12,10 @@ class Chunk:
 
     CHUNK_SIZE = 16
     LOADED_CHUNKS = {}
+    with open("simParams.json", "r") as f:
+        params = json.load(f)
+        f.close()
+
 
     def __init__(self,chunk: dict[str,Block], name: str = str(uuid4()), folder:str = "data"):
         if chunk is None:
@@ -42,6 +46,15 @@ class Chunk:
                         tmp = AbstractionLayer.get_abstraction_layer_instance().get_chunk(coords[0],coords[2])
                         allBlocks.append((coords,tmp.get_block(coords[0],coords[1],coords[2])))
         return allBlocks
+
+    def getGroundHeight(self,x,z) -> int:
+        y = 320
+        found = False
+        while y > -64 and not found:
+            if self.get_block(x,y,z).id in Chunk.params["ground"]:
+                found = True
+            y-=1
+        return y+1
 
     @staticmethod
     def serialize(data: dict[str, tuple[str,dict,any]]):

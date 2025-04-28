@@ -23,7 +23,6 @@ class AbstractionLayer:
         )
 
         chunk = Chunk.from_gdmc(tmp, f"{args[1]}_{args[2]}")
-
         chunk.to_file()
 
     def pull(self, forceReload:bool =False):
