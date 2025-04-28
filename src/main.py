@@ -30,7 +30,7 @@ agents = []
 for i in range(config["nodeAgents"][0]):
     x = randint(-radius//2, radius//2)
     z = randint(-radius//2, radius//2)
-    agent = Agent(abl, Chunk.LOADED_CHUNKS, radius=radius, x=x, z=z, center_village=(0, 0))
+    agent = Agent(abl, Chunk.LOADED_CHUNKS, radius=radius, x=x, z=z, center_village=(0, 0), observation_range=config["observationRange"])
     agents.append(agent)
 
 data = [(agent, config, agents) for agent in agents]
@@ -38,8 +38,10 @@ data = [(agent, config, agents) for agent in agents]
 def processAgent(args: tuple[Agent, dict, list[Agent]]):
     agent, config_data, all_agents = args
     agent.all_agents = all_agents
-    for _ in range(0, config_data["nbTurns"]):
+    for i in range(0, config_data["nbTurns"]):
         agent.tick()
+        if agent.home.center_point == None and i > config_data["nbTurns"]/2 and randint(0, 10) > 3:
+            agent.place_house()
         sleep(0.05)
     return
 
@@ -53,11 +55,13 @@ for agent in agents:
     print("----")
     print(agent.__str__())
     print(agent.job.__str__())
+    print(agent.home.__str__())
     print("Hunger: " + str(agent.needs["hunger"]) + "(" + str(agent.needs_decay["hunger"]) + ")")
     print("Energy: " + str(agent.needs["energy"]) + "(" + str(agent.needs_decay["energy"]) + ")")
     print("Social: " + str(agent.needs["social"]) + "(" + str(agent.needs_decay["social"]) + ")")
     print("Health: " + str(agent.needs["health"]) + "(" + str(agent.needs_decay["health"]) + ")")
     print("Muscular: " + str(agent.attributes["muscular"]))
+    print("Observations: " + str(agent.observations))
     print("Relationships:")
     for relationship, details in agent.relationships.items():
         print(f"\t-{relationship}: {details.__str__()}")

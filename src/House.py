@@ -71,9 +71,8 @@ class House(Building):
                              Block(f"red_bed[part=head,facing={bed_facing}]")
                              )
 
-        self.built = True
         self.chunk.to_file()
-        super().build()
+        super().built()
 
     def get_door_position(self):
         if self.center_point is None:
@@ -99,6 +98,9 @@ class House(Building):
 
         return door_x, center_y, door_z
 
+    def __str__(self):
+        print("House" + super().__str__())
+
 if __name__ == "__main__":
     from gdpc import interface
     from AbstractionLayer import AbstractionLayer
@@ -112,5 +114,5 @@ if __name__ == "__main__":
     abl.push()
 
     print("Beginning build test...")
-    h = House((-326, 79, 60), Agent(abl, Chunk.LOADED_CHUNKS, radius=5, x=randint(-5, 5), z=randint(-5, 5)), "MaisonTest", orientation="north")
+    h = House((1723, 75, 1072), Agent(abl, Chunk.LOADED_CHUNKS, radius=5, x=randint(-5, 5), z=randint(-5, 5)), "MaisonTest", orientation="south")
     h.build()

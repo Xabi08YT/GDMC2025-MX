@@ -5,25 +5,32 @@ from random import choice
 from Job import JobType, Job
 import AbstractionLayer
 from utils import distance_xz
+import Building
+import House
+from gdpc.vector_tools import ivec3
 
 class Agent:
-    def __init__(self,  abl: AbstractionLayer, loaded_chunks: dict, radius: int = 20, x: int = 0, y: int = 100, z: int=0, center_village: tuple[int,int] = (0, 0), job: JobType = JobType.UNEMPLOYED):
+    def __init__(self,  abl: AbstractionLayer, loaded_chunks: dict, radius: int = 20, x: int = 0, y: int = 100, z: int=0, center_village: tuple[int,int] = (0, 0), job: JobType = JobType.UNEMPLOYED, observation_range: int = 5):
         self.id: str = str(uuid4())
-        self.abl = abl
-        self.loaded_chunks = loaded_chunks
-        self.radius = radius
+        with open("./txt/agent_names.txt", "r") as f:
+            self.name = choice(f.readlines()).strip()
+        self.abl: AbstractionLayer = abl
+        self.loaded_chunks: dict = loaded_chunks
+        self.radius: int = radius
         self.x: float = x
         self.y: float = y
         self.z: float = z
         self.center_village: tuple[int,int] = center_village
-        self.job = Job(job)
-        self.tickEnable = True
+        self.job: Job = Job(job)
+        self.observation_range: int = observation_range
+        self.tickEnable: bool = True
         self.needs = {
             "hunger": 1.0,
             "social": 0.8,
             "energy": 1.0,
             "health": 1.0,
         }
+        self.home : Building = Building.Building(None, self, self.name + "'s Home")
         self.needs_decay = {
             "hunger": round(random.uniform(0.00, 0.1), 2),
             "energy": round(random.uniform(0.00, 0.1), 2),
@@ -32,14 +39,17 @@ class Agent:
         }
         self.attributes = {
             "muscular": round(random.uniform(0.00, 0.7), 2),
+            "adventurous": round(random.uniform(0.00, 0.8), 2),
         }
         self.relationships = {}
         self.actions = {}
-        self.observations = {}
+        self.observations = {
+            "terrain": {},
+            "structures": {},
+            "points_of_interest": []
+        }
         self.current_phase = "starting"
         self.all_agents = []
-        with open("./txt/agent_names.txt", "r") as f:
-            self.name = choice(f.readlines()).strip()
 
     def __str__(self):
         return "Agent {} ({}, {}, {}) is {}".format(self.name, round(self.x,2), round(self.y,2), round(self.z,2), self.current_phase)
@@ -55,7 +65,7 @@ class Agent:
 
     def increment_need(self, need: str, increment: float):
         new_need = self.needs[need] + increment
-        if new_need >= 0 and new_need <= 1:
+        if 0 <= new_need <= 1:
             self.needs[need] = new_need
 
     # -- ACTIONS --
@@ -104,19 +114,47 @@ class Agent:
         self.increment_need("hunger", -self.needs_decay["hunger"])
         self.increment_need("social", -self.needs_decay["social"])
 
+    def observe_environment(self):
+        x, y, z = int(self.x), int(self.y), int(self.z)
+        observation_range = self.observation_range
+        for dx in range(-observation_range, observation_range+1):
+            for dz in range(-observation_range, observation_range+1):
+                for dy in range(-observation_range, observation_range+1):
+                    tmp_x, tmp_y, tmp_z = x + dx, y + dy, z + dz
+                    chunk_x, chunk_z = tmp_x // 16, tmp_z // 16
+                    try:
+                        chunk = self.abl.get_chunk(tmp_x, tmp_z)
+                    except:
+                        pass
+
+
+        self.analyze_observations()
+        
+    def analyze_observations(self):
+        # make conclusions
+        pass
+
     def move(self, increment_x: float, increment_y: float, increment_z: float):
         self.current_phase = "moving"
         new_x = self.x + increment_x
         new_z = self.z + increment_z
-        if (new_x <= self.radius and new_x >= -self.radius):
+        if self.radius >= new_x >= -self.radius:
             self.x = new_x
-        if (new_z <= self.radius and new_z >= -self.radius):
+        if self.radius >= new_z >= -self.radius:
             self.z = new_z
         self.increment_need("hunger", -self.needs_decay["hunger"])
         self.increment_need("energy", -self.needs_decay["energy"])
         self.increment_need("health", self.needs_decay["health"])
         self.increment_need("social", -self.needs_decay["social"])
+        
+        self.observe_environment()
+        
         print(f"{self.name}'s pos = {self.x}, {self.z}")
+
+    def place_house(self):
+        self.home = House.House(ivec3(0, 0, 0), self, self.name + "'s Home")
+        print("Got new home!")
+        pass
 
     # -- RELATIONSHIPS --
 

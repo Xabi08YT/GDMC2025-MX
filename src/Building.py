@@ -1,5 +1,5 @@
 from gdpc.interface import ivec3
-from Agent import Agent
+import Agent
 from Chunk import Chunk
 
 class Building:
@@ -12,9 +12,8 @@ class Building:
         self.folder = folder
         self.chunk = Chunk({}, name, folder)
 
-    def build(self):
-        if self.built is not True:
-            return
+    def built(self):
+        self.built = True
         print(f"Building at x={self.center_point[0]}, y={self.center_point[1]}, z={self.center_point[2]} done!")
 
     def set_orientation_towards_center(self, agent: Agent = None):
@@ -42,4 +41,4 @@ class Building:
         return "Building(center_point={}, agent={})".format(self.center_point, self.agent)
 
     def __str__(self):
-        return "Building at x={}, y={}, z={} owned by {}".format(self.center_point.x, self.center_point.y, self.center_point.z, self.agent.name)
+        return " at x={}, y={}, z={} owned by {}".format(self.center_point.x, self.center_point.y, self.center_point.z, self.agent.name)
