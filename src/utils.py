@@ -1,5 +1,7 @@
 import math
 import Agent
+from src.AbstractionLayer import AbstractionLayer
+
 
 def distance_xz(ax: float, az: float, bx: float, bz: float)-> float:
     return math.sqrt((ax-bx)**2 + (az-bz)**2)
@@ -10,11 +12,13 @@ def min_distance_to_others(agent, others):
 def same_point(p1,p2):
     return p1[0] == p2[0] and p1[1] == p2[1] and p1[2] == p2[2]
 
-def is_flat(x: int, z: int, radius: int = 2) -> float:
+def is_flat(x: int, z: int, abl: AbstractionLayer, radius: int = 2) -> float:
     heights = []
     for dx in range(-radius, radius + 1):
         for dz in range(-radius, radius + 1):
-            new_y = 0 # get ground height
+            nx, nz = x + dx, z + dz
+            chunk = abl.get_chunk(nx, nz)
+            new_y = chunk.getGroundHeight(nx, nz)
             heights.append(new_y)
     variation = max(heights) - min(heights)
     return 1 - min(variation / 5, 1)
@@ -29,6 +33,6 @@ def evaluate_spot(agent: Agent, x: int, z: int) -> float:
     dist_from_center = distance_xz(x, z, agent.center_village[0], agent.center_village[1])
     score += dist_from_center * agent.attributes["adventurous"]
 
-    flatness = 1 - is_flat(x, z)
+    flatness = 1 - is_flat(x, z, agent.abl)
     score += flatness
     return score
