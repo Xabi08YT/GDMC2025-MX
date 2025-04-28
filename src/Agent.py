@@ -1,16 +1,25 @@
+import json
 import random
+
+from gdpc import Block
+
 from Relationship import Relationship, RelationShipType
 from uuid import uuid4
 from random import choice
 from Job import JobType, Job
 import AbstractionLayer
 from utils import distance_xz
-import Building
+from Building import Building
 import House
 from gdpc.vector_tools import ivec3
 
 
 class Agent:
+
+    with open("simParams.json", "r") as file:
+        simParams = json.load(file)
+        file.close()
+
     def __init__(self, abl: AbstractionLayer, loaded_chunks: dict, radius: int = 20, x: int = 0, y: int = 100,
                  z: int = 0, center_village: tuple[int, int] = (0, 0), job: JobType = JobType.UNEMPLOYED,
                  observation_range: int = 5):
@@ -47,8 +56,8 @@ class Agent:
         self.relationships = {}
         self.actions = {}
         self.observations = {
-            "terrain": {},
-            "structures": {},
+            "terrain": {"wood":[], "water":[], "lava":[]},
+            "structures": [],
             "points_of_interest": []
         }
         self.current_phase = "starting"
@@ -123,13 +132,26 @@ class Agent:
         x, y, z = int(self.x), int(self.y), int(self.z)
 
         chunk = self.abl.get_chunk(x,z)
-        scan_results = chunk.scan(x,y,z)
 
-        self.analyze_observations()
+        self.analyze_observations(chunk.scan(x,y,z))
 
-    def analyze_observations(self):
-        # make conclusions
-        pass
+    def analyze_observations(self,blocks: list[tuple[tuple[int,int,int],Block]]):
+
+        tresspassing = Building.detect_all_tresspassing(self.x, self.z)
+        self.observations["structures"] = list(dict.fromkeys(self.observations["structures"] + tresspassing))
+
+        interesting_blocks_config = [ e for i in Agent.simParams["interestingTerrainChars"] for e in Agent.simParams[i]]
+        wood = Agent.simParams["wood"]
+        for coord,block in blocks:
+            if block.id in interesting_blocks_config:
+                if block.id in wood:
+                    self.observations["terrain"]["wood"].append(coord)
+                elif block.id in Agent.simParams["water"]:
+                    self.observations["terrain"]["water"].append(coord)
+                elif block.id in Agent.simParams["lava"]:
+                    self.observations["terrain"]["lava"].append(coord)
+
+        return
 
     def move(self, increment_x: float, increment_y: float, increment_z: float):
         self.current_phase = "moving"
