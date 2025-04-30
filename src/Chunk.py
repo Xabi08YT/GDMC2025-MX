@@ -5,14 +5,13 @@ from gdpc import Block, interface
 from pyglm.glm import ivec3
 from uuid import uuid4
 
-from src.AbstractionLayer import AbstractionLayer
-
-
 class Chunk:
 
     CHUNK_SIZE = 16
     LOADED_CHUNKS = {}
-    with open("simParams.json", "r") as f:
+    
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(current_dir, "simParams.json"), "r") as f:
         params = json.load(f)
         f.close()
 
@@ -25,7 +24,12 @@ class Chunk:
         self.folder = folder
 
     def get_block(self,x,y,z) -> Block:
-        return self.chunk[Chunk.coord_to_key(x,y,z)]
+        if not self.is_in_chunk(x,y,z):
+            return Block("air", {}, 0)
+        key = Chunk.coord_to_key(x,y,z)
+        if key not in self.chunk:
+            return Block("air", {}, 0)
+        return self.chunk[key]
 
     def set_block(self,x:int ,y: int,z: int,block: Block) -> None:
         self.chunk[Chunk.coord_to_key(x,y,z)] = block
@@ -40,21 +44,24 @@ class Chunk:
             for ys in range(2*radius+1):
                 for zs in range(2*radius+1):
                     coords = (min[0] + xs, min[1] + ys, min[2] + zs)
-                    if self.is_in_chunk(xs,ys,zs):
-                        allBlocks.append((coords,self.get_block(coords[0],coords[1],coords[2])))
+                    if self.is_in_chunk(coords[0], coords[1], coords[2]):
+                        allBlocks.append((coords, self.get_block(coords[0], coords[1], coords[2])))
                     else:
-                        tmp = AbstractionLayer.get_abstraction_layer_instance().get_chunk(coords[0],coords[2])
-                        allBlocks.append((coords,tmp.get_block(coords[0],coords[1],coords[2])))
+                        from AbstractionLayer import AbstractionLayer
+                        tmp = AbstractionLayer.get_abstraction_layer_instance().get_chunk(coords[0], coords[2])
+                        allBlocks.append((coords, tmp.get_block(coords[0], coords[1], coords[2])))
         return allBlocks
 
     def getGroundHeight(self,x,z) -> int:
-        y = 320
-        found = False
-        while y > -64 and not found:
-            if self.get_block(x,y,z).id in Chunk.params["ground"]:
-                found = True
-            y-=1
-        return y+1
+        if not self.is_in_chunk(x, 0, z):
+            return -64
+        y = 319
+        while y > -64:
+            block = self.get_block(x, y, z)
+            if block.id in Chunk.params["ground"]:
+                return y
+            y -= 1
+        return -64
 
     @staticmethod
     def serialize(data: dict[str, tuple[str,dict,any]]):
@@ -103,7 +110,6 @@ class Chunk:
             filename = self.name + ".json"
         if path is None:
             path = self.folder
-        print(f"Saving Chunk {self.name} to: {filename}")
         with open(os.path.join(os.getcwd(), path, filename),"w+") as f:
             json.dump(self.deserialize(self), f)
             f.close()
@@ -127,4 +133,10 @@ class Chunk:
 
     @staticmethod
     def get_chunk_id_from_coord(buildArea: interface.Box, x:int,z:int) -> tuple[int,int]:
-        return x - buildArea.begin[0], z - buildArea.begin[2]
+        dx = x - buildArea.begin[0]
+        dz = z - buildArea.begin[2]
+        max_x_idx = (buildArea.end[0] - buildArea.begin[0] - 1) // Chunk.CHUNK_SIZE
+        max_z_idx = (buildArea.end[2] - buildArea.begin[2] - 1) // Chunk.CHUNK_SIZE
+        cx = max(0, min(dx // Chunk.CHUNK_SIZE, max_x_idx))
+        cz = max(0, min(dz // Chunk.CHUNK_SIZE, max_z_idx))
+        return cx, cz

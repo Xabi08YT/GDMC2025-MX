@@ -1,22 +1,22 @@
 import json
 import random
-
 from gdpc import Block
-
 from Relationship import Relationship, RelationShipType
 from uuid import uuid4
 from random import choice
 from Job import JobType, Job
 import AbstractionLayer
-from utils import distance_xz
+from utils import evaluate_spot
+from math_methods import distance_xz
 from Building import Building
 import House
 from gdpc.vector_tools import ivec3
-
+import os
 
 class Agent:
 
-    with open("simParams.json", "r") as file:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(current_dir, "simParams.json"), "r") as file:
         simParams = json.load(file)
         file.close()
 
@@ -42,7 +42,7 @@ class Agent:
             "energy": 1.0,
             "health": 1.0,
         }
-        self.home: Building = Building.Building(None, self, self.name + "'s Home")
+        self.home: Building = Building(None, self, self.name + "'s Home")
         self.needs_decay = {
             "hunger": round(random.uniform(0.00, 0.1), 2),
             "energy": round(random.uniform(0.00, 0.1), 2),
@@ -64,6 +64,9 @@ class Agent:
         self.all_agents = []
 
     def __str__(self):
+        return f"{self.name}"
+        
+    def __repr__(self):
         return "Agent {} ({}, {}, {}) is {}".format(self.name, round(self.x, 2), round(self.y, 2), round(self.z, 2),
                                                     self.current_phase)
 
@@ -133,7 +136,7 @@ class Agent:
 
         chunk = self.abl.get_chunk(x,z)
 
-        self.analyze_observations(chunk.scan(x,y,z))
+        self.analyze_observations(chunk.scan(x,y,z, 2))
 
     def analyze_observations(self,blocks: list[tuple[tuple[int,int,int],Block]]):
 
@@ -168,12 +171,37 @@ class Agent:
 
         self.observe_environment()
 
-        print(f"{self.name}'s pos = {self.x}, {self.z}")
-
     def place_house(self):
-        self.home = House.House(ivec3(0, 0, 0), self, self.name + "'s Home")
-        print("Got new home!")
-        pass
+        if hasattr(self, 'home') and self.home.center_point is not None and self.home.built:
+            print(f"{self.name} already has a home")
+            return
+            
+        num_spots = 10
+        best_spot = None
+        best_score = float('-inf')
+
+        for _ in range(num_spots):
+            ba = self.abl.getBuildArea()
+            min_x, min_z = ba.begin[0], ba.begin[2]
+            max_x, max_z = ba.end[0] - 1, ba.end[2] - 1
+            test_x = random.randint(min_x, max_x)
+            test_z = random.randint(min_z, max_z)
+
+            score = evaluate_spot(self, int(test_x), int(test_z))
+
+            if score > best_score:
+                best_score = score
+                best_spot = (test_x, test_z)
+
+        chunk = self.abl.get_chunk(int(best_spot[0]), int(best_spot[1]))
+        y = chunk.getGroundHeight(int(best_spot[0]), int(best_spot[1]))
+
+        if hasattr(self, 'home') and self.home in Building.BUILDINGS:
+            Building.BUILDINGS.remove(self.home)
+            
+        self.home = House.House(ivec3(int(best_spot[0]), y, int(best_spot[1])), self, self.name + "'s House")
+        self.home.build()
+        print(f"{self.name} built a new house!")
 
     # -- RELATIONSHIPS --
 
@@ -226,7 +254,7 @@ class Agent:
 
         if self.job.job_type == JobType.UNEMPLOYED and random.uniform(0, 1) < 0.5:
             self.job.get_new_job(self)
-            print(f"{self.name} got a new job: {self.job.job_type}")
+            print(f"{self.name} got a new job: {self.job.job_type.value}")
 
         priority_need = min(self.needs, key=self.needs.get)
 

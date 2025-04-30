@@ -3,7 +3,7 @@ from time import time
 from gdpc import interface, Editor
 from multiprocessing import Pool, cpu_count
 import os, json, utils
-
+from math_methods import same_point
 
 class AbstractionLayer:
 
@@ -35,7 +35,7 @@ class AbstractionLayer:
                 with open(os.path.join(os.getcwd(), "data", "areaData.json"), "r") as f:
                     data = json.load(f)
                     f.close()
-                if utils.same_point(self.buildArea.begin, data["begin"]) and utils.same_point(self.buildArea.end, data["end"]):
+                if same_point(self.buildArea.begin, data["begin"]) and same_point(self.buildArea.end, data["end"]):
                     print("Same area, skipping world pulling... If you want to pull it, remove the folder.")
                     return
             except json.JSONDecodeError:
@@ -67,20 +67,33 @@ class AbstractionLayer:
         return Chunk.from_file(f"{cid[0]}_{cid[1]}.json")
 
     def save_all(self):
-        for chunk in Chunk.LOADED_CHUNKS.keys():
-            Chunk.LOADED_CHUNKS[chunk].to_file(filename=f"{chunk.name}.json", path=chunk.path)
+        chunk_names = list(Chunk.LOADED_CHUNKS.keys())
+        for chunk_name in chunk_names:
+            chunk = Chunk.LOADED_CHUNKS[chunk_name]
+            chunk.to_file(filename=f"{chunk_name}.json", path=chunk.folder)
         Chunk.LOADED_CHUNKS.clear()
 
     def push(self, folder="generated"):
         self.save_all()
+        if not os.path.exists(folder):
+            os.makedirs(folder)
         for file in os.listdir(folder):
             if file.endswith(".json"):
-                c = Chunk.from_file(file,folder)
-                interface.placeBlocks(c.to_gdmc(), doBlockUpdates=False)
+                c = Chunk.from_file(file, folder)
+                try:
+                    interface.placeBlocks(c.to_gdmc(), doBlockUpdates=False)
+                except AttributeError as e:
+                    if "'str' object has no attribute 'get'" in str(e):
+                        print(f"Warning: Got string response while placing blocks. Some blocks may not have been placed.")
+                    else:
+                        raise
 
     @staticmethod
     def get_abstraction_layer_instance():
         return AbstractionLayer._AbstractionLayerInstance
+
+    def getBuildArea(self) -> interface.Box:
+        return self.buildArea
 
 if __name__ == "__main__":
     editor = Editor(buffering=True)

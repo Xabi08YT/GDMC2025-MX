@@ -1,10 +1,9 @@
 from random import random, choice
-
 from gdpc.interface import ivec3
 import Agent
 from Chunk import Chunk
 import utils
-from src.utils import distance_xz
+from utils import distance_xz
 
 
 class Building:
@@ -24,39 +23,65 @@ class Building:
 
     def built(self):
         self.built = True
-        print(f"Building at x={self.center_point[0]}, y={self.center_point[1]}, z={self.center_point[2]} done!")
+        print(f"Building at x={self.center_point[0]}, y={self.center_point[1]}, z={self.center_point[2]} done! ({self.name})")
 
-    def set_orientation_according_to_center(self, village_center: tuple[int, int], agent: Agent = None):
+    def set_orientation_according_to_center(self, agent: Agent = None):
         if agent is None:
             agent = self.agent
 
         if self.center_point is None:
             return
-
-        orientations = {"north": [0, -1], "south": [0, 1], "east": [0, 1], "west": [0, -1]}
+        village_center = agent.center_village
+        orientations = {"north": [0, -1], "south": [0, 1], "east": [1, 0], "west": [-1, 0]}
         score = {k: distance_xz(village_center[0], village_center[1], self.center_point.x + self.radius * e[0], self.center_point.z + self.radius * e[1]) for k,e in orientations.items()}
 
-        max = -32768
-        K = None
-        for k,s in score.items():
-            if s > max:
-                max = s
-                K = k
-            elif s == max and random() < 0.5:
-                K = k
+        max_distance = max(score.values())
+        
+        orientations_to_remove = [k for k, s in score.items() if s == max_distance]
+        for orientation in orientations_to_remove:
+            orientations.pop(orientation)
+        
+        if orientations:
+            self.orientation = choice(list(orientations.keys()))
+        else:
+            self.orientation = choice(["north", "south", "east", "west"])
 
-        orientations.pop(K)
-        keys = list(orientations.keys())
-        self.orientation = orientations[choice(keys)]
+    def get_entrance_coordinates(self):
+        if self.center_point is None:
+            return None
+
+        try:
+            if isinstance(self.center_point, ivec3):
+                x, y, z = self.center_point.x, self.center_point.y, self.center_point.z
+            else:
+                x, y, z = self.center_point[0], self.center_point[1], self.center_point[2]
+        except (TypeError, IndexError, AttributeError) as e:
+            return None
+        
+        entrance_offset = {"north": (0, -self.radius), "south": (0, self.radius), 
+                          "east": (self.radius, 0), "west": (-self.radius, 0)}
+
+        if self.orientation not in entrance_offset:
+            self.orientation = "south"
+            
+        offset = entrance_offset[self.orientation]
+        entrance_x = x + offset[0]
+        entrance_z = z + offset[1]
+
+        return (entrance_x, entrance_z)
 
     def __repr__(self):
-        return "Building(center_point={}, agent={})".format(self.center_point, self.agent)
-
-    def __str__(self):
+        if self.center_point is None:
+            return "Building at nowhere owned by {}".format(self.agent.name)
         return " at x={}, y={}, z={} owned by {}".format(self.center_point.x, self.center_point.y, self.center_point.z,
                                                          self.agent.name)
 
+    def __str__(self):
+         return f"{self.name}"
+
     def detect_tresspassing(self, x, z):
+        if self.center_point is None:
+            return False
         return utils.distance_xz(self.center_point[0], self.center_point[2], x, z) <= self.radius
 
     @staticmethod

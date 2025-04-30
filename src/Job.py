@@ -23,6 +23,9 @@ class Job:
         self.job_type = job_type
 
     def __str__(self):
+        return f"{self.job_type.value}"
+    
+    def __repr__(self):
         return f"Job: {self.job_type.value}"
 
     def get_new_job(self, agent: Agent):

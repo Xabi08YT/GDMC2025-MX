@@ -2,7 +2,7 @@ import Agent
 from gdpc.vector_tools import ivec3
 from gdpc import Block
 from Building import Building
-
+from gdpc.minecraft_tools import signBlock
 
 class House(Building):
     def __init__(self, center_point: ivec3 | None, agent: Agent, name:str, orientation: str = "south", built: bool = False, folder="generated"):
@@ -16,9 +16,11 @@ class House(Building):
         center_z = self.center_point[2]
         width, depth, height = 5, 5, 4
         half_w, half_d = width // 2, depth // 2
+        self.set_orientation_according_to_center(self.agent)
         orientation = self.orientation
         bed_facing = {"north": "south", "south": "north", "east": "west", "west": "east"}[orientation]
         relatives = {"north": (0,-1), "south": (0,1), "east": (1,0), "west": (-1,0)}
+        sign_relatives = {"north": (1,0), "south": (-1,0), "east": (0,1), "west": (0,-1)}
         floor = Block("oak_planks")
         wall = Block("cobblestone")
         log = Block("oak_log")
@@ -71,6 +73,29 @@ class House(Building):
                              Block(f"red_bed[part=head,facing={bed_facing}]")
                              )
 
+        sign_x = door_x + sign_relatives[orientation][0]
+        sign_z = door_z + sign_relatives[orientation][1]
+        
+        sign_adjustments = {
+            "north": (0, -1),
+            "east": (1, 0),
+            "west": (-1, 0),
+            "south": (0, 1)
+        }
+        
+        if orientation in sign_adjustments:
+            sign_x += sign_adjustments[orientation][0]
+            sign_z += sign_adjustments[orientation][1]
+
+        block = signBlock(
+            wall=True, 
+            facing=orientation, 
+            rotation=0, 
+            frontLine2=self.agent.name, 
+            frontLine3=self.agent.job.__str__(), 
+        )
+        self.chunk.set_block(sign_x, center_y + 2, sign_z, block)
+
         self.chunk.to_file()
         super().built()
 
@@ -97,22 +122,3 @@ class House(Building):
             door_x, door_z = start_x, center_z
 
         return door_x, center_y, door_z
-
-    def __str__(self):
-        print("House" + super().__str__())
-
-if __name__ == "__main__":
-    from gdpc import interface
-    from AbstractionLayer import AbstractionLayer
-    from Agent import Agent
-    from Chunk import Chunk
-    from random import randint
-
-
-    abl = AbstractionLayer(interface.getBuildArea())
-    abl.save_all()
-    abl.push()
-
-    print("Beginning build test...")
-    h = House((1723, 75, 1072), Agent(abl, Chunk.LOADED_CHUNKS, radius=5, x=randint(-5, 5), z=randint(-5, 5)), "MaisonTest", orientation="south")
-    h.build()

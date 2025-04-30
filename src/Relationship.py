@@ -16,6 +16,9 @@ class Relationship:
         self.interactions = 0
         
     def __str__(self):
+        return f"{self.type.value}"
+
+    def __repr__(self):
         strength_desc = "strong" if self.strength > 0.7 else "moderate" if self.strength > 0.4 else "weak"
         return f"{strength_desc} ({self.type.value})"
     
