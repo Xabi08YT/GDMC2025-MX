@@ -124,13 +124,6 @@ class Agent:
         self.increment_need("hunger", -self.needs_decay["hunger"])
         self.increment_need("social", -self.needs_decay["social"])
 
-    def rest(self):
-        self.current_phase = "resting"
-        self.increment_need("energy", round(random.uniform(0.3, 0.5), 2))
-        self.increment_need("health", round(random.uniform(0.1, 0.3), 2))
-        self.increment_need("hunger", -self.needs_decay["hunger"])
-        self.increment_need("social", -self.needs_decay["social"])
-
     def observe_environment(self):
         x, y, z = int(self.x), int(self.y), int(self.z)
 
@@ -170,6 +163,55 @@ class Agent:
         self.increment_need("social", -self.needs_decay["social"])
 
         self.observe_environment()
+
+    def apply_boids_movement(self):
+        separation_weight = 1.5
+        alignment_weight = 1.0
+        cohesion_weight = 1.0
+
+        nearby_agents = [agent for agent in self.all_agents
+                         if agent.id != self.id and
+                         distance_xz(self.x, self.z, agent.x, agent.z) < 15]
+
+        if not nearby_agents:
+            dx = random.uniform(-5, 5)
+            dz = random.uniform(-5, 5)
+        else:
+            separation_x = separation_z = 0
+            for agent in nearby_agents:
+                dist = max(distance_xz(self.x, self.z, agent.x, agent.z), 0.1)
+                separation_x += (self.x - agent.x) / (dist * dist)
+                separation_z += (self.z - agent.z) / (dist * dist)
+
+            avg_dx = avg_dz = 0
+            if nearby_agents:
+                avg_dx /= len(nearby_agents)
+                avg_dz /= len(nearby_agents)
+
+            center_x = center_z = 0
+            for agent in nearby_agents:
+                center_x += agent.x
+                center_z += agent.z
+            if nearby_agents:
+                center_x /= len(nearby_agents)
+                center_z /= len(nearby_agents)
+                cohesion_x = center_x - self.x
+                cohesion_z = center_z - self.z
+            else:
+                cohesion_x = cohesion_z = 0
+
+            dx = (separation_x * separation_weight +
+                  avg_dx * alignment_weight +
+                  cohesion_x * cohesion_weight)
+            dz = (separation_z * separation_weight +
+                  avg_dz * alignment_weight +
+                  cohesion_z * cohesion_weight)
+
+            magnitude = max(((dx * dx) + (dz * dz)) ** 0.5, 0.0001)
+            dx = (dx / magnitude) * 5
+            dz = (dz / magnitude) * 5
+
+        self.move(dx, 0, dz)
 
     def place_house(self):
         if hasattr(self, 'home') and self.home.center_point is not None and self.home.built:
@@ -265,8 +307,6 @@ class Agent:
         elif priority_need == "energy":
             self.sleep()
         elif priority_need == "health":
-            self.move(random.randint(-5, 5), 0, random.randint(-5, 5))
-        else:
-            self.move(random.randint(-5, 5), 0, random.randint(-5, 5))
+            self.apply_boids_movement()
 
 
