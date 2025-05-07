@@ -12,6 +12,7 @@ from Building import Building
 import House
 from gdpc.vector_tools import ivec3
 import os
+from LogFile import LogFile
 
 class Agent:
 
@@ -20,7 +21,7 @@ class Agent:
         simParams = json.load(file)
         file.close()
 
-    def __init__(self, abl: AbstractionLayer, loaded_chunks: dict, radius: int = 20, x: int = 0, y: int = 100,
+    def __init__(self, abl: AbstractionLayer, loaded_chunks: dict,logFile: LogFile, radius: int = 20, x: int = 0, y: int = 100,
                  z: int = 0, center_village: tuple[int, int] = (0, 0), job: JobType = JobType.UNEMPLOYED,
                  observation_range: int = 5):
         self.id: str = str(uuid4())
@@ -29,6 +30,7 @@ class Agent:
         self.abl: AbstractionLayer = abl
         self.loaded_chunks: dict = loaded_chunks
         self.radius: int = radius
+        self.logFile = logFile
         self.x: float = x
         self.y: float = y
         self.z: float = z
@@ -140,8 +142,8 @@ class Agent:
 
     def analyze_observations(self,blocks: list[tuple[tuple[int,int,int],Block]]):
 
-        tresspassing = Building.detect_all_tresspassing(self.x, self.z)
-        self.observations["structures"] = list(dict.fromkeys(self.observations["structures"] + tresspassing))
+        trespassing = Building.detect_all_trespassing(self.x, self.z)
+        self.observations["structures"] = list(dict.fromkeys(self.observations["structures"] + trespassing))
 
         interesting_blocks_config = [ e for i in Agent.simParams["interestingTerrainChars"] for e in Agent.simParams[i]]
         wood = Agent.simParams["wood"]
@@ -269,4 +271,4 @@ class Agent:
         else:
             self.move(random.randint(-5, 5), 0, random.randint(-5, 5))
 
-
+        self.logFile.addLine(self,priority_need)

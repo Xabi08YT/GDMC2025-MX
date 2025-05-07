@@ -9,10 +9,13 @@ from AbstractionLayer import AbstractionLayer
 from Chunk import Chunk
 from random import randint
 from Firecamp import Firecamp
+from LogFile import LogFile
 
 with open("config.json", mode="r") as cfg:
     config: dict = load(cfg)
     cfg.close()
+
+logfile = LogFile()
 
 print("GDMC 2025 - MX")
 editor = Editor(buffering=True)
@@ -40,7 +43,7 @@ agents = []
 for i in range(config["nodeAgents"][0]):
     x = randint(min_x, max_x)
     z = randint(min_z, max_z)
-    agent = Agent(abl, Chunk.LOADED_CHUNKS, radius=radius, x=x, z=z, center_village=(firecamp.get_coords().x, firecamp.get_coords().z), observation_range=config["observationRange"])
+    agent = Agent(abl, Chunk.LOADED_CHUNKS, logfile, radius=radius, x=x, z=z, center_village=(firecamp.get_coords().x, firecamp.get_coords().z), observation_range=config["observationRange"])
     agents.append(agent)
 
 data = [(agent, config, agents) for agent in agents]
@@ -49,6 +52,7 @@ def processAgent(args: tuple[Agent, dict, list[Agent]]):
     agent, config_data, all_agents = args
     agent.all_agents = all_agents
     for i in range(0, config_data["nbTurns"]):
+        logfile.turn[args[0].id] = i
         agent.tick()
         if agent.home.built == False and i > config_data["nbTurns"]/2 and randint(0, 10) > 3:
             agent.place_house()
@@ -84,6 +88,7 @@ for agent in agents:
 
 print("Simulation done, saving results...")
 abl.save_all()
+logfile.close()
 print("Pushing results...")
 abl.push()
 for file in os.listdir("generated"):

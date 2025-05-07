@@ -73,15 +73,15 @@ class Building:
     def __str__(self):
          return f"{self.name}"
 
-    def detect_tresspassing(self, x, z):
+    def detect_trespassing(self, x, z):
         if self.center_point is None:
             return False
         return utils.distance_xz(self.center_point[0], self.center_point[2], x, z) <= self.radius
 
     @staticmethod
-    def detect_all_tresspassing(x, z):
-        tresspassing = []
+    def detect_all_trespassing(x, z):
+        trespassing = []
         for b in Building.BUILDINGS:
-            if b.detect_tresspassing(x, z):
-                tresspassing.append(b)
-        return tresspassing
+            if b.detect_trespassing(x, z):
+                trespassing.append(b)
+        return trespassing

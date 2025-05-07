@@ -19,7 +19,7 @@ def evaluate_spot(agent, x: int, z: int) -> float:
     from Agent import Agent as AgentClass
     from Building import Building
 
-    if Building.detect_all_tresspassing(x, z):
+    if Building.detect_all_trespassing(x, z):
         return float('-inf')
 
     score = 0
