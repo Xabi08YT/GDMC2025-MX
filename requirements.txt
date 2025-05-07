@@ -1,3 +1,1 @@
 gdpc==8.1.0
-pandas==2.2.3
-matplotlib==3.10.1
