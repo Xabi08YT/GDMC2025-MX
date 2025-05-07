@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="flex justify-center flex-col">
+  <h1 class="text-center font-bold text-2xl">You selected: <span class="text-red-700">{{simID}}</span>, please click on what you want to see below.</h1>
+  <div class="self-center mt-[25px]">
+    <a class="p-3 bg-slate-200 rounded-lg shadow-md mx-[5px]" href="{{url_for('globalgraphs',simID = simID)}}">Per-agent informations</a>
+    <a class="p-3 bg-slate-200 rounded-lg shadow-md mx-[5px]" href="{{url_for('globalgraphs',simID = simID)}}">Per-turn informations</a>
+    <a class="p-3 bg-slate-200 rounded-lg shadow-md mx-[5px]" href="{{url_for('globalgraphs',simID = simID)}}">Global informations</a>
+  </div>
+</div>
+{% endblock %}

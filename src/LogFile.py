@@ -7,7 +7,7 @@ class LogFile:
     def __init__(self, fpath =  "logs"):
         if not path.exists(fpath):
             mkdir(fpath)
-        self.file = open(path.join(getcwd(), fpath, f"{time()}.csv"), "w+")
+        self.file = open(path.join(getcwd(), fpath, f"{str(time()).split(".")[0]}.csv"), "w+")
         self.dictWriter = csv.DictWriter(self.file, fieldnames=[
             "id",
             "name",

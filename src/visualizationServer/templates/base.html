@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+<header>
+    <nav class="flex items-center justify-between flex-wrap bg-slate-700 p-3 text-white shadow-xl absolute top-0 left-0 w-screen">
+        <ul class="flex">
+            {% block returnBTN %} {% endblock %}
+            <li class="flex items-center p-3">
+                <a href="/">Home</a>
+            </li>
+            <li class="flex items-center p-3">
+                <a href="/shutdown">Shutdown server</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="mt-[80px]">
+    {% block content %}{% endblock %}
+</main>
+<footer>
+    <p>
+        footer
+    </p>
+</footer>
+</body>
+</html>
