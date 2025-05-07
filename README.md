@@ -44,6 +44,15 @@ Agents are autonomous entities that explore and interact with the Minecraft worl
 - Can build their own houses when conditions are right
 - Can have relationships with other agents
 
+### Actions
+Agents perform various actions throughout the simulation cycle:
+- **Exploration:** Move around the village
+- **Building:** Construct houses after sufficient exploration
+- **Need Management:** Take actions to satisfy his needs
+- **Social Interaction:** Engage with other agents to develop relationships
+- **Observation:** Record and remember information about the environment
+- **Job Performance:** Execute tasks related to their assigned profession (TODO)
+
 ### Buildings
 - **Houses:** Agents build their own houses after exploring the area, typically after the simulation has run for half of its duration
 - **Firecamp:** A central structure that serves as the village center, randomly placed in the build area
