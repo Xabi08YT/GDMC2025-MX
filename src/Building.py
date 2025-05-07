@@ -70,12 +70,6 @@ class Building:
 
         return (entrance_x, entrance_z)
 
-    def __repr__(self):
-        if self.center_point is None:
-            return "Building at nowhere owned by {}".format(self.agent.name)
-        return " at x={}, y={}, z={} owned by {}".format(self.center_point.x, self.center_point.y, self.center_point.z,
-                                                         self.agent.name)
-
     def __str__(self):
          return f"{self.name}"
 

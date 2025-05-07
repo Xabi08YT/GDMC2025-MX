@@ -3,7 +3,6 @@ from Building import Building
 from Firecamp import Firecamp
 from DSU import DSU
 
-
 class Graph:
     def __init__(self, buildings: list[Building], campfire: Firecamp):
         self.nodes = buildings

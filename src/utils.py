@@ -3,7 +3,6 @@ from math_methods import distance_xz
 def min_distance_to_others(agent, others):
     return min([distance_xz(agent.x, agent.z, otherx, otherz) for otherx, otherz in others])
 
-
 def is_flat(x: int, z: int, abl, radius: int = 2) -> float:
     heights = []
     for dx in range(-radius, radius + 1):
@@ -27,7 +26,9 @@ def evaluate_spot(agent, x: int, z: int) -> float:
     other_positions = [(other.x, other.z) for other in agent.all_agents if other.id != agent.id]
 
     min_dist = min_distance_to_others(agent, other_positions)
-    social_factor = 1 / (agent.needs_decay["social"] + 1e-6)
+    social_factor = 1
+    if agent.needs_decay["social"] != 0:
+        social_factor = 1 / (agent.needs_decay["social"])
     score += min_dist * social_factor
 
     dist_from_center = distance_xz(x, z, agent.center_village[0], agent.center_village[1])

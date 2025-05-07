@@ -42,7 +42,7 @@ class Agent:
             "energy": 1.0,
             "health": 1.0,
         }
-        self.home: Building = Building(None, self, self.name + "'s Home")
+        self.home: Building = Building(None, self, self.name + "'s Space")
         self.needs_decay = {
             "hunger": round(random.uniform(0.00, 0.1), 2),
             "energy": round(random.uniform(0.00, 0.1), 2),
@@ -268,3 +268,5 @@ class Agent:
             self.move(random.randint(-5, 5), 0, random.randint(-5, 5))
         else:
             self.move(random.randint(-5, 5), 0, random.randint(-5, 5))
+
+
