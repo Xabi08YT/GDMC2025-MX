@@ -34,6 +34,8 @@ class Agent:
         self.x: float = x
         self.y: float = y
         self.z: float = z
+        self.happiness = 0
+        self.happiness_decay = 0
         self.center_village: tuple[int, int] = center_village
         self.job: Job = Job(job)
         self.observation_range: int = observation_range
