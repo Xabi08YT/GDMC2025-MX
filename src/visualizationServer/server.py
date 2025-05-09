@@ -1,11 +1,8 @@
-import base64
-from io import BytesIO
-
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template
 from os import getpid, kill, listdir
 from time import ctime
-from pandas import read_csv, DataFrame, concat
-from matplotlib import pyplot as plt
+from pandas import read_csv
+from visualizationServer.graphs import draw_general_needs_graphs, draw_general_needs_decay_graphs
 
 app = Flask("visualizationServer")
 
@@ -31,39 +28,13 @@ def sim(simID):
 @app.route("/sim/<simID>/global")
 def globalgraphs(simID):
     df = read_csv("logs/" + simID + ".csv")
-    columns = ["turn", "mean_hunger", "mean_social", "mean_energy", "mean_health", "mean_happiness"]
-    finalDF = DataFrame([], columns=columns)
+    df["happiness"] = 0
+    df["happiness_decay"] = 0
 
-    for turn in df["turn"].unique():
-        tmpDF = df[df["turn"] == turn]
-        tmp = {
-            "turn": turn,
-            "mean_hunger": tmpDF["hunger"].mean(),
-            "mean_social": tmpDF["social"].mean(),
-            "mean_energy": tmpDF["energy"].mean(),
-            "mean_health": tmpDF["health"].mean(),
-            "mean_happiness": tmpDF["happiness"].mean()
-        }
+    gneedsurl = draw_general_needs_graphs(df)
+    gneedsdecayurl = draw_general_needs_decay_graphs(df)
 
-        finalDF = concat([DataFrame(tmp, columns), finalDF], ignore_index=True)
-
-    print(finalDF.head())
-    img = BytesIO()
-
-    plt.plot(finalDF["turn"], finalDF["mean_hunger"], label="Mean of Hunger need")
-    plt.plot(finalDF["turn"], finalDF["mean_social"], label="Mean of Social need")
-    plt.plot(finalDF["turn"], finalDF["mean_energy"], label="Mean of Energy need")
-    plt.plot(finalDF["turn"], finalDF["mean_health"], label="Mean of Health need")
-    plt.plot(finalDF["turn"], finalDF["mean_happiness"], label="Mean of Happiness")
-    plt.title("Means of the needs values as well as happiness")
-    plt.legend()
-
-    plt.savefig(img)
-
-    img.seek(0)
-    plot_url = base64.b64encode(img.getvalue()).decode('utf8')
-
-    return render_template("globalgraphs.html", plot_url=plot_url)
+    return render_template("globalgraphs.html", general_plot_needs_url=gneedsurl, general_plot_decayurl=gneedsdecayurl)
 
 
 app.run(debug=True)
