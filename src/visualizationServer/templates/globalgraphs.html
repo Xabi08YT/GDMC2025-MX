@@ -4,5 +4,7 @@
 {%endblock%}
 
 {% block content %}
-<img src="data:image.ong;base64, {{ plot_url }}" alt="Graph to see needs of the agents during simulation">
+<div class="flex justify-center w-max">
+    <img src="data:image.ong;base64, {{ plot_url }}" alt="Graph to see needs of the agents during simulation">
+</div>
 {% endblock %}

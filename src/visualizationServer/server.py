@@ -31,7 +31,7 @@ def sim(simID):
 @app.route("/sim/<simID>/global")
 def globalgraphs(simID):
     df = read_csv("logs/" + simID + ".csv")
-    columns = ["turn", "mean_hunger", "mean_social", "mean_energy", "mean_health"]
+    columns = ["turn", "mean_hunger", "mean_social", "mean_energy", "mean_health", "mean_happiness"]
     finalDF = DataFrame([], columns=columns)
 
     for turn in df["turn"].unique():
@@ -41,7 +41,8 @@ def globalgraphs(simID):
             "mean_hunger": tmpDF["hunger"].mean(),
             "mean_social": tmpDF["social"].mean(),
             "mean_energy": tmpDF["energy"].mean(),
-            "mean_health": tmpDF["health"].mean()
+            "mean_health": tmpDF["health"].mean(),
+            "mean_happiness": tmpDF["happiness"].mean()
         }
 
         finalDF = concat([DataFrame(tmp, columns), finalDF], ignore_index=True)
@@ -53,7 +54,8 @@ def globalgraphs(simID):
     plt.plot(finalDF["turn"], finalDF["mean_social"], label="Mean of Social need")
     plt.plot(finalDF["turn"], finalDF["mean_energy"], label="Mean of Energy need")
     plt.plot(finalDF["turn"], finalDF["mean_health"], label="Mean of Health need")
-    plt.title("General informations during the simulation")
+    plt.plot(finalDF["turn"], finalDF["mean_happiness"], label="Mean of Happiness")
+    plt.title("Means of the needs values as well as happiness")
     plt.legend()
 
     plt.savefig(img)
