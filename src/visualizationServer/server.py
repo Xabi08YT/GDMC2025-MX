@@ -2,7 +2,8 @@ from flask import Flask, render_template
 from os import getpid, kill, listdir
 from time import ctime
 from pandas import read_csv
-from visualizationServer.graphs import draw_general_needs_graphs, draw_general_needs_decay_graphs
+from visualizationServer.graphs import draw_general_needs_graphs, draw_general_needs_decay_graphs, draw_jobless_count_graph
+
 
 app = Flask("visualizationServer")
 
@@ -33,8 +34,9 @@ def globalgraphs(simID):
 
     gneedsurl = draw_general_needs_graphs(df)
     gneedsdecayurl = draw_general_needs_decay_graphs(df)
+    jlcounturl = draw_jobless_count_graph(df)
 
-    return render_template("globalgraphs.html", general_plot_needs_url=gneedsurl, general_plot_decayurl=gneedsdecayurl)
+    return render_template("globalgraphs.html", general_plot_needs_url=gneedsurl, general_plot_decayurl=gneedsdecayurl, jobless_count_url=jlcounturl)
 
 
 app.run(debug=True)

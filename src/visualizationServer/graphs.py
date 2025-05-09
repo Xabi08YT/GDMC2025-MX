@@ -5,7 +5,7 @@ from io import BytesIO
 import base64
 
 
-def draw_general_graph(df, params: dict):
+def draw_means_graph(df, params: dict, title):
     columns = list(params.keys())
     columns.append("turn")
     finalDF = DataFrame([], columns=columns)
@@ -24,7 +24,7 @@ def draw_general_graph(df, params: dict):
     for k in params.keys():
         plt.plot(finalDF["turn"], finalDF[k], label=params[k][1])
 
-    plt.title("Means of the needs values as well as happiness")
+    plt.title(title)
     plt.legend()
 
     plt.savefig(img)
@@ -41,7 +41,7 @@ def draw_general_needs_graphs(df):
         "mean_health": ["health", "Mean of Health need"],
         "mean_happiness": ["happiness", "Mean of Happiness"]
     }
-    return draw_general_graph(df,params)
+    return draw_means_graph(df, params, "Means of the needs values as well as happiness")
 
 def draw_general_needs_decay_graphs(df):
     params = {
@@ -52,4 +52,28 @@ def draw_general_needs_decay_graphs(df):
         "mean_happiness_decay": ["happiness_decay", "Mean of Happiness decay rate"],
     }
 
-    return draw_general_graph(df,params)
+    return draw_means_graph(df, params, "Means of needs and happiness decay values")
+
+def draw_jobless_count_graph(df):
+    columns = ["turn,jobless_count"]
+    finalDF = DataFrame([], columns=columns)
+    for turn in df["turn"].unique():
+        tmpDF = df[df["turn"] == turn]
+        tmp = {
+            "turn": turn,
+            "jobless_count": len(tmpDF[tmpDF["job"] == "Unemployed"])
+        }
+
+        finalDF = concat([finalDF, DataFrame(tmp,columns)], ignore_index=True)
+
+    img = BytesIO()
+
+    plt.plot(finalDF["turn"], finalDF["jobless_count"])
+
+    plt.title("Number of jobless agents per turn")
+
+    plt.savefig(img)
+
+    plt.close()
+    img.seek(0)
+    return base64.b64encode(img.getvalue()).decode('utf8')
