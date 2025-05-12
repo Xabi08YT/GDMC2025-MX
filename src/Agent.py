@@ -1,6 +1,5 @@
 import random
 import uuid
-from LogFile import LogFile
 
 
 class Agent:
@@ -29,7 +28,8 @@ class Agent:
             "social": 0,
         }
         self.happiness = 0
-        self.relationship = {}
+        self.happiness_decay = 0
+        self.relationships = {}
         self.id = str(uuid.uuid4())
         self.name = ""
         self.x = x
@@ -43,6 +43,7 @@ class Agent:
         self.nb_turn_hungry = 0
         self.nb_turn_sleepy = 0
         self.logfile = None
+        self.observations = {}
 
     def apply_decay(self):
         if self.decay_rates["hunger"] > 0:
@@ -71,5 +72,5 @@ class Agent:
     def tick(self):
         self.apply_decay()
         priority = self.determine_priority()
-        print(priority)
+        self.logfile.addLine(self,priority)
         pass

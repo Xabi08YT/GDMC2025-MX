@@ -1,5 +1,5 @@
 import json, os, sys
-from datetime import time
+from time import time
 
 from LogFile import LogFile
 from gdpc import Editor
@@ -61,12 +61,53 @@ class Simulation:
         agent.logfile.close()
 
     def launch(self):
+        editor = Editor(buffering=True)
+        editor.runCommand(
+            'tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Starting simulation...","color":"white"}]')
+        print("Starting simulation...")
+
         p = Pool(cpu_count())
         p.map_async(self.run, self.agents).get()
         p.close()
         p.join()
 
+        editor = Editor(buffering=True)
+        editor.runCommand(
+            'tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Simulation stopped. To see the evolution of the statistics, you can start the visualization server.","color":"white"}]')
+        print("Simulation stopped.")
+
+    def end(self):
+
+        editor = Editor(buffering=True)
+        editor.runCommand(
+            'tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Pushing changes to the map... (This step may take several minutes)","color":"white"}]')
+        print("Pushing changes to the map...")
+
+        self.abl.save_all()
+        self.abl.push()
+
+        editor.runCommand(
+            'tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Done. Cleaning up...","color":"white"}]')
+        print("Changes pushed. Cleaning up...")
+
+        for file in os.listdir("generated"):
+            os.remove(f"generated/{file}")
+
+        logfile = LogFile(fname=f"{str(self.creation_time).split(".")[0]}.csv")
+
+        logfile.merge_logs()
+        logfile.close()
+
+        for file in os.listdir("logs/ongoing"):
+            os.remove(f"logs/ongoing/{file}")
+        os.rmdir("logs/ongoing")
+
+        editor.runCommand(
+            'tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Done. Goodbye world !","color":"white"}]')
+        print("Done. Goodbye world !")
+
 if __name__ == "__main__":
     sim = Simulation()
     sim.prepare()
     sim.launch()
+    sim.end()

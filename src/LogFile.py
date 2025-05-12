@@ -1,4 +1,5 @@
 import csv
+import os
 from os import getcwd, path, mkdir
 from time import time
 
@@ -36,7 +37,6 @@ class LogFile:
             "coord_z"
         ])
         self.dictWriter.writeheader()
-        self.turn = {}
 
     def addLine(self, agent, priority_need: str):
 
@@ -49,7 +49,7 @@ class LogFile:
             "id": agent.id,
             "name": agent.name,
             "action": action_made,
-            "turn": self.turn[agent.id],
+            "turn": agent.turn,
             "job": agent.job,
             "hunger": agent.attributes["hunger"],
             "social": agent.attributes["social"],
@@ -57,10 +57,10 @@ class LogFile:
             "health": agent.attributes["health"],
             "happiness": agent.happiness,
             "happiness_decay": agent.happiness_decay,
-            "hunger_decay": agent.attributes_decay["hunger"],
-            "social_decay": agent.attributes_decay["social"],
-            "energy_decay": agent.attributes_decay["energy"],
-            "health_decay": agent.attributes_decay["health"],
+            "hunger_decay": agent.decay_rates["hunger"],
+            "social_decay": agent.decay_rates["social"],
+            "energy_decay": agent.decay_rates["energy"],
+            "health_decay": agent.decay_rates["health"],
             "attributes": agent.attributes,
             "relationships": agent.relationships,
             "observations": agent.observations,
@@ -73,3 +73,38 @@ class LogFile:
 
     def close(self):
         self.file.close()
+
+    def merge_logs(self, fpath="logs/ongoing"):
+        for file in os.listdir(fpath):
+            if not file.endswith(".csv"):
+                continue
+            with open(path.join(getcwd(), fpath, file), "r") as f:
+                dict_reader = csv.DictReader(f, fieldnames=[
+                    "id",
+                    "name",
+                    "action",
+                    "turn",
+                    "job",
+                    "hunger",
+                    "social",
+                    "energy",
+                    "health",
+                    "happiness",
+                    "happiness_decay",
+                    "hunger_decay",
+                    "social_decay",
+                    "energy_decay",
+                    "health_decay",
+                    "attributes",
+                    "relationships",
+                    "observations",
+                    "coord_x",
+                    "coord_y",
+                    "coord_z"
+                ])
+                for row in dict_reader:
+                    if row["id"] == "id":
+                        continue
+                    self.dictWriter.writerow(row)
+                f.close()
+        return
