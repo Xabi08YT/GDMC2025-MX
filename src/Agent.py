@@ -21,11 +21,13 @@ class Agent:
             "social": random.uniform(-0.4, 0.5),
             "strength": random.uniform(0.1, 0.3),
         }
-        self.attributes_malus = {
+        self.attributes_mod = {
             "hunger": 0,
             "energy": 0,
             "health": 0,
             "social": 0,
+            "strength": 0,
+            "adventurous": 0,
         }
         self.happiness = 0
         self.happiness_decay = 0
@@ -45,13 +47,35 @@ class Agent:
         self.logfile = None
         self.observations = {}
 
+            "adventurous": 0,
+    def force_constraints_on_attributes(self):
+        if self.attributes["social"] < -1:
+            self.attributes["social"] = -1
+        elif self.attributes["social"] > 1:
+            self.attributes["social"] = 1
+
+        if self.attributes["health"] < 0:
+            self.attributes["health"] = 0
+        elif self.attributes["health"] > 1:
+            self.attributes["health"] = 1
+
+        if self.attributes["hunger"] < -1:
+            self.attributes["hunger"] = -1
+        elif self.attributes["hunger"] > 1:
+            self.attributes["hunger"] = 1
+
+        if self.attributes["energy"] < 0:
+            self.attributes["energy"] = 0
+        elif self.attributes["energy"] > 1:
+            self.attributes["energy"] = 1
+
     def apply_decay(self):
-        if self.attributes["hunger"] > 0:
+        if self.attributes["hunger"] + self.attributes_mod["hunger"] > 0:
             self.attributes["hunger"] -= self.decay_rates["hunger"]
             self.nb_turn_hungry = 0
         else:
             self.nb_turn_hungry += 1
-        if self.attributes["energy"] > 0:
+        if self.attributes["energy"] + self.attributes_mod["energy"] > 0:
             self.attributes["energy"] -= self.decay_rates["energy"]
             self.nb_turn_sleepy = 0
         else:
@@ -64,7 +88,9 @@ class Agent:
 
         self.attributes["social"] -= self.decay_rates["social"]
 
-        self.dead = (self.attributes["health"] <= 0)
+        self.force_constraints_on_attributes()
+
+        self.dead = (self.attributes["health"]  + self.attributes_mod["health"] <= 0)
 
     def determine_priority(self):
         return min(self.attributes.items())
