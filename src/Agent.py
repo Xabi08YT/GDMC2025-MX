@@ -59,7 +59,7 @@ class Agent:
             self.attributes["health"] = 1
 
         if self.attributes["hunger"] < 0:
-            self.attributes["hunger"] = -1
+            self.attributes["hunger"] = 0
         elif self.attributes["hunger"] > 1:
             self.attributes["hunger"] = 1
 
