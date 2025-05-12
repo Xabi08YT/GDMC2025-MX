@@ -49,7 +49,7 @@ class Agent:
 
     def force_constraints_on_attributes(self):
         if self.attributes["social"] < 0:
-            self.attributes["social"] = -1
+            self.attributes["social"] = 0
         elif self.attributes["social"] > 1:
             self.attributes["social"] = 1
 
