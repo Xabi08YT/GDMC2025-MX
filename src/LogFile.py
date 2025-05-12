@@ -2,12 +2,16 @@ import csv
 from os import getcwd, path, mkdir
 from time import time
 
+
 class LogFile:
 
-    def __init__(self, fpath =  "logs"):
-        if not path.exists(fpath):
+    def __init__(self, fpath="logs", fname=None):
+        try:
             mkdir(fpath)
-        self.file = open(path.join(getcwd(), fpath, f"{str(time()).split(".")[0]}.csv"), "w+")
+        except FileExistsError:
+            pass
+        self.file = open(path.join(getcwd(), fpath, f"{str(time()).split(".")[0]}.csv"),
+                         "w+") if fname is None else open(path.join(getcwd(), fpath, fname), "w+")
         self.dictWriter = csv.DictWriter(self.file, fieldnames=[
             "id",
             "name",
@@ -36,7 +40,7 @@ class LogFile:
 
     def addLine(self, agent, priority_need: str):
 
-        actions = {"hunger":"eat","social":"socializing","energy":"sleep","health":"moving"}
+        actions = {"hunger": "eat", "social": "socializing", "energy": "sleep", "health": "moving"}
         action_made = actions.get(priority_need)
         if action_made == "None":
             action_made = "explore"

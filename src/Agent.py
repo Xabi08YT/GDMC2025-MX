@@ -1,9 +1,10 @@
 import random
 import uuid
+from LogFile import LogFile
 
 
 class Agent:
-    def __init__(self, sim):
+    def __init__(self, sim, x, y, z):
         self.simulation = sim
         self.dead = False
         self.attributes = {
@@ -31,9 +32,9 @@ class Agent:
         self.relationship = {}
         self.id = str(uuid.uuid4())
         self.name = ""
-        self.x = None
-        self.y = None
-        self.z = None
+        self.x = x
+        self.y = y
+        self.z = z
         self.job = None
         self.turn = 0
         self.action = None
@@ -41,6 +42,7 @@ class Agent:
         self.job_place = None
         self.nb_turn_hungry = 0
         self.nb_turn_sleepy = 0
+        self.logfile = None
 
     def apply_decay(self):
         if self.decay_rates["hunger"] > 0:
@@ -63,6 +65,11 @@ class Agent:
 
         self.dead = (self.attributes["health"] <= 0)
 
+    def determine_priority(self):
+        return min(self.attributes.items())
+
     def tick(self):
         self.apply_decay()
+        priority = self.determine_priority()
+        print(priority)
         pass
