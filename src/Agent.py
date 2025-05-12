@@ -48,7 +48,7 @@ class Agent:
         self.observations = {}
 
     def force_constraints_on_attributes(self):
-        if self.attributes["social"] < -1:
+        if self.attributes["social"] < 0:
             self.attributes["social"] = -1
         elif self.attributes["social"] > 1:
             self.attributes["social"] = 1
@@ -58,7 +58,7 @@ class Agent:
         elif self.attributes["health"] > 1:
             self.attributes["health"] = 1
 
-        if self.attributes["hunger"] < -1:
+        if self.attributes["hunger"] < 0:
             self.attributes["hunger"] = -1
         elif self.attributes["hunger"] > 1:
             self.attributes["hunger"] = 1
