@@ -47,7 +47,6 @@ class Agent:
         self.logfile = None
         self.observations = {}
 
-            "adventurous": 0,
     def force_constraints_on_attributes(self):
         if self.attributes["social"] < -1:
             self.attributes["social"] = -1
