@@ -15,7 +15,7 @@ class Simulation:
 
     def __init__(self):
         self.agents = []
-        self.have_farmer = False
+        self.has_farmer = False
         self.creation_time = time()
 
         with open("config.json", mode="r") as cfg:
