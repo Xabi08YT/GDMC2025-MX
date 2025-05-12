@@ -69,6 +69,11 @@ class Agent:
         elif self.attributes["energy"] > 1:
             self.attributes["energy"] = 1
 
+        if self.attributes["strength"] < 0:
+            self.attributes["strength"] = 0
+        elif self.attributes["strength"] > 1:
+            self.attributes["strength"] = 1
+
     def apply_decay(self):
         if self.attributes["hunger"] + self.attributes_mod["hunger"] > 0:
             self.attributes["hunger"] -= self.decay_rates["hunger"]
