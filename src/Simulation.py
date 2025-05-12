@@ -102,9 +102,18 @@ class Simulation:
             os.remove(f"logs/ongoing/{file}")
         os.rmdir("logs/ongoing")
 
-        editor.runCommand(
-            'tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Done. Goodbye world !","color":"white"}]')
-        print("Done. Goodbye world !")
+        if sys.argv[3] == "--visualize":
+            editor.runCommand(
+                'tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Done. Launching visualization server... Please check your default web browser.","color":"white"}]'
+            )
+            print("Done. Launching visualization server... Please check your default web browser.")
+            from VisualizeSim import launch_visualization_server
+            launch_visualization_server()
+        else:
+            editor.runCommand(
+                'tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Done. Goodbye world !","color":"white"}]'
+            )
+            print("Done. Goodbye world !")
 
 if __name__ == "__main__":
     sim = Simulation()
