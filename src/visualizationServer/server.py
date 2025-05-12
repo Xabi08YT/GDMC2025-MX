@@ -39,4 +39,4 @@ def globalgraphs(simID):
     return render_template("globalgraphs.html", general_plot_needs_url=gneedsurl, general_plot_decayurl=gneedsdecayurl, jobless_count_url=jlcounturl)
 
 
-app.run(debug=True)
+app.run()

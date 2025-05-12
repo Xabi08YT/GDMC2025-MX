@@ -18,7 +18,7 @@ class Agent:
             "hunger": random.uniform(0.1, 0.2),
             "energy": random.uniform(0.1, 0.5),
             "health": random.uniform(0.1, 0.3),
-            "social": random.uniform(-0.5, 0.5),
+            "social": random.uniform(-0.4, 0.5),
             "strength": random.uniform(0.1, 0.3),
         }
         self.attributes_malus = {
@@ -46,12 +46,12 @@ class Agent:
         self.observations = {}
 
     def apply_decay(self):
-        if self.decay_rates["hunger"] > 0:
+        if self.attributes["hunger"] > 0:
             self.attributes["hunger"] -= self.decay_rates["hunger"]
             self.nb_turn_hungry = 0
         else:
             self.nb_turn_hungry += 1
-        if self.decay_rates["energy"] > 0:
+        if self.attributes["energy"] > 0:
             self.attributes["energy"] -= self.decay_rates["energy"]
             self.nb_turn_sleepy = 0
         else:
@@ -70,6 +70,9 @@ class Agent:
         return min(self.attributes.items())
 
     def tick(self):
+        if self.dead:
+            self.logfile.addLine(self, "DEAD")
+            return
         self.apply_decay()
         priority = self.determine_priority()
         self.logfile.addLine(self,priority)

@@ -38,7 +38,7 @@ class Simulation:
         ba = editor.getBuildArea()
         self.abl = AbstractionLayer(ba)
         try:
-            self.abl.pull("--force-pull" in sys.argv)
+            self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv)
         except:
             pass
 
@@ -102,7 +102,7 @@ class Simulation:
             os.remove(f"logs/ongoing/{file}")
         os.rmdir("logs/ongoing")
 
-        if "--visualize" in sys.argv:
+        if "--visualize" in sys.argv or "-vs" in sys.argv:
             editor.runCommand(
                 'tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Done. Launching visualization server... Please check your default web browser.","color":"white"}]'
             )
