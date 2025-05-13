@@ -1,7 +1,7 @@
 from buildings.Building import Building
 from gdpc.vector_tools import ivec3
 from gdpc import Block, interface
-from AbstractionLayer import AbstractionLayer
+from abstractionLayer.AbstractionLayer import AbstractionLayer
 import random
 
 class Firecamp(Building):

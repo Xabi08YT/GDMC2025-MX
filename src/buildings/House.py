@@ -1,4 +1,4 @@
-import Agent
+import simLogic.Agent
 from gdpc.vector_tools import ivec3
 from gdpc import Block
 from buildings.Building import Building

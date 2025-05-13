@@ -1,7 +1,7 @@
 from random import random, choice
 from gdpc.interface import ivec3
-import Agent
-from Chunk import Chunk
+import simLogic.Agent as Agent
+from abstactionLayer.Chunk import Chunk
 import utils.utils as utils
 from utils.utils import distance_xz
 
