@@ -1,6 +1,5 @@
 import math
 from typing import List
-from simLogic.Agent import Agent
 
 class BoidsBehavior:
     def __init__(self, 
@@ -17,13 +16,13 @@ class BoidsBehavior:
         self.alignment_radius = alignment_radius
         self.cohesion_radius = cohesion_radius
         
-    def get_neighbors(self, agent: Agent, agents: List[Agent], radius: float) -> List[Agent]:
+    def get_neighbors(self, agent, agents, radius: float):
         return [other for other in agents 
                 if other != agent and agent.distance_to(other) < radius]
     
-    def separation(self, agent: Agent, neighbors: List[Agent]) -> tuple:
+    def separation(self, agent, neighbors) -> tuple[float, float, float]:
         if not neighbors:
-            return (0, 0, 0)
+            return (.0, .0, .0)
             
         force_x = force_y = force_z = 0
         for neighbor in neighbors:
@@ -39,9 +38,9 @@ class BoidsBehavior:
                 
         return (force_x, force_y, force_z)
     
-    def alignment(self, agent: Agent, neighbors: List[Agent]) -> tuple:
+    def alignment(self, agent, neighbors) -> tuple[float, float, float]:
         if not neighbors:
-            return (0, 0, 0)
+            return (.0, .0, .0)
             
         avg_vx = avg_vy = avg_vz = 0
         for neighbor in neighbors:
@@ -58,9 +57,9 @@ class BoidsBehavior:
                 avg_vy - agent.velocity_y,
                 avg_vz - agent.velocity_z)
     
-    def cohesion(self, agent: Agent, neighbors: List[Agent]) -> tuple:
+    def cohesion(self, agent, neighbors) -> tuple[float, float, float]:
         if not neighbors:
-            return (0, 0, 0)
+            return (.0, .0, .0)
             
         center_x = center_y = center_z = 0
         for neighbor in neighbors:
@@ -77,7 +76,7 @@ class BoidsBehavior:
                 center_y - agent.y,
                 center_z - agent.z)
     
-    def apply_boids_behavior(self, agent: Agent, agents: List[Agent]):
+    def apply_boids_behavior(self, agent, agents):
         separation_neighbors = self.get_neighbors(agent, agents, self.separation_radius)
         alignment_neighbors = self.get_neighbors(agent, agents, self.alignment_radius)
         cohesion_neighbors = self.get_neighbors(agent, agents, self.cohesion_radius)

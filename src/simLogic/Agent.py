@@ -1,7 +1,6 @@
 import random
 import uuid
 import math
-import BoidsBehavior
 
 class Agent:
     def __init__(self, sim, x, y, z):
@@ -128,7 +127,7 @@ class Agent:
         pass
 
     def move(self):
-        BoidsBehavior.apply_boids_behavior(self, [])
+        self.simulation.boids.apply_boids_behavior(self, [])
         self.update_position()
 
     def tick(self):

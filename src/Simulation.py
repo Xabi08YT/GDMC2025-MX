@@ -10,6 +10,7 @@ from random import randint
 from simLogic.Agent import Agent
 from abstractionLayer.Chunk import Chunk
 from multiprocessing import Pool, cpu_count
+from simLogic.BoidsBehavior import BoidsBehavior
 
 
 class Simulation:
@@ -19,6 +20,7 @@ class Simulation:
         self.agents = []
         self.has_farmer = False
         self.creation_time = time()
+        self.boids = BoidsBehavior()
         # self.relationships = Relationships()
 
         with open("config/config.json", mode="r") as cfg:
