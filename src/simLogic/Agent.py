@@ -32,7 +32,7 @@ class Agent:
             "adventurous": 0,
         }
         self.happiness = 0
-        self.happiness_decay = 0
+        self.happiness_decay = random.uniform(0.005, 0.03)
         self.relationships = {}
         self.id = str(uuid.uuid4())
         self.name = ""
@@ -111,6 +111,7 @@ class Agent:
             self.attributes["health"] += self.decay_rates["health"]
 
         self.attributes["social"] -= self.decay_rates["social"]
+        self.happiness -= self.happiness_decay
 
         self.force_constraints_on_attributes()
 
@@ -122,11 +123,10 @@ class Agent:
     def fulfill_needs(self):
         if self.simulation.has_farmer:
             self.attributes["hunger"] = 1
+            self.happiness += 0.01
         if self.home is not None and self.home.built:
             self.attributes["energy"] = 1
-
-    def apply_priority(self, priority):
-        pass
+            self.happiness += 0.01
 
     def move(self):
         self.simulation.boids.apply_boids_behavior(self, [])
@@ -142,4 +142,4 @@ class Agent:
         priority = self.determine_priority()
         self.logfile.addLine(self,priority)
         if self.job.job_type == JobType.UNEMPLOYED:
-            self.job = Job().get_new_job(self, priority)
+            self.job.get_new_job(self, priority)
