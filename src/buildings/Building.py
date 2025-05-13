@@ -1,7 +1,7 @@
 from random import random, choice
 from gdpc.interface import ivec3
 import simLogic.Agent as Agent
-from abstactionLayer.Chunk import Chunk
+from abstractionLayer.Chunk import Chunk
 import utils.utils as utils
 from utils.utils import distance_xz
 
@@ -23,7 +23,6 @@ class Building:
 
     def built(self):
         self.built = True
-        print(f"Building at x={self.center_point[0]}, y={self.center_point[1]}, z={self.center_point[2]} done! ({self.name})")
 
     def set_orientation_according_to_center(self, agent: Agent = None):
         if agent is None:

@@ -1,6 +1,8 @@
 import json, os, sys
 from time import time
 
+from buildings.Firecamp import Firecamp
+from ANSIColors import ANSIColors
 from visualization.LogFile import LogFile
 from gdpc import Editor
 from abstractionLayer.AbstractionLayer import AbstractionLayer
@@ -9,14 +11,15 @@ from simLogic.Agent import Agent
 from abstractionLayer.Chunk import Chunk
 from multiprocessing import Pool, cpu_count
 
-class Simulation:
 
+class Simulation:
     LOADED_CHUNKS = Chunk.LOADED_CHUNKS
 
     def __init__(self):
         self.agents = []
         self.has_farmer = False
         self.creation_time = time()
+        # self.relationships = Relationships()
 
         with open("config/config.json", mode="r") as cfg:
             self.config = json.load(cfg)
@@ -26,11 +29,10 @@ class Simulation:
             self.params = json.load(sim)
             sim.close()
 
-    def show_message(self,message):
+    def show_message(self, message):
         editor = Editor(buffering=True)
         print("[INFO] " + message)
-        editor.runCommand('tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - '+message+'","color":"white"}]')
-
+        editor.runCommand('tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - ' + message + '","color":"white"}]')
 
     def prepare(self):
         print("GDMC 2025 - MX")
@@ -54,8 +56,8 @@ class Simulation:
         for i in range(self.config["nodeAgents"][0]):
             x = randint(self.min_x, self.max_x)
             z = randint(self.min_z, self.max_z)
-            c = self.abl.get_chunk(x,z)
-            y = c.getGroundHeight(x,z)
+            c = self.abl.get_chunk(x, z)
+            y = c.getGroundHeight(x, z)
             agent = Agent(self, x, y, z)
             self.agents.append(agent)
 
@@ -70,6 +72,18 @@ class Simulation:
 
     def launch(self):
         self.show_message("Simulation launched. This may take a while to complete.")
+
+        firecamp = Firecamp(self)
+        firecamp.get_best_location()
+        firecamp.build()
+        coords = firecamp.get_coords()
+
+        editor = Editor(buffering=True)
+        editor.runCommand(
+            f'tellraw @a [{{"text":"GDMC","color":"aqua"}},{{"text":" - Center of the village: ","color":"white"}},{{"text":"({firecamp.center_point.x}, {firecamp.center_point.y}, {firecamp.center_point.z})","color":"yellow","clickEvent":{{"action":"run_command","value":"/tp @s {firecamp.center_point.x} {firecamp.center_point.y} {firecamp.center_point.z}"}},"hoverEvent":{{"action":"show_text","value":"Click to teleport"}}}}]')
+
+        print(
+            f"{ANSIColors.OKBLUE}[SIMULATION INFO] Firecamp has been placed at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{coords[0], coords[1], coords[2]}{ANSIColors.ENDC}")
 
         p = Pool(cpu_count())
         p.map_async(self.run, self.agents).get()
@@ -105,6 +119,7 @@ class Simulation:
             launch_visualization_server()
         else:
             self.show_message("Done. Goodbye World !")
+
 
 if __name__ == "__main__":
     sim = Simulation()

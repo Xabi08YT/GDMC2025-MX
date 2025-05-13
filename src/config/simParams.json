@@ -39,11 +39,13 @@
     "minecraft:cherry_log",
     "minecraft:pale_oak_log"
   ],
-  "water": ["minecraft:water"],
-  "lava": ["minecraft:lava"],
+  "water": ["minecraft:water","minecraft:flowing_water"],
+  "lava": ["minecraft:lava","minecraft:flowing_lava"],
   "interestingTerrainChars": [
     "wood",
     "water",
     "lava"
-  ]
+  ],
+  "villageCenterBlock": "minecraft:campfire",
+  "centerPlazaFloor": "minecraft:dirt_path"
 }
