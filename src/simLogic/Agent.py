@@ -1,6 +1,8 @@
 import random
 import uuid
 import math
+from simLogic.Job import JobType, Job
+
 
 class Agent:
     def __init__(self, sim, x, y, z):
@@ -42,7 +44,7 @@ class Agent:
         self.velocity_z = 0
         self.max_speed = 1.0
         self.max_force = 0.1
-        self.job = None
+        self.job = Job(JobType.UNEMPLOYED)
         self.turn = 0
         self.action = None
         self.home = None
@@ -139,4 +141,5 @@ class Agent:
         self.move()
         priority = self.determine_priority()
         self.logfile.addLine(self,priority)
-        pass
+        if self.job.job_type == JobType.UNEMPLOYED:
+            self.job = Job().get_new_job(self, priority)
