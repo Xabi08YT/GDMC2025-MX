@@ -4,6 +4,7 @@ from gdpc import interface, Editor
 from multiprocessing import Pool, cpu_count
 import os, json, utils.utils as utils
 from utils.math_methods import same_point
+from ANSIColors import ANSIColors
 
 class AbstractionLayer:
 
@@ -27,7 +28,6 @@ class AbstractionLayer:
 
     def pull(self, forceReload:bool =False):
         start = time()
-        print("Pulling minecraft world...")
         size = (self.buildArea.end[0] - self.buildArea.begin[0], self.buildArea.end[1] - self.buildArea.begin[1],
                 self.buildArea.end[2] - self.buildArea.begin[2])
         if os.path.exists(os.path.join(os.getcwd(), "data", "areaData.json")) and not forceReload:
@@ -36,12 +36,12 @@ class AbstractionLayer:
                     data = json.load(f)
                     f.close()
                 if same_point(self.buildArea.begin, data["begin"]) and same_point(self.buildArea.end, data["end"]):
-                    print("Same area, skipping world pulling... If you want to pull it, remove the folder.")
+                    print(f"{ANSIColors.OKCYAN}[NOTE] Same area, skipping world pulling... If you want to pull it, remove the folder.{ANSIColors.ENDC}")
                     return
             except json.JSONDecodeError:
-                print("Invalid JSON, loading everything...")
+                print(f"{ANSIColors.WARNING}[WARN] Invalid cache JSON, resuming pulling...{ANSIColors.ENDC}")
             except KeyError:
-                print("Invalid JSON, loading everything...")
+                print(f"{ANSIColors.WARNING}[WARN] Invalid cache JSON, resuming pulling...{ANSIColors.ENDC}")
 
         if os.path.exists(os.path.join(os.getcwd(), "data")):
             for filename in os.listdir(os.path.join(os.getcwd(), "data")):
@@ -60,7 +60,7 @@ class AbstractionLayer:
             json.dump({"begin": self.buildArea.begin.to_list(), "end": self.buildArea.end.to_list()}, f)
             f.close()
         end = time()
-        print("Minecraft world pulled in {:.2f} seconds.".format(end - start))
+        print("[INFO] Minecraft world pulled in {:.2f} seconds.".format(end - start))
 
     def get_chunk(self,x,z) -> Chunk:
         cid = Chunk.get_chunk_id_from_coord(self.buildArea, x, z)
@@ -84,7 +84,7 @@ class AbstractionLayer:
                     interface.placeBlocks(c.to_gdmc(), doBlockUpdates=False)
                 except AttributeError as e:
                     if "'str' object has no attribute 'get'" in str(e):
-                        print(f"Warning: Got string response while placing blocks. Some blocks may not have been placed.")
+                        print(f"{ANSIColors.WARNING}[WARN] Got string response while placing blocks. Some blocks may not have been placed.{ANSIColors.ENDC}")
                     else:
                         raise
 
