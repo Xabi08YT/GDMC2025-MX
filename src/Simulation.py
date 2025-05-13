@@ -2,7 +2,7 @@ import json, os, sys
 from time import time
 
 from buildings.Firecamp import Firecamp
-from ANSIColors import ANSIColors
+from utils.ANSIColors import ANSIColors
 from visualization.LogFile import LogFile
 from gdpc import Editor
 from abstractionLayer.AbstractionLayer import AbstractionLayer

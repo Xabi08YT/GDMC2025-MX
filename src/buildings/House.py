@@ -3,6 +3,7 @@ from gdpc.vector_tools import ivec3
 from gdpc import Block
 from buildings.Building import Building
 from gdpc.minecraft_tools import signBlock
+from simLogic.Agent import Agent
 
 class House(Building):
     def __init__(self, center_point: ivec3 | None, agent: Agent, name:str, orientation: str = "south", built: bool = False, folder="generated"):

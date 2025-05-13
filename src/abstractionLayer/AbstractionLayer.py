@@ -4,7 +4,7 @@ from gdpc import interface, Editor
 from multiprocessing import Pool, cpu_count
 import os, json, utils.utils as utils
 from utils.math_methods import same_point
-from ANSIColors import ANSIColors
+from utils.ANSIColors import ANSIColors
 
 class AbstractionLayer:
 
