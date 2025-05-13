@@ -5,7 +5,7 @@ def launch_visualization_server():
 
     webbrowser.open(url, new=0, autoraise=True)
 
-    import visualizationServer.server as srv
+    import visualization.visualizationServer.server as srv
 
 if __name__ == "__main__":
     launch_visualization_server()

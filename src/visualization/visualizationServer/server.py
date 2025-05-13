@@ -2,10 +2,10 @@ from flask import Flask, render_template
 from os import getpid, kill, listdir
 from time import ctime
 from pandas import read_csv
-from visualizationServer.graphs import draw_general_needs_graphs, draw_general_needs_decay_graphs, draw_jobless_count_graph
+from visualization.visualizationServer.graphs import draw_general_needs_graphs, draw_general_needs_decay_graphs, draw_jobless_count_graph
 
 
-app = Flask("visualizationServer")
+app = Flask("visualization.visualizationServer")
 
 
 @app.route("/")

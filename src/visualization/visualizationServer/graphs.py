@@ -18,7 +18,6 @@ def draw_means_graph(df, params: dict, title):
 
         finalDF = concat([DataFrame(tmp, columns), finalDF], ignore_index=True)
 
-    print(finalDF.head())
     img = BytesIO()
 
     for k in params.keys():
