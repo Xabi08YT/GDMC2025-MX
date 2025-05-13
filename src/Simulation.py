@@ -3,10 +3,10 @@ from time import time
 
 from visualization.LogFile import LogFile
 from gdpc import Editor
-from AbstractionLayer import AbstractionLayer
+from abstractionLayer.AbstractionLayer import AbstractionLayer
 from random import randint
-from Agent import Agent
-from Chunk import Chunk
+from simLogic.Agent import Agent
+from abstractionLayer.Chunk import Chunk
 from multiprocessing import Pool, cpu_count
 
 class Simulation:
@@ -18,11 +18,11 @@ class Simulation:
         self.has_farmer = False
         self.creation_time = time()
 
-        with open("config.json", mode="r") as cfg:
+        with open("config/config.json", mode="r") as cfg:
             self.config = json.load(cfg)
             cfg.close()
 
-        with open("simParams.json", mode="r") as sim:
+        with open("config/simParams.json", mode="r") as sim:
             self.params = json.load(sim)
             sim.close()
 

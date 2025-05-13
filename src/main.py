@@ -4,9 +4,9 @@ from json import load
 from time import sleep
 from gdpc import Editor
 from gdpc.vector_tools import ivec3
-from Agent import Agent
-from AbstractionLayer import AbstractionLayer
-from Chunk import Chunk
+from src.simLogic.Agent import Agent
+from src.abstractionLayer.AbstractionLayer import AbstractionLayer
+from src.abstractionLayer.Chunk import Chunk
 from random import randint
 from buildings.Firecamp import Firecamp
 from visualization.LogFile import LogFile

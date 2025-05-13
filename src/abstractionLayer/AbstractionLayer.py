@@ -1,4 +1,4 @@
-from Chunk import Chunk
+from abstractionLayer.Chunk import Chunk
 from time import time
 from gdpc import interface, Editor
 from multiprocessing import Pool, cpu_count
