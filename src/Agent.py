@@ -97,9 +97,9 @@ class Agent:
         self.dead = (self.attributes["health"]  + self.attributes_mod["health"] <= 0)
 
     def determine_priority(self):
-        return min(self.attributes.items())
+        return min(self.attributes.items(), key=lambda x: x[1])
 
-    def fullfill_needs(self):
+    def fulfill_needs(self):
         if self.simulation.has_farmer:
             self.attributes["hunger"] = 1
         if self.home is not None and self.home.built:
@@ -107,12 +107,13 @@ class Agent:
 
     def apply_priority(self, priority):
         pass
+
     def tick(self):
         if self.dead:
             self.logfile.addLine(self, "DEAD")
             return
         self.apply_decay()
-        self.fullfill_needs()
+        self.fulfill_needs()
         priority = self.determine_priority()
         self.logfile.addLine(self,priority)
         pass
