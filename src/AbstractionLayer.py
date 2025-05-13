@@ -2,8 +2,8 @@ from Chunk import Chunk
 from time import time
 from gdpc import interface, Editor
 from multiprocessing import Pool, cpu_count
-import os, json, utils
-from math_methods import same_point
+import os, json, utils.utils as utils
+from utils.math_methods import same_point
 
 class AbstractionLayer:
 

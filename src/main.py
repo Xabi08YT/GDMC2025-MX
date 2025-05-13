@@ -8,8 +8,8 @@ from Agent import Agent
 from AbstractionLayer import AbstractionLayer
 from Chunk import Chunk
 from random import randint
-from Firecamp import Firecamp
-from LogFile import LogFile
+from buildings.Firecamp import Firecamp
+from visualization.LogFile import LogFile
 
 with open("config.json", mode="r") as cfg:
     config: dict = load(cfg)

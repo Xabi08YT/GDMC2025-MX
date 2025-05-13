@@ -1,7 +1,7 @@
 import Agent
 from gdpc.vector_tools import ivec3
 from gdpc import Block
-from Building import Building
+from buildings.Building import Building
 from gdpc.minecraft_tools import signBlock
 
 class House(Building):

@@ -1,6 +1,6 @@
 from pyglm import ivec3
 from Job import Job
-from Building import Building
+from buildings.Building import Building
 from Agent import Agent
 
 class JobHouse(Building):

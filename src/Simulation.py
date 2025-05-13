@@ -1,7 +1,7 @@
 import json, os, sys
 from time import time
 
-from LogFile import LogFile
+from visualization.LogFile import LogFile
 from gdpc import Editor
 from AbstractionLayer import AbstractionLayer
 from random import randint
@@ -107,7 +107,7 @@ class Simulation:
                 'tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - Done. Launching visualization server... Please check your default web browser.","color":"white"}]'
             )
             print("Done. Launching visualization server... Please check your default web browser.")
-            from VisualizeSim import launch_visualization_server
+            from visualization.VisualizeSim import launch_visualization_server
             launch_visualization_server()
         else:
             editor.runCommand(

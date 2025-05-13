@@ -1,4 +1,4 @@
-from math_methods import distance_xz
+from utils.math_methods import distance_xz
 
 def min_distance_to_others(agent, others):
     return min([distance_xz(agent.x, agent.z, otherx, otherz) for otherx, otherz in others])
@@ -17,7 +17,7 @@ def is_flat(x: int, z: int, abl, radius: int = 2) -> float:
 
 def evaluate_spot(agent, x: int, z: int) -> float:
     from Agent import Agent as AgentClass
-    from Building import Building
+    from buildings.Building import Building
 
     if Building.detect_all_trespassing(x, z):
         return float('-inf')
