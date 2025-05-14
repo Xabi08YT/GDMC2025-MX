@@ -1,5 +1,6 @@
 from enum import Enum
 from random import choice
+import os
 
 class JobType(Enum):
     ARMORER = "Armorer"
@@ -28,9 +29,10 @@ class Job:
         return f"Job: {self.job_type.value}"
 
     def get_new_job(self, agent, priority):
-        if priority == "hunger" and not agent.simulation.has_farmer:
+        if priority == "hunger" and not os.path.exists(".hasfarmer"):
             self.job_type = choice([JobType.FARMER, JobType.FISHERMAN, JobType.BUTCHER])
-            agent.simulation.has_farmer = True
+            with open(file=".hasfarmer", mode="x") as f:
+                f.close()
             return
         if agent.attributes["strength"] > 0.3:
             self.job_type = choice([JobType.ARMORER, JobType.WEAPONSMITH, JobType.TOOLSMITH, JobType.LEATHERWORKER])

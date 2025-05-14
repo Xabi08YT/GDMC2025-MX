@@ -2,6 +2,7 @@ import random
 import uuid
 import math
 from simLogic.Job import JobType, Job
+import os
 
 
 class Agent:
@@ -12,12 +13,12 @@ class Agent:
             "hunger": 1,
             "energy": 1,
             "health": 1,
-            "social": .8,
+            "social": 1,
             "strength": random.uniform(0.1, 0.5),
             "adventurous": random.uniform(0.1, 1),
         }
         self.decay_rates = {
-            "hunger": random.uniform(0.1, 0.2),
+            "hunger": random.uniform(0.1, 0.5),
             "energy": random.uniform(0.1, 0.5),
             "health": random.uniform(0.1, 0.3),
             "social": random.uniform(-0.4, 0.5),
@@ -118,10 +119,16 @@ class Agent:
         self.dead = (self.attributes["health"]  + self.attributes_mod["health"] <= 0)
 
     def determine_priority(self):
-        return min(self.attributes.items(), key=lambda x: x[1])
+        tmp = {
+            "hunger": self.attributes["hunger"],
+            "energy": self.attributes["energy"],
+            "social": self.attributes["social"],
+        }
+        return min(tmp.keys(), key=lambda k: tmp[k])
 
     def fulfill_needs(self):
-        if self.simulation.has_farmer:
+        print(f"[DEBUG] {os.path.exists(".hasfarmer")}")
+        if os.path.exists(".hasfarmer"):
             self.attributes["hunger"] = 1
             self.happiness += 0.01
         if self.home is not None and self.home.built:

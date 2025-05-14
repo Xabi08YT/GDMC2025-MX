@@ -36,7 +36,7 @@ class AbstractionLayer:
                     data = json.load(f)
                     f.close()
                 if same_point(self.buildArea.begin, data["begin"]) and same_point(self.buildArea.end, data["end"]):
-                    print(f"{ANSIColors.OKCYAN}[NOTE] Same area, skipping world pulling... If you want to pull it, remove the folder.{ANSIColors.ENDC}")
+                    print(f"{ANSIColors.OKCYAN}[NOTE] Same area, skipping world pulling... If you want to pull it again, remove the folder or add the -fp argument to the launch command.{ANSIColors.ENDC}")
                     return
             except json.JSONDecodeError:
                 print(f"{ANSIColors.WARNING}[WARN] Invalid cache JSON, resuming pulling...{ANSIColors.ENDC}")

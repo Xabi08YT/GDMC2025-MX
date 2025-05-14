@@ -18,7 +18,6 @@ class Simulation:
 
     def __init__(self):
         self.agents = []
-        self.has_farmer = False
         self.creation_time = time()
         self.boids = BoidsBehavior()
         # self.relationships = Relationships()
@@ -42,6 +41,9 @@ class Simulation:
         editor.runCommand('tellraw @a [{"text":"GDMC 2025 - MX","color":"aqua"}]')
         if not os.path.exists("generated"):
             os.mkdir("generated")
+
+        if os.path.exists(".hasfarmer"):
+            os.remove(".hasfarmer")
         self.show_message("Pulling minecraft map... This may take several minutes...")
         ba = editor.getBuildArea()
         self.abl = AbstractionLayer(ba)
@@ -102,6 +104,9 @@ class Simulation:
         self.abl.push()
 
         self.show_message("Changes pushed. Beginning cleanup...")
+
+        if os.path.exists(".hasfarmer"):
+            os.remove(".hasfarmer")
 
         for file in os.listdir("generated"):
             os.remove(f"generated/{file}")
