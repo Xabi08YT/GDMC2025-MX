@@ -31,8 +31,11 @@ class Job:
     def get_new_job(self, agent, priority):
         if priority == "hunger" and not os.path.exists(".hasfarmer"):
             self.job_type = choice([JobType.FARMER, JobType.FISHERMAN, JobType.BUTCHER])
-            with open(file=".hasfarmer", mode="x") as f:
-                f.close()
+            try:
+                with open(file=".hasfarmer", mode="x") as f:
+                    f.close()
+            except FileExistsError:
+                pass
             return
         if agent.attributes["strength"] > 0.3:
             self.job_type = choice([JobType.ARMORER, JobType.WEAPONSMITH, JobType.TOOLSMITH, JobType.LEATHERWORKER])

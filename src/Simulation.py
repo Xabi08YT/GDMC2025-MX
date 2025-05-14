@@ -35,7 +35,16 @@ class Simulation:
         print("[INFO] " + message)
         editor.runCommand('tellraw @a [{"text":"GDMC","color":"aqua"},{"text":" - ' + message + '","color":"white"}]')
 
+    def post_crash_cleanup(self):
+        print(
+            f"{ANSIColors.WARNING}[WARN] Simulation seemed to have crashed before cleanup. Initiating cleanup now.{ANSIColors.ENDC}")
+        self.clean()
+        print(f"{ANSIColors.OKGREEN}[INFO] Post-crash cleanup done.{ANSIColors.ENDC}")
+
+
     def prepare(self):
+        if os.path.exists(".notCleaned"):
+            self.post_crash_cleanup()
         print("GDMC 2025 - MX")
         editor = Editor(buffering=True)
         editor.runCommand('tellraw @a [{"text":"GDMC 2025 - MX","color":"aqua"}]')
@@ -76,6 +85,9 @@ class Simulation:
 
     def launch(self):
         self.show_message("Simulation launched. This may take a while to complete.")
+        with open(file=".notCleaned", mode="w") as file:
+            file.write("")
+            file.close()
 
         firecamp = Firecamp(self)
         firecamp.get_best_location()
@@ -105,20 +117,12 @@ class Simulation:
 
         self.show_message("Changes pushed. Beginning cleanup...")
 
-        if os.path.exists(".hasfarmer"):
-            os.remove(".hasfarmer")
-
-        for file in os.listdir("generated"):
-            os.remove(f"generated/{file}")
-
         logfile = LogFile(fname=f"{str(self.creation_time).split(".")[0]}.csv")
 
         logfile.merge_logs()
         logfile.close()
 
-        for file in os.listdir("logs/ongoing"):
-            os.remove(f"logs/ongoing/{file}")
-        os.rmdir("logs/ongoing")
+        self.clean()
 
         if "--visualize" in sys.argv or "-vs" in sys.argv:
             self.show_message("Done. Visualization server is now running. Please check your browser.")
@@ -126,6 +130,20 @@ class Simulation:
             launch_visualization_server()
         else:
             self.show_message("Done. Goodbye World !")
+
+    def clean(self):
+        for file in os.listdir("logs/ongoing"):
+            os.remove(f"logs/ongoing/{file}")
+        os.rmdir("logs/ongoing")
+
+        if os.path.exists(".hasfarmer"):
+            os.remove(".hasfarmer")
+
+        for file in os.listdir("generated"):
+            os.remove(f"generated/{file}")
+
+        if os.path.exists(".notCleaned"):
+            os.remove(".notCleaned")
 
 
 if __name__ == "__main__":
