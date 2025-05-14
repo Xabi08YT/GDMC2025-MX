@@ -127,7 +127,6 @@ class Agent:
         return min(tmp.keys(), key=lambda k: tmp[k])
 
     def fulfill_needs(self):
-        print(f"[DEBUG] {os.path.exists(".hasfarmer")}")
         if os.path.exists(".hasfarmer"):
             self.attributes["hunger"] = 1
             self.happiness += 0.01
