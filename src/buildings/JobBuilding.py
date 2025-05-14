@@ -1,7 +1,7 @@
 from pyglm import ivec3
-from Job import Job
-from Building import Building
-from Agent import Agent
+from simLogic.Job import Job
+from buildings.Building import Building
+from simLogic.Agent import Agent
 
 class JobHouse(Building):
     def __init__(self, job: Job, center_point: ivec3 | None, agent: Agent, orientation: str = "south", built: bool = False, folder="generated"):

@@ -4,12 +4,12 @@ from json import load
 from time import sleep
 from gdpc import Editor
 from gdpc.vector_tools import ivec3
-from Agent import Agent
-from AbstractionLayer import AbstractionLayer
-from Chunk import Chunk
+from src.simLogic.Agent import Agent
+from src.abstractionLayer.AbstractionLayer import AbstractionLayer
+from src.abstractionLayer.Chunk import Chunk
 from random import randint
-from Firecamp import Firecamp
-from LogFile import LogFile
+from buildings.Firecamp import Firecamp
+from visualization.LogFile import LogFile
 
 with open("config.json", mode="r") as cfg:
     config: dict = load(cfg)

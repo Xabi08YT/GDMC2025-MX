@@ -1,4 +1,4 @@
-from math_methods import distance_xz
+from utils.math_methods import distance_xz
 
 def min_distance_to_others(agent, others):
     return min([distance_xz(agent.x, agent.z, otherx, otherz) for otherx, otherz in others])
@@ -16,24 +16,23 @@ def is_flat(x: int, z: int, abl, radius: int = 2) -> float:
 
 
 def evaluate_spot(agent, x: int, z: int) -> float:
-    from Agent import Agent as AgentClass
-    from Building import Building
+    from buildings.Building import Building
 
     if Building.detect_all_trespassing(x, z):
         return float('-inf')
 
     score = 0
-    other_positions = [(other.x, other.z) for other in agent.all_agents if other.id != agent.id]
+    other_positions = [(other.x, other.z) for other in agent.simulation.agents if other.id != agent.id]
 
     min_dist = min_distance_to_others(agent, other_positions)
     social_factor = 1
-    if agent.needs_decay["social"] != 0:
-        social_factor = 1 / (agent.needs_decay["social"])
+    if agent.decay_rates["social"] != 0:
+        social_factor = 1 / (agent.decay_rates["social"])
     score += min_dist * social_factor
 
-    dist_from_center = distance_xz(x, z, agent.center_village[0], agent.center_village[1])
+    dist_from_center = distance_xz(x, z, agent.simulation.firecamp_coords[0], agent.simulation.firecamp_coords[1])
     score += dist_from_center * agent.attributes["adventurous"]
 
-    flatness = 1 - is_flat(x, z, agent.abl)
+    flatness = 1 - is_flat(x, z, agent.simulation.abl)
     score += flatness
     return score

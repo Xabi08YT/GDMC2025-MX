@@ -1,15 +1,14 @@
 from random import random, choice
 from gdpc.interface import ivec3
-import Agent
-from Chunk import Chunk
-import utils
-from utils import distance_xz
+from abstractionLayer.Chunk import Chunk
+import utils.utils as utils
+from utils.utils import distance_xz
 
 
 class Building:
     BUILDINGS = []
 
-    def __init__(self, center_point: ivec3 | None, agent: Agent, name: str, orientation: str = "south",
+    def __init__(self, center_point: ivec3 | None, agent, name: str, orientation: str = "south",
                  built: bool = False, folder="generated"):
         self.built = built
         self.orientation = orientation
@@ -23,15 +22,14 @@ class Building:
 
     def built(self):
         self.built = True
-        print(f"Building at x={self.center_point[0]}, y={self.center_point[1]}, z={self.center_point[2]} done! ({self.name})")
 
-    def set_orientation_according_to_center(self, agent: Agent = None):
+    def set_orientation_according_to_center(self, agent = None):
         if agent is None:
             agent = self.agent
 
         if self.center_point is None:
             return
-        village_center = agent.center_village
+        village_center = agent.simulation.firecamp_coords
         orientations = {"north": [0, -1], "south": [0, 1], "east": [1, 0], "west": [-1, 0]}
         score = {k: distance_xz(village_center[0], village_center[1], self.center_point.x + self.radius * e[0], self.center_point.z + self.radius * e[1]) for k,e in orientations.items()}
 

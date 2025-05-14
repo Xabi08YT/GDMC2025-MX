@@ -9,9 +9,7 @@ class Chunk:
 
     CHUNK_SIZE = 16
     LOADED_CHUNKS = {}
-    
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(current_dir, "simParams.json"), "r") as f:
+    with open("config/simParams.json", "r") as f:
         params = json.load(f)
         f.close()
 
@@ -47,7 +45,7 @@ class Chunk:
                     if self.is_in_chunk(coords[0], coords[1], coords[2]):
                         allBlocks.append((coords, self.get_block(coords[0], coords[1], coords[2])))
                     else:
-                        from AbstractionLayer import AbstractionLayer
+                        from src.abstractionLayer.AbstractionLayer import AbstractionLayer
                         tmp = AbstractionLayer.get_abstraction_layer_instance().get_chunk(coords[0], coords[2])
                         allBlocks.append((coords, tmp.get_block(coords[0], coords[1], coords[2])))
         return allBlocks

@@ -1,0 +1,219 @@
+import random
+import uuid
+import math
+
+from gdpc.vector_tools import ivec3
+from simLogic.Job import JobType, Job
+import os
+from buildings.Building import Building
+from buildings.House import House
+from utils.utils import evaluate_spot
+
+from utils.ANSIColors import ANSIColors
+
+
+class Agent:
+    def __init__(self, sim, x, y, z):
+        self.simulation = sim
+        self.dead = False
+        self.attributes = {
+            "hunger": 1,
+            "energy": 1,
+            "health": 1,
+            "social": 1,
+            "strength": random.uniform(0.1, 0.5),
+            "adventurous": random.uniform(0.1, 1),
+        }
+        self.decay_rates = {
+            "hunger": random.uniform(0.1, 0.5),
+            "energy": random.uniform(0.1, 0.5),
+            "health": random.uniform(0.1, 0.3),
+            "social": random.uniform(-0.4, 0.5),
+            "strength": random.uniform(0.1, 0.3),
+        }
+        self.attributes_mod = {
+            "hunger": 0,
+            "energy": 0,
+            "health": 0,
+            "social": 0,
+            "strength": 0,
+            "adventurous": 0,
+        }
+        self.happiness = 0
+        self.happiness_decay = random.uniform(0.005, 0.03)
+        self.relationships = {}
+        self.id = str(uuid.uuid4())
+        with open("./txt/agent_names.txt", "r") as f:
+            self.name = random.choice(f.readlines()).strip()
+        self.x = x
+        self.y = y
+        self.z = z
+        self.velocity_x = 0
+        self.velocity_y = 0
+        self.velocity_z = 0
+        self.max_speed = 1.0
+        self.max_force = 0.1
+        self.job = Job(JobType.UNEMPLOYED)
+        self.turn = 0
+        self.action = None
+        self.home = Building(None, self, self.name + "'s Space")
+        self.job_place = None
+        self.nb_turn_hungry = 0
+        self.nb_turn_sleepy = 0
+        self.logfile = None
+        self.observations = {
+            "terrain": {"wood": [], "water": [], "lava": []},
+            "structures": [],
+            "points_of_interest": []
+        }
+
+    def get_position(self):
+        return (self.x, self.y, self.z)
+
+    def get_velocity(self):
+        return (self.velocity_x, self.velocity_y, self.velocity_z)
+
+    def set_velocity(self, vx, vy, vz):
+        speed = math.sqrt(vx * vx + vy * vy + vz * vz)
+        if speed > self.max_speed:
+            vx = (vx / speed) * self.max_speed
+            vy = (vy / speed) * self.max_speed
+            vz = (vz / speed) * self.max_speed
+        self.velocity_x = vx
+        self.velocity_y = vy
+        self.velocity_z = vz
+
+    def apply_force(self, fx, fy, fz):
+        force_magnitude = math.sqrt(fx * fx + fy * fy + fz * fz)
+        if force_magnitude > self.max_force:
+            fx = (fx / force_magnitude) * self.max_force
+            fy = (fy / force_magnitude) * self.max_force
+            fz = (fz / force_magnitude) * self.max_force
+
+        self.velocity_x += fx
+        self.velocity_y += fy
+        self.velocity_z += fz
+
+    def update_position(self):
+        self.x += self.velocity_x
+        self.y += self.velocity_y
+        self.z += self.velocity_z
+
+    def force_constraints_on_attributes(self):
+        self.attributes["social"] = max(0, min(1, self.attributes["social"]))
+        self.attributes["health"] = max(0, min(1, self.attributes["health"]))
+        self.attributes["hunger"] = max(0, min(1, self.attributes["hunger"]))
+        self.attributes["energy"] = max(0, min(1, self.attributes["energy"]))
+        self.attributes["strength"] = max(0, min(1, self.attributes["strength"]))
+
+    def apply_decay(self):
+        if self.attributes["hunger"] + self.attributes_mod["hunger"] > 0:
+            self.attributes["hunger"] -= self.decay_rates["hunger"]
+            self.nb_turn_hungry = 0
+        else:
+            self.nb_turn_hungry += 1
+        if self.attributes["energy"] + self.attributes_mod["energy"] > 0:
+            self.attributes["energy"] -= self.decay_rates["energy"]
+            self.nb_turn_sleepy = 0
+        else:
+            self.nb_turn_sleepy += 1
+
+        if self.nb_turn_hungry > 12 or self.nb_turn_sleepy > 20:
+            self.attributes["health"] -= self.decay_rates["health"]
+        elif self.attributes["health"] < 1:
+            self.attributes["health"] += self.decay_rates["health"]
+
+        self.attributes["social"] -= self.decay_rates["social"]
+        self.happiness -= self.happiness_decay
+
+        self.force_constraints_on_attributes()
+
+        self.dead = (self.attributes["health"] + self.attributes_mod["health"] <= 0)
+
+    def determine_priority(self):
+        tmp = {
+            "hunger": self.attributes["hunger"],
+            "energy": self.attributes["energy"],
+            "social": self.attributes["social"],
+        }
+        return min(tmp.keys(), key=lambda k: tmp[k])
+
+    def fulfill_needs(self):
+        if os.path.exists(".hasfarmer"):
+            self.attributes["hunger"] = 1
+            self.happiness += 0.01
+        if self.home is not None and self.home.built:
+            self.attributes["energy"] = 1
+            self.happiness += 0.01
+
+    def move(self):
+        self.simulation.boids.apply_boids_behavior(self, [])
+        self.update_position()
+
+    def observe_environment(self):
+        x, y, z = int(self.x), int(self.y), int(self.z)
+
+        chunk = self.simulation.abl.get_chunk(x, z)
+        trespassing = Building.detect_all_trespassing(self.x, self.z)
+        self.observations["structures"] = list(dict.fromkeys(self.observations["structures"] + trespassing))
+
+        interesting_blocks_config = [e for i in self.simulation.params["interestingTerrainChars"] for e in
+                                     self.simulation.params[i]]
+        for coord, block in chunk.chunk.items():
+            if block.id in interesting_blocks_config:
+                if block.id in self.simulation.params["wood"]:
+                    self.observations["terrain"]["wood"].append(coord)
+                elif block.id in self.simulation.params["water"]:
+                    self.observations["terrain"]["water"].append(coord)
+                elif block.id in self.simulation.params["lava"]:
+                    self.observations["terrain"]["lava"].append(coord)
+
+        return
+
+    def place_house(self):
+        if hasattr(self, 'home') and self.home.center_point is not None and self.home.built:
+            print(f"{self.name} already has a home")
+            return
+
+        num_spots = 10
+        best_spot = None
+        best_score = float('-inf')
+
+        for _ in range(num_spots):
+            ba = self.simulation.abl.getBuildArea()
+            min_x, min_z = ba.begin[0], ba.begin[2]
+            max_x, max_z = ba.end[0] - 1, ba.end[2] - 1
+            test_x = random.randint(min_x, max_x)
+            test_z = random.randint(min_z, max_z)
+
+            score = evaluate_spot(self, int(test_x), int(test_z))
+
+            if score > best_score:
+                best_score = score
+                best_spot = (test_x, test_z)
+
+        chunk = self.simulation.abl.get_chunk(int(best_spot[0]), int(best_spot[1]))
+        y = chunk.getGroundHeight(int(best_spot[0]), int(best_spot[1]))
+
+        if hasattr(self, 'home') and self.home in Building.BUILDINGS:
+            Building.BUILDINGS.remove(self.home)
+
+        self.home = House(ivec3(int(best_spot[0]), y, int(best_spot[1])), self, self.name + "'s House")
+        self.home.build()
+        print(
+            f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE} built a new house!{ANSIColors.ENDC}")
+
+    def tick(self):
+        if self.dead:
+            self.logfile.addLine(self, "DEAD")
+            return
+        self.apply_decay()
+        self.fulfill_needs()
+        self.move()
+        priority = self.determine_priority()
+        self.logfile.addLine(self, priority)
+        if self.job.job_type == JobType.UNEMPLOYED:
+            self.job.get_new_job(self, priority)
+        self.observe_environment()
+        if self.turn > 10 and self.home.center_point is None:
+            self.place_house()
