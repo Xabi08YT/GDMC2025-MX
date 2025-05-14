@@ -1,5 +1,4 @@
-import csv
-import os
+import csv, sys, os
 from os import getcwd, path, mkdir
 from time import time
 
@@ -7,6 +6,7 @@ from time import time
 class LogFile:
 
     def __init__(self, fpath="logs", fname=None):
+        csv.field_size_limit(sys.maxsize)
         try:
             mkdir(fpath)
         except FileExistsError:

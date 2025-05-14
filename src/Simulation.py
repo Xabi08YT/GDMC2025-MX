@@ -92,14 +92,14 @@ class Simulation:
         firecamp = Firecamp(self)
         firecamp.get_best_location()
         firecamp.build()
-        coords = firecamp.get_coords()
+        self.firecamp_coords = firecamp.get_coords()
 
         editor = Editor(buffering=True)
         editor.runCommand(
             f'tellraw @a [{{"text":"GDMC","color":"aqua"}},{{"text":" - Center of the village: ","color":"white"}},{{"text":"({firecamp.center_point.x}, {firecamp.center_point.y}, {firecamp.center_point.z})","color":"yellow","clickEvent":{{"action":"run_command","value":"/tp @s {firecamp.center_point.x} {firecamp.center_point.y} {firecamp.center_point.z}"}},"hoverEvent":{{"action":"show_text","value":"Click to teleport"}}}}]')
 
         print(
-            f"{ANSIColors.OKBLUE}[SIMULATION INFO] Firecamp has been placed at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{coords[0], coords[1], coords[2]}{ANSIColors.ENDC}")
+            f"{ANSIColors.OKBLUE}[SIMULATION INFO] Firecamp has been placed at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.firecamp_coords[0], self.firecamp_coords[1], self.firecamp_coords[2]}{ANSIColors.ENDC}")
 
         p = Pool(cpu_count())
         p.map_async(self.run, self.agents).get()
@@ -132,9 +132,12 @@ class Simulation:
             self.show_message("Done. Goodbye World !")
 
     def clean(self):
-        for file in os.listdir("logs/ongoing"):
-            os.remove(f"logs/ongoing/{file}")
-        os.rmdir("logs/ongoing")
+        try:
+            for file in os.listdir("logs/ongoing"):
+                os.remove(f"logs/ongoing/{file}")
+            os.rmdir("logs/ongoing")
+        except FileNotFoundError:
+            pass
 
         if os.path.exists(".hasfarmer"):
             os.remove(".hasfarmer")
