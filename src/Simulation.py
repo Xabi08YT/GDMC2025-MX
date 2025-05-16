@@ -56,17 +56,14 @@ class Simulation:
         self.show_message("Pulling minecraft map... This may take several minutes...")
         ba = editor.getBuildArea()
         self.abl = AbstractionLayer(ba)
-        try:
-            self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv)
-        except:
-            pass
+        self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv)
 
         self.show_message("Done. Preparing simulation...")
 
         self.min_x, self.min_z = ba.begin[0], ba.begin[2]
         self.max_x, self.max_z = ba.end[0] - 1, ba.end[2] - 1
 
-        for i in range(self.config["nodeAgents"][0]):
+        """for i in range(self.config["nodeAgents"][0]):
             x = randint(self.min_x, self.max_x)
             z = randint(self.min_z, self.max_z)
             c = self.abl.get_chunk(x, z)
@@ -74,7 +71,7 @@ class Simulation:
             agent = Agent(self, x, y, z)
             self.agents.append(agent)
 
-        self.show_message("Simulation ready.")
+        self.show_message("Simulation ready.")"""
 
     def run(self, agent):
         agent.logfile = LogFile(fpath="logs/ongoing", fname=f"{str(agent.id)}.csv")
@@ -152,5 +149,5 @@ class Simulation:
 if __name__ == "__main__":
     sim = Simulation()
     sim.prepare()
-    sim.launch()
-    sim.end()
+    #sim.launch()
+    #sim.end()
