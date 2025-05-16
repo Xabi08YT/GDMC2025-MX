@@ -1,14 +1,12 @@
-from abstractionLayer.Chunk import Chunk
 from time import time
 
 from gdpc import interface, Editor
 from multiprocessing import Pool, cpu_count
-import os, json, utils.utils as utils
+import os, json
 from utils.math_methods import same_point
 from utils.ANSIColors import ANSIColors
 import numpy as np
 import requests
-from matplotlib import pyplot as plt
 
 class AbstractionLayer:
 
@@ -22,6 +20,13 @@ class AbstractionLayer:
         with open("config/simParams.json") as json_file:
             self.simParams = json.load(json_file)
             json_file.close()
+
+
+        self.walkable = None
+        self.wood = None
+        self.water = None
+        self.lava = None
+
 
     @staticmethod
     def pull_chunk(args: tuple[interface.Box,int,int, int, int, np.array, dict] ) -> tuple[int,int,np.array,np.array,np.array,np.array]:
@@ -119,16 +124,16 @@ class AbstractionLayer:
             wood[16 * res[0]:16 * res[0] + 16, 16 * res[1]:16 * res[1] + 16] = res[2]
 
         # Adapting results size
-        walkable = walkable[0:size[0], 0:size[2]]
-        wood = wood[0:size[0], 0:size[2]]
-        water = water[0:size[0], 0:size[2]]
-        lava = lava[0:size[0], 0:size[2]]
+        self.walkable = walkable[0:size[0], 0:size[2]]
+        self.wood = wood[0:size[0], 0:size[2]]
+        self.water = water[0:size[0], 0:size[2]]
+        self.lava = lava[0:size[0], 0:size[2]]
 
         # Saving results to cache
-        walkable.dump("data/walkableMatrix")
-        lava.dump("data/lavaMatrix")
-        water.dump("data/waterMatrix")
-        wood.dump("data/woodMatrix")
+        self.walkable.dump("data/walkableMatrix")
+        self.lava.dump("data/lavaMatrix")
+        self.water.dump("data/waterMatrix")
+        self.wood.dump("data/woodMatrix")
 
         with open(os.path.join(os.getcwd(), "data", "areaData.json"), "w+") as f:
             json.dump({"begin": self.buildArea.begin.to_list(), "end": self.buildArea.end.to_list()}, f)
@@ -136,31 +141,8 @@ class AbstractionLayer:
         end = time()
         print("[INFO] Minecraft world pulled in {:.2f} seconds.".format(end - start))
 
-    def get_chunk(self,x,z) -> Chunk:
-        cid = Chunk.get_chunk_id_from_coord(self.buildArea, x, z)
-        return Chunk.from_file(f"{cid[0]}_{cid[1]}.json")
-
-    def save_all(self):
-        chunk_names = list(Chunk.LOADED_CHUNKS.keys())
-        for chunk_name in chunk_names:
-            chunk = Chunk.LOADED_CHUNKS[chunk_name]
-            chunk.to_file(filename=f"{chunk_name}.json", path=chunk.folder)
-        Chunk.LOADED_CHUNKS.clear()
-
     def push(self, folder="generated"):
-        self.save_all()
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-        for file in os.listdir(folder):
-            if file.endswith(".json"):
-                c = Chunk.from_file(file, folder)
-                try:
-                    interface.placeBlocks(c.to_gdmc(), doBlockUpdates=False)
-                except AttributeError as e:
-                    if "'str' object has no attribute 'get'" in str(e):
-                        print(f"{ANSIColors.WARNING}[WARN] Got string response while placing blocks. Some blocks may not have been placed.{ANSIColors.ENDC}")
-                    else:
-                        raise
+        pass
 
     @staticmethod
     def get_abstraction_layer_instance():
