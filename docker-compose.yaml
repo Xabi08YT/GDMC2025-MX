@@ -1,11 +1,11 @@
 services:
   simulation:
-    image: localhost/gmdcsim:latest
+    image: gdmcsim:latest
     container_name: GDMC_2025_MX
     volumes:
-      - "config:/src/config"
-      - "data:/src/data"
-      - "generated:/src/generated"
-      - "logs:/src/logs"
+      - "./config:/src/config"
+      - "./data:/src/data"
+      - "./generated:/src/generated"
+      - "./logs:/src/logs"
     ports:
       - "5000:500"
