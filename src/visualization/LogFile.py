@@ -31,7 +31,6 @@ class LogFile:
             "health_decay",
             "attributes",
             "relationships",
-            "observations",
             "coord_x",
             "coord_y",
             "coord_z"
@@ -63,7 +62,6 @@ class LogFile:
             "health_decay": agent.decay_rates["health"],
             "attributes": agent.attributes,
             "relationships": agent.relationships,
-            "observations": agent.observations,
             "coord_x": agent.x,
             "coord_y": agent.y,
             "coord_z": agent.z,
@@ -97,7 +95,6 @@ class LogFile:
                     "health_decay",
                     "attributes",
                     "relationships",
-                    "observations",
                     "coord_x",
                     "coord_y",
                     "coord_z"
