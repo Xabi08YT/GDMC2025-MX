@@ -149,5 +149,5 @@ class Simulation:
 if __name__ == "__main__":
     sim = Simulation()
     sim.prepare()
-    #sim.launch()
-    #sim.end()
+    sim.launch()
+    sim.end()
