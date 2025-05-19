@@ -1,9 +1,9 @@
 from enum import Enum
 from random import choice
 import os
-from src.simLogic import Agent
-from src.buildings import Building
-from src.buildings.JobBuilding import WorkshopBuilding, FarmBuilding, BlacksmithBuilding, CommunityBuilding
+from simLogic import Agent
+from buildings import Building
+from buildings.JobBuilding import WorkshopBuilding, FarmBuilding, BlacksmithBuilding, CommunityBuilding
 
 class JobType(Enum):
     ARMORER = "Armorer"

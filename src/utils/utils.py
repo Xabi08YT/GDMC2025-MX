@@ -1,4 +1,4 @@
-from src.utils.math_methods import distance_xz
+from utils.math_methods import distance_xz
 
 def min_distance_to_others(agent, others):
     return min([distance_xz(agent.x, agent.z, otherx, otherz) for otherx, otherz in others])

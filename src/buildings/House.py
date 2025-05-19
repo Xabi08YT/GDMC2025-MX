@@ -1,10 +1,9 @@
-from Building import Building
+from buildings.Building import Building
 from gdpc.minecraft_tools import signBlock
 import random
 from simLogic.Job import JobType
 from utils.math_methods import distance_xz
 from utils.ANSIColors import ANSIColors
-from simLogic.Relationships import Relationships
 
 class House(Building):
     def __init__(self, center_point: tuple[int,int] | None, agent, name: str, orientation: str = "south",
@@ -25,7 +24,7 @@ class House(Building):
         ]
 
         family_size = 1
-        for rel in Relationships.RELATIONSHIPS.keys():
+        for rel in agent.simulation.relationships.RELATIONSHIPS.keys():
             if rel['value'] >= 0.8:
                 family_size += 1
 

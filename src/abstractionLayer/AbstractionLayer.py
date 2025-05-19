@@ -78,9 +78,9 @@ class AbstractionLayer:
                 with open(os.path.join(os.getcwd(), "data", "areaData.json"), "r") as f:
                     data = json.load(f)
                     f.close()
-                if same_point(self.buildArea.begin, data["begin"]) and same_point(self.buildArea.end, data["end"] and os.path.exists("data/walkableMatrix") and os.path.exists("data/waterMatrix") and os.path.exists("data/lavaMatrix") and os.path.exists("data/woodMatrix")):
+                if same_point(self.buildArea.begin, data["begin"]) and same_point(self.buildArea.end, data["end"]) and os.path.exists("data/walkableMatrix") and os.path.exists("data/waterMatrix") and os.path.exists("data/lavaMatrix") and os.path.exists("data/woodMatrix"):
                     print(f"{ANSIColors.OKCYAN}[NOTE] Same area, skipping world pulling... If you want to pull it again, remove the folder or add the -fp argument to the launch command.{ANSIColors.ENDC}")
-                    return
+                    return [np.load("data/walkableMatrix",allow_pickle=True), np.load("data/woodMatrix",allow_pickle=True), np.load("data/waterMatrix",allow_pickle=True), np.load("data/lavaMatrix",allow_pickle=True), self.get_height_map_excluding("air&#leaves")]
                 print(f"{ANSIColors.WARNING}[WARN] Some files appears to be missing. Initiating pull... {ANSIColors.ENDC}")
             except json.JSONDecodeError:
                 print(f"{ANSIColors.WARNING}[WARN] Invalid cache JSON, resuming pulling...{ANSIColors.ENDC}")

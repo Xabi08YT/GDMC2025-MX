@@ -2,7 +2,7 @@ import random
 import uuid
 import math
 from gdpc.vector_tools import ivec3
-from Job import JobType, Job
+from simLogic.Job import JobType, Job
 import os
 from buildings.Building import Building
 from buildings.House import House
