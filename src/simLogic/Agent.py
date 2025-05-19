@@ -1,22 +1,19 @@
 import random
 import uuid
 import math
-
 from gdpc.vector_tools import ivec3
-from simLogic.Job import JobType, Job
+from Job import JobType, Job
 import os
-from buildings.Building import Building
-from buildings.House import House
-from utils.utils import evaluate_spot
-
-from utils.ANSIColors import ANSIColors
-
+from src.buildings.Building import Building
+from src.buildings.House import House
+from src.utils.utils import evaluate_spot
+from src.utils.ANSIColors import ANSIColors
 
 class Agent:
-    def __init__(self, sim, x, y, z):
+    def __init__(self, sim, x, y, z, name):
         self.simulation = sim
         self.dead = False
-        self.attributes = {
+        self.base_attributes = {
             "hunger": 1,
             "energy": 1,
             "health": 1,
@@ -24,12 +21,21 @@ class Agent:
             "strength": random.uniform(0.1, 0.5),
             "adventurous": random.uniform(0.1, 1),
         }
+        self.attributes = {
+            "hunger": self.base_attributes["hunger"],
+            "energy": self.base_attributes["energy"],
+            "health": self.base_attributes["health"],
+            "social": self.base_attributes["social"],
+            "strength": self.base_attributes["strength"],
+            "adventurous": self.base_attributes["adventurous"],
+        }
         self.decay_rates = {
             "hunger": random.uniform(0.1, 0.5),
             "energy": random.uniform(0.1, 0.5),
             "health": random.uniform(0.1, 0.3),
             "social": random.uniform(-0.4, 0.5),
             "strength": random.uniform(0.1, 0.3),
+            "adventurous": random.uniform(0.1, 0.3),
         }
         self.attributes_mod = {
             "hunger": 0,
@@ -41,15 +47,12 @@ class Agent:
         }
         self.happiness = 0
         self.happiness_decay = random.uniform(0.005, 0.03)
-        self.relationships = {}
         self.id = str(uuid.uuid4())
-        with open("./txt/agent_names.txt", "r") as f:
-            self.name = random.choice(f.readlines()).strip()
+        self.name = name
         self.x = x
         self.y = y
         self.z = z
         self.velocity_x = 0
-        self.velocity_y = 0
         self.velocity_z = 0
         self.max_speed = 1.0
         self.max_force = 0.1
@@ -57,46 +60,40 @@ class Agent:
         self.turn = 0
         self.action = None
         self.home = Building(None, self, self.name + "'s Space")
-        self.job_place = None
         self.nb_turn_hungry = 0
         self.nb_turn_sleepy = 0
+        self.nb_turn_fulfilled = 0
         self.logfile = None
         self.observations = {
             "terrain": {"wood": [], "water": [], "lava": []},
             "structures": [],
-            "points_of_interest": []
         }
 
     def get_position(self):
-        return (self.x, self.y, self.z)
+        return self.x, self.y, self.z
 
     def get_velocity(self):
-        return (self.velocity_x, self.velocity_y, self.velocity_z)
+        return self.velocity_x, self.velocity_z
 
-    def set_velocity(self, vx, vy, vz):
-        speed = math.sqrt(vx * vx + vy * vy + vz * vz)
+    def set_velocity(self, vx, vz):
+        speed = math.sqrt(vx * vx + vz * vz)
         if speed > self.max_speed:
             vx = (vx / speed) * self.max_speed
-            vy = (vy / speed) * self.max_speed
             vz = (vz / speed) * self.max_speed
         self.velocity_x = vx
-        self.velocity_y = vy
         self.velocity_z = vz
 
-    def apply_force(self, fx, fy, fz):
-        force_magnitude = math.sqrt(fx * fx + fy * fy + fz * fz)
+    def apply_force(self, fx, fz):
+        force_magnitude = math.sqrt(fx * fx + fz * fz)
         if force_magnitude > self.max_force:
             fx = (fx / force_magnitude) * self.max_force
-            fy = (fy / force_magnitude) * self.max_force
             fz = (fz / force_magnitude) * self.max_force
 
         self.velocity_x += fx
-        self.velocity_y += fy
         self.velocity_z += fz
 
     def update_position(self):
         self.x += self.velocity_x
-        self.y += self.velocity_y
         self.z += self.velocity_z
 
     def force_constraints_on_attributes(self):
@@ -108,7 +105,8 @@ class Agent:
 
     def apply_decay(self):
         if self.attributes["hunger"] + self.attributes_mod["hunger"] > 0:
-            self.attributes["hunger"] -= self.decay_rates["hunger"]
+            multiply = 1 + self.attributes["strength"]
+            self.attributes["hunger"] -= self.decay_rates["hunger"] * multiply
             self.nb_turn_hungry = 0
         else:
             self.nb_turn_hungry += 1
@@ -118,13 +116,20 @@ class Agent:
         else:
             self.nb_turn_sleepy += 1
 
-        if self.nb_turn_hungry > 12 or self.nb_turn_sleepy > 20:
+        if self.attributes["strength"] + self.attributes_mod["strength"] > 0:
+            if self.attributes["strength"] - self.decay_rates["strength"] >= self.base_attributes["strength"]:
+                self.attributes["strength"] -= self.decay_rates["strength"]
+
+        if self.nb_turn_hungry >= 3 or self.nb_turn_sleepy >= 5:
             self.attributes["health"] -= self.decay_rates["health"]
-        elif self.attributes["health"] < 1:
+        elif self.attributes["health"] < 1 and self.nb_turn_fulfilled >= 3:
             self.attributes["health"] += self.decay_rates["health"]
 
         self.attributes["social"] -= self.decay_rates["social"]
         self.happiness -= self.happiness_decay
+
+        if self.attributes["hunger"] == 1 and self.attributes["energy"] == 1:
+            self.nb_turn_fulfilled += 1
 
         self.force_constraints_on_attributes()
 
@@ -147,7 +152,8 @@ class Agent:
             self.happiness += 0.01
 
     def move(self):
-        self.simulation.boids.apply_boids_behavior(self, [])
+        (fx, fz) = self.simulation.boids.apply_boids_behavior(self, []) # [] à remplacer par la liste de tous les agents
+        self.apply_force(fx, fz)
         self.update_position()
 
     def observe_environment(self):

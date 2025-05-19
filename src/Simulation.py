@@ -1,26 +1,23 @@
 import json, os, sys
+import random
 from time import time
-
 from buildings.Firecamp import Firecamp
+from simLogic.Relationships import Relationships
 from utils.ANSIColors import ANSIColors
 from visualization.LogFile import LogFile
 from gdpc import Editor
 from abstractionLayer.AbstractionLayer import AbstractionLayer
 from random import randint
 from simLogic.Agent import Agent
-from abstractionLayer.Chunk import Chunk
 from multiprocessing import Pool, cpu_count
 from simLogic.BoidsBehavior import BoidsBehavior
 
-
 class Simulation:
-    LOADED_CHUNKS = Chunk.LOADED_CHUNKS
-
     def __init__(self):
         self.agents = []
         self.creation_time = time()
         self.boids = BoidsBehavior()
-        # self.relationships = Relationships()
+        self.relationships = Relationships()
 
         with open("config/config.json", mode="r") as cfg:
             self.config = json.load(cfg)
@@ -29,6 +26,10 @@ class Simulation:
         with open("config/simParams.json", mode="r") as sim:
             self.params = json.load(sim)
             sim.close()
+
+        with open("txt/agent_names.txt", mode="r") as agent_names:
+            self.names = agent_names.readlines()
+            agent_names.close()
 
     def show_message(self, message):
         editor = Editor(buffering=True)
@@ -68,7 +69,7 @@ class Simulation:
             z = randint(self.min_z, self.max_z)
             c = self.abl.get_chunk(x, z)
             y = c.getGroundHeight(x, z)
-            agent = Agent(self, x, y, z)
+            agent = Agent(self, x=x, y=y, z=z, name=self.names.pop(self.names.index(random.choice(self.names).strip())))
             self.agents.append(agent)
 
         self.show_message("Simulation ready.")"""
@@ -108,10 +109,7 @@ class Simulation:
     def end(self):
 
         self.show_message("Pushing changes to Minecraft... This may take several minutes.")
-
-        self.abl.save_all()
         self.abl.push()
-
         self.show_message("Changes pushed. Beginning cleanup...")
 
         logfile = LogFile(fname=f"{str(self.creation_time).split(".")[0]}.csv")

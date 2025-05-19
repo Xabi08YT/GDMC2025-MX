@@ -1,6 +1,6 @@
 from gdpc.vector_tools import ivec3
 from gdpc import Block
-from buildings.Building import Building
+from src.buildings.Building import Building
 from gdpc.minecraft_tools import signBlock
 
 class House(Building):

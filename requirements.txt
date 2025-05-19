@@ -1,2 +1,4 @@
 gdpc==8.1.0
 numpy==2.2.5
+pyglm==2.8.2
+matplotlib==3.10.3
