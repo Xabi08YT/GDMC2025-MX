@@ -22,12 +22,6 @@ class AbstractionLayer:
             json_file.close()
 
 
-        self.walkable = None
-        self.wood = None
-        self.water = None
-        self.lava = None
-
-
     @staticmethod
     def pull_chunk(args: tuple[interface.Box,int,int, int, int, np.array, dict] ) -> tuple[int,int,np.array,np.array,np.array,np.array]:
         tmp = interface.getBlocks(
@@ -124,22 +118,23 @@ class AbstractionLayer:
             wood[16 * res[0]:16 * res[0] + 16, 16 * res[1]:16 * res[1] + 16] = res[2]
 
         # Adapting results size
-        self.walkable = walkable[0:size[0], 0:size[2]]
-        self.wood = wood[0:size[0], 0:size[2]]
-        self.water = water[0:size[0], 0:size[2]]
-        self.lava = lava[0:size[0], 0:size[2]]
+        walkable = walkable[0:size[0], 0:size[2]]
+        wood = wood[0:size[0], 0:size[2]]
+        water = water[0:size[0], 0:size[2]]
+        lava = lava[0:size[0], 0:size[2]]
 
         # Saving results to cache
-        self.walkable.dump("data/walkableMatrix")
-        self.lava.dump("data/lavaMatrix")
-        self.water.dump("data/waterMatrix")
-        self.wood.dump("data/woodMatrix")
+        walkable.dump("data/walkableMatrix")
+        lava.dump("data/lavaMatrix")
+        water.dump("data/waterMatrix")
+        wood.dump("data/woodMatrix")
 
         with open(os.path.join(os.getcwd(), "data", "areaData.json"), "w+") as f:
             json.dump({"begin": self.buildArea.begin.to_list(), "end": self.buildArea.end.to_list()}, f)
             f.close()
         end = time()
         print("[INFO] Minecraft world pulled in {:.2f} seconds.".format(end - start))
+        return [walkable, wood, water, lava, heightmap]
 
     def push(self, folder="generated"):
         pass

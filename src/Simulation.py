@@ -13,11 +13,22 @@ from multiprocessing import Pool, cpu_count
 from simLogic.BoidsBehavior import BoidsBehavior
 
 class Simulation:
+
     def __init__(self):
         self.agents = []
         self.creation_time = time()
         self.boids = BoidsBehavior()
+        self.walkable = None
+        self.wood = None
+        self.water = None
+        self.lava = None
+        self.heightmap = None
         self.relationships = Relationships()
+        self.walkable = None
+        self.wood = None
+        self.water = None
+        self.lava = None
+        self.heightmap = None
 
         with open("config/config.json", mode="r") as cfg:
             self.config = json.load(cfg)
@@ -57,7 +68,7 @@ class Simulation:
         self.show_message("Pulling minecraft map... This may take several minutes...")
         ba = editor.getBuildArea()
         self.abl = AbstractionLayer(ba)
-        self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv)
+        [self.walkable, self.wood, self.water, self.lava, self.heightmap] = self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv)
 
         self.show_message("Done. Preparing simulation...")
 
