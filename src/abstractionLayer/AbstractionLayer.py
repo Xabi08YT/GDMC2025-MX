@@ -3,6 +3,8 @@ from time import time
 from gdpc import interface, Editor, Block
 from multiprocessing import Pool, cpu_count
 import os, json
+
+from buildings.Building import Building
 from utils.math_methods import same_point
 from utils.ANSIColors import ANSIColors
 import numpy as np
@@ -162,6 +164,8 @@ class AbstractionLayer:
 
 
     def push(self, folder="generated"):
+        for building in Building.BUILDINGS:
+            building.matrix_to_files()
         p = Pool(cpu_count())
         hmap = self.get_height_map_excluding("air&#leaves")
         p.map_async(self.push_building, [(folder,target, hmap) for target in os.listdir(folder)]).get()

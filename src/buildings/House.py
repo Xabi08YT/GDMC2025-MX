@@ -1,4 +1,3 @@
-from gdpc import Block
 from Building import Building
 from gdpc.minecraft_tools import signBlock
 import random
@@ -314,7 +313,7 @@ class House(Building):
 
     def build_foundation_progressive(self, progress_ratio):
         center_y = self.center_point[1]
-        floor = Block(self.materials["floor"])
+        floor = self.materials["floor"]
 
         total_blocks = self.width * self.depth
         blocks_to_place = int(total_blocks * progress_ratio)
@@ -334,11 +333,11 @@ class House(Building):
                 dz = random.randint(0, self.depth - 1)
                 for dy in range(1, random.randint(2, 4)):
                     super().add_block_to_matrix(self.start_x + dx, center_y - dy, self.start_z + dz,
-                                         Block(self.materials["log"]))
+                                         self.materials["log"])
 
     def build_walls_progressive(self, progress_ratio):
         center_y = self.center_point[1]
-        log = Block(self.materials["log"])
+        log = self.materials["log"]
 
         total_wall_blocks = (2 * (self.width + self.depth - 2)) * (self.height - 1)
         blocks_to_place = int(total_wall_blocks * progress_ratio)
@@ -363,14 +362,14 @@ class House(Building):
                         block_count += 1
                     elif is_edge:
                         if dy == 1:
-                            wall_block = Block(random.choice(self.materials["wall"]))
+                            wall_block = random.choice(self.materials["wall"])
                         elif dy == self.height - 1:
-                            wall_block = Block(random.choice(self.materials["wall"]))
+                            wall_block = random.choice(self.materials["wall"])
                         else:
                             if random.random() < 0.2:
-                                wall_block = Block(random.choice(self.materials["wall"]))
+                                wall_block = random.choice(self.materials["wall"])
                             else:
-                                wall_block = Block(self.materials["wall"][0])
+                                wall_block = self.materials["wall"][0]
 
                         super().add_block_to_matrix(x, center_y + dy, z, wall_block)
                         block_count += 1
@@ -378,12 +377,11 @@ class House(Building):
         if progress_ratio > 0.25:
             door = self.materials["door"]
             super().add_block_to_matrix(self.door_x, center_y + 1, self.door_z,
-                                 Block(f"{door}[facing={self.bed_facing}]"))
+                                 f"{door};facing={self.bed_facing}")
             super().add_block_to_matrix(self.door_x, center_y + 2, self.door_z,
-                                 Block(f"{door}[facing={self.bed_facing},half=upper]"))
+                                 f"{door}[facing={self.bed_facing};half=upper]")
 
     def build_roof_progressive(self, progress_ratio):
-        center_y = self.center_point[1]
         roof_material = random.choice(["oak_planks", "spruce_planks"])
         stairs_material = roof_material.replace("planks", "stairs")
 
@@ -419,64 +417,64 @@ class House(Building):
                                 self.start_x + dx,
                                 y,
                                 self.start_z + dz,
-                                Block(f"{stairs_material}[facing={facing},shape={shape}]")
+                                f"{stairs_material};facing={facing};shape={shape}"
                             )
                         elif is_west:
                             super().add_block_to_matrix(
                                 self.start_x + dx,
                                 y,
                                 self.start_z + dz,
-                                Block(f"{stairs_material}[facing=east]")
+                                f"{stairs_material};facing=east"
                             )
                         elif is_east:
                             super().add_block_to_matrix(
                                 self.start_x + dx,
                                 y,
                                 self.start_z + dz,
-                                Block(f"{stairs_material}[facing=west]")
+                                f"{stairs_material};facing=west"
                             )
                         elif is_north:
                             super().add_block_to_matrix(
                                 self.start_x + dx,
                                 y,
                                 self.start_z + dz,
-                                Block(f"{stairs_material}[facing=south]")
+                                f"{stairs_material};facing=south"
                             )
                         elif is_south:
                             super().add_block_to_matrix(
                                 self.start_x + dx,
                                 y,
                                 self.start_z + dz,
-                                Block(f"{stairs_material}[facing=north]")
+                                f"{stairs_material};facing=north"
                             )
                         elif -overhang < dx < self.width + overhang - 1 and -overhang < dz < self.depth + overhang - 1:
                             super().add_block_to_matrix(
                                 self.start_x + dx,
                                 y,
                                 self.start_z + dz,
-                                Block(roof_material)
+                                roof_material
                             )
 
         if progress_ratio > 0.99 and random.randint(0, 1) < 0.2:
             chimney_x = self.start_x + self.width - random.randint(1, 3) - 1
             chimney_z = self.start_z + random.randint(1, 3)
-            super().add_block_to_matrix(chimney_x, self.top_y + 1, chimney_z, Block("bricks"))
-            super().add_block_to_matrix(chimney_x, self.top_y + 2, chimney_z, Block("brick_wall"))
-            super().add_block_to_matrix(chimney_x, self.top_y + 3, chimney_z, Block("flower_pot"))
+            super().add_block_to_matrix(chimney_x, self.top_y + 1, chimney_z, "bricks")
+            super().add_block_to_matrix(chimney_x, self.top_y + 2, chimney_z, "brick_wall")
+            super().add_block_to_matrix(chimney_x, self.top_y + 3, chimney_z, "flower_pot")
 
     def build_furniture_progressive(self, progress_ratio):
         center_y = self.center_point[1]
 
         if progress_ratio > 0.5:
             super().add_block_to_matrix(self.torch_pos[0], self.torch_pos[1], self.torch_pos[2],
-                                 Block(f"wall_torch[facing={self.bed_facing}]"))
+                                 f"minecraft:wall_torch;facing={self.bed_facing}")
 
         if progress_ratio > 0.75:
             bed = self.materials["bed"]
             super().add_block_to_matrix(self.bed_pos[0], self.bed_pos[1], self.bed_pos[2],
-                                 Block(f"{bed}[facing={self.bed_facing}]"))
+                                 f"{bed};facing={self.bed_facing}")
             super().add_block_to_matrix(self.bed_head_pos[0], self.bed_head_pos[1], self.bed_head_pos[2],
-                                 Block(f"{bed}[part=head,facing={self.bed_facing}]"))
+                                 f"{bed};part=head;facing={self.bed_facing}")
 
             num_blocks = random.randint(0, 1)
             for _ in range(num_blocks):
@@ -495,7 +493,7 @@ class House(Building):
                     x = self.bed_head_pos[0]
                     z = self.bed_head_pos[2] + side
 
-                super().add_block_to_matrix(x, self.bed_head_pos[1], z, Block(f"{block_type}[facing={self.bed_facing}]"))
+                super().add_block_to_matrix(x, self.bed_head_pos[1], z, f"{block_type};facing={self.bed_facing}")
 
         if progress_ratio > 0.9:
             block = signBlock(
