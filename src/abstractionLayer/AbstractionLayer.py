@@ -1,6 +1,6 @@
 from time import time
 
-from gdpc import interface, Editor
+from gdpc import interface, Editor, Block
 from multiprocessing import Pool, cpu_count
 import os, json
 from utils.math_methods import same_point
@@ -138,8 +138,35 @@ class AbstractionLayer:
         print("[INFO] Minecraft world pulled in {:.2f} seconds.".format(end - start))
         return [walkable, wood, water, lava, heightmap]
 
+    def push_building(self,args):
+        if not os.path.isdir(os.path.join(args[0],args[1])):
+            return
+
+        meta = json.load(open(os.path.join(args[0],args[1],"metadata.json")))
+        blocks = np.load(os.path.join(args[0],args[1],"matrix"))
+
+        x = meta["x"] - blocks.shape[0]
+        mcx = x + self.buildArea.begin[0]
+        z = meta["z"] - blocks.shape[1]
+        mcz = z + self.buildArea.begin[2]
+        mcy = args[2][x:x+blocks.shape[0],z:z+blocks.shape[1]].min()
+
+        gdpcblocks = []
+
+        for mx in range(blocks.shape[0]):
+            for mz in range(blocks.shape[1]):
+                for my in range(blocks.shape[2]):
+                    gdpcblocks.append(((mcx+mx, mcy+my,mcz+mz), Block(blocks[mx,mz,my])))
+
+        interface.placeBlocks(gdpcblocks)
+
+
     def push(self, folder="generated"):
-        pass
+        p = Pool(cpu_count())
+        hmap = self.get_height_map_excluding("air&#leaves")
+        p.map_async(self.push_building, [(folder,target, hmap) for target in os.listdir(folder)]).get()
+        p.close()
+        p.join()
 
     @staticmethod
     def get_abstraction_layer_instance():
