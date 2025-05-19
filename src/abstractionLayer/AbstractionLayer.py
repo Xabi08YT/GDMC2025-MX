@@ -142,7 +142,9 @@ class AbstractionLayer:
         if not os.path.isdir(os.path.join(args[0],args[1])):
             return
 
-        meta = json.load(open(os.path.join(args[0],args[1],"metadata.json")))
+        with open(os.path.join(args[0],args[1],"metadata.json")) as f:
+            meta = json.load(f)
+            f.close()
         blocks = np.load(os.path.join(args[0],args[1],"matrix"))
 
         x = meta["x"] - blocks.shape[0] /2
