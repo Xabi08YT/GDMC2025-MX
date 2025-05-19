@@ -1,8 +1,6 @@
-from random import random, choice
-from abstractionLayer.Chunk import Chunk
-import utils.utils as utils
-from utils.utils import distance_xz
-
+from random import choice
+import numpy as np
+from utils.math_methods import distance_xz
 
 class Building:
     BUILDINGS = []
@@ -20,7 +18,10 @@ class Building:
         self.agent = agent
         self.name = name
         self.folder = folder
-        self.chunk = Chunk({}, name, folder)
+        self.width = 5
+        self.height = 5
+        self.depth = 5
+        self.matrix = np.zeros((self.height, self.width, self.depth))
         Building.BUILDINGS.append(self)
 
     def built(self):
@@ -71,7 +72,7 @@ class Building:
     def detect_trespassing(self, x, z):
         if self.center_point is None:
             return False
-        return utils.distance_xz(self.center_point[0], self.center_point[1], x, z) <= self.radius * 2
+        return distance_xz(self.center_point[0], self.center_point[1], x, z) <= self.radius * 2
 
     @staticmethod
     def detect_all_trespassing(x, z):
@@ -80,3 +81,6 @@ class Building:
             if b.detect_trespassing(x, z):
                 trespassing.append(b)
         return trespassing
+
+    def add_block_to_matrix(self, x: int, y: int, z: int, block: str):
+        self.matrix[x][y][z] = block

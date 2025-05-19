@@ -4,10 +4,10 @@ import math
 from gdpc.vector_tools import ivec3
 from Job import JobType, Job
 import os
-from src.buildings.Building import Building
-from src.buildings.House import House
-from src.utils.utils import evaluate_spot
-from src.utils.ANSIColors import ANSIColors
+from buildings.Building import Building
+from buildings.House import House
+from utils.utils import evaluate_spot
+from utils.ANSIColors import ANSIColors
 
 class Agent:
     def __init__(self, sim, x, y, z, name):
@@ -64,10 +64,6 @@ class Agent:
         self.nb_turn_sleepy = 0
         self.nb_turn_fulfilled = 0
         self.logfile = None
-        self.observations = {
-            "terrain": {"wood": [], "water": [], "lava": []},
-            "structures": [],
-        }
 
     def get_position(self):
         return self.x, self.y, self.z

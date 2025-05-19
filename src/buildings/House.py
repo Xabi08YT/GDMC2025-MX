@@ -2,12 +2,10 @@ from gdpc import Block
 from Building import Building
 from gdpc.minecraft_tools import signBlock
 import random
-
-from Job import JobType
-from math_methods import distance_xz
-
-from src.utils.ANSIColors import ANSIColors
-
+from simLogic.Job import JobType
+from utils.math_methods import distance_xz
+from utils.ANSIColors import ANSIColors
+from simLogic.Relationships import Relationships
 
 class House(Building):
     def __init__(self, center_point: tuple[int,int] | None, agent, name: str, orientation: str = "south",
@@ -28,8 +26,8 @@ class House(Building):
         ]
 
         family_size = 1
-        for rel in agent.relationships.values():
-            if rel.value >= 0.8:
+        for rel in Relationships.RELATIONSHIPS.keys():
+            if rel['value'] >= 0.8:
                 family_size += 1
 
         if family_size <= 2:
@@ -55,7 +53,8 @@ class House(Building):
         if self.center_point is not None:
             self.setup_positions()
 
-    def choose_materials(self, biome: str = "plains"):
+    @staticmethod
+    def choose_materials(biome: str = "plains"):
         floor_options = ["oak_planks", "spruce_planks", "birch_planks", "dark_oak_planks", "acacia_planks"]
         wall_options = {
             "stone": ["stone", "stone_bricks", "cracked_stone_bricks", "mossy_stone_bricks"],
@@ -313,8 +312,6 @@ class House(Building):
             helpers = f" with {len(self.helping_agents)} helpers" if self.helping_agents else ""
             print(f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.agent.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE}'s house: {ANSIColors.ENDC}{ANSIColors.OKCYAN}{status}{helpers}{ANSIColors.ENDC}")
 
-        self.chunk.to_file()
-
     def build_foundation_progressive(self, progress_ratio):
         center_y = self.center_point[1]
         floor = Block(self.materials["floor"])
@@ -325,7 +322,7 @@ class House(Building):
         for i in range(blocks_to_place):
             dx = i % self.width
             dz = i // self.width
-            self.chunk.set_block(self.start_x + dx, center_y, self.start_z + dz, floor)
+            super().add_block_to_matrix(self.start_x + dx, center_y, self.start_z + dz, floor)
 
         if progress_ratio > 0.5:
             support_ratio = (progress_ratio - 0.5) * 2
@@ -336,7 +333,7 @@ class House(Building):
                 dx = random.randint(0, self.width - 1)
                 dz = random.randint(0, self.depth - 1)
                 for dy in range(1, random.randint(2, 4)):
-                    self.chunk.set_block(self.start_x + dx, center_y - dy, self.start_z + dz,
+                    super().add_block_to_matrix(self.start_x + dx, center_y - dy, self.start_z + dz,
                                          Block(self.materials["log"]))
 
     def build_walls_progressive(self, progress_ratio):
@@ -358,11 +355,11 @@ class House(Building):
 
                     x, z = self.start_x + dx, self.start_z + dz
 
-                    if (x == self.door_x and z == self.door_z and dy <= 2):
+                    if x == self.door_x and z == self.door_z and dy <= 2:
                         continue
 
                     if is_corner:
-                        self.chunk.set_block(x, center_y + dy, z, log)
+                        super().add_block_to_matrix(x, center_y + dy, z, log)
                         block_count += 1
                     elif is_edge:
                         if dy == 1:
@@ -375,14 +372,14 @@ class House(Building):
                             else:
                                 wall_block = Block(self.materials["wall"][0])
 
-                        self.chunk.set_block(x, center_y + dy, z, wall_block)
+                        super().add_block_to_matrix(x, center_y + dy, z, wall_block)
                         block_count += 1
 
         if progress_ratio > 0.25:
             door = self.materials["door"]
-            self.chunk.set_block(self.door_x, center_y + 1, self.door_z,
+            super().add_block_to_matrix(self.door_x, center_y + 1, self.door_z,
                                  Block(f"{door}[facing={self.bed_facing}]"))
-            self.chunk.set_block(self.door_x, center_y + 2, self.door_z,
+            super().add_block_to_matrix(self.door_x, center_y + 2, self.door_z,
                                  Block(f"{door}[facing={self.bed_facing},half=upper]"))
 
     def build_roof_progressive(self, progress_ratio):
@@ -418,42 +415,42 @@ class House(Building):
                             elif is_west and is_south:
                                 facing = "north"
                                 shape = "outer_right"
-                            self.chunk.set_block(
+                            super().add_block_to_matrix(
                                 self.start_x + dx,
                                 y,
                                 self.start_z + dz,
                                 Block(f"{stairs_material}[facing={facing},shape={shape}]")
                             )
                         elif is_west:
-                            self.chunk.set_block(
+                            super().add_block_to_matrix(
                                 self.start_x + dx,
                                 y,
                                 self.start_z + dz,
                                 Block(f"{stairs_material}[facing=east]")
                             )
                         elif is_east:
-                            self.chunk.set_block(
+                            super().add_block_to_matrix(
                                 self.start_x + dx,
                                 y,
                                 self.start_z + dz,
                                 Block(f"{stairs_material}[facing=west]")
                             )
                         elif is_north:
-                            self.chunk.set_block(
+                            super().add_block_to_matrix(
                                 self.start_x + dx,
                                 y,
                                 self.start_z + dz,
                                 Block(f"{stairs_material}[facing=south]")
                             )
                         elif is_south:
-                            self.chunk.set_block(
+                            super().add_block_to_matrix(
                                 self.start_x + dx,
                                 y,
                                 self.start_z + dz,
                                 Block(f"{stairs_material}[facing=north]")
                             )
                         elif -overhang < dx < self.width + overhang - 1 and -overhang < dz < self.depth + overhang - 1:
-                            self.chunk.set_block(
+                            super().add_block_to_matrix(
                                 self.start_x + dx,
                                 y,
                                 self.start_z + dz,
@@ -463,22 +460,22 @@ class House(Building):
         if progress_ratio > 0.99 and random.randint(0, 1) < 0.2:
             chimney_x = self.start_x + self.width - random.randint(1, 3) - 1
             chimney_z = self.start_z + random.randint(1, 3)
-            self.chunk.set_block(chimney_x, self.top_y + 1, chimney_z, Block("bricks"))
-            self.chunk.set_block(chimney_x, self.top_y + 2, chimney_z, Block("brick_wall"))
-            self.chunk.set_block(chimney_x, self.top_y + 3, chimney_z, Block("flower_pot"))
+            super().add_block_to_matrix(chimney_x, self.top_y + 1, chimney_z, Block("bricks"))
+            super().add_block_to_matrix(chimney_x, self.top_y + 2, chimney_z, Block("brick_wall"))
+            super().add_block_to_matrix(chimney_x, self.top_y + 3, chimney_z, Block("flower_pot"))
 
     def build_furniture_progressive(self, progress_ratio):
         center_y = self.center_point[1]
 
         if progress_ratio > 0.5:
-            self.chunk.set_block(self.torch_pos[0], self.torch_pos[1], self.torch_pos[2],
+            super().add_block_to_matrix(self.torch_pos[0], self.torch_pos[1], self.torch_pos[2],
                                  Block(f"wall_torch[facing={self.bed_facing}]"))
 
         if progress_ratio > 0.75:
             bed = self.materials["bed"]
-            self.chunk.set_block(self.bed_pos[0], self.bed_pos[1], self.bed_pos[2],
+            super().add_block_to_matrix(self.bed_pos[0], self.bed_pos[1], self.bed_pos[2],
                                  Block(f"{bed}[facing={self.bed_facing}]"))
-            self.chunk.set_block(self.bed_head_pos[0], self.bed_head_pos[1], self.bed_head_pos[2],
+            super().add_block_to_matrix(self.bed_head_pos[0], self.bed_head_pos[1], self.bed_head_pos[2],
                                  Block(f"{bed}[part=head,facing={self.bed_facing}]"))
 
             num_blocks = random.randint(0, 1)
@@ -498,7 +495,7 @@ class House(Building):
                     x = self.bed_head_pos[0]
                     z = self.bed_head_pos[2] + side
 
-                self.chunk.set_block(x, self.bed_head_pos[1], z, Block(f"{block_type}[facing={self.bed_facing}]"))
+                super().add_block_to_matrix(x, self.bed_head_pos[1], z, Block(f"{block_type}[facing={self.bed_facing}]"))
 
         if progress_ratio > 0.9:
             block = signBlock(
@@ -508,7 +505,7 @@ class House(Building):
                 frontLine2=self.agent.name,
                 frontLine3=self.agent.job.__str__(),
             )
-            self.chunk.set_block(self.sign_x, center_y + 2, self.sign_z, block)
+            super().add_block_to_matrix(self.sign_x, center_y + 2, self.sign_z, block)
 
     def get_door_position(self):
         if self.center_point is None:

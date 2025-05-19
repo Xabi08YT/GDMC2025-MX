@@ -24,11 +24,6 @@ class Simulation:
         self.lava = None
         self.heightmap = None
         self.relationships = Relationships()
-        self.walkable = None
-        self.wood = None
-        self.water = None
-        self.lava = None
-        self.heightmap = None
 
         with open("config/config.json", mode="r") as cfg:
             self.config = json.load(cfg)
