@@ -145,9 +145,9 @@ class AbstractionLayer:
         meta = json.load(open(os.path.join(args[0],args[1],"metadata.json")))
         blocks = np.load(os.path.join(args[0],args[1],"matrix"))
 
-        x = meta["x"] - blocks.shape[0]
+        x = meta["x"] - blocks.shape[0] /2
         mcx = x + self.buildArea.begin[0]
-        z = meta["z"] - blocks.shape[1]
+        z = meta["z"] - blocks.shape[1] /2
         mcz = z + self.buildArea.begin[2]
         mcy = args[2][x:x+blocks.shape[0],z:z+blocks.shape[1]].min()
 
