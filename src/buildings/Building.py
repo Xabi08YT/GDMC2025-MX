@@ -90,6 +90,8 @@ class Building:
         self.matrix[x][z][y] = block
 
     def matrix_to_files(self):
+        if self.center_point is None:
+            return
         data = {
             "name": self.name,
             "x": self.center_point[0],

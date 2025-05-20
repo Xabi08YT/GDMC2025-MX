@@ -180,7 +180,7 @@ class Agent:
 
         # Transform best_stop into tuple
         # self.home = House(lll, self, self.name + "'s House")
-        self.home.build()
+        #self.home.build()
         print(
             f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE} built a new house!{ANSIColors.ENDC}")
 
