@@ -21,10 +21,10 @@ class Firecamp(Building):
         temp_abl = self.simulation.abl
         height_map = temp_abl.get_height_map_excluding("air")
 
-        min_x = begin_x - len(height_map[0])
-        max_x = end_x - len(height_map[0])
-        min_z = begin_z - len(height_map[1])
-        max_z = end_z - len(height_map[1])
+        min_x = 0
+        max_x = len(height_map[0])
+        min_z = 0
+        max_z = len(height_map[1])
 
         for _ in range(num_candidates):
             x = random.randint(min_x, max_x - 1)
