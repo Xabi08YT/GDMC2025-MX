@@ -10,7 +10,7 @@ from utils.utils import evaluate_spot
 from utils.ANSIColors import ANSIColors
 
 class Agent:
-    def __init__(self, sim, x, y, z, name):
+    def __init__(self, sim, x, z, name):
         self.simulation = sim
         self.dead = False
         self.base_attributes = {
@@ -50,7 +50,6 @@ class Agent:
         self.id = str(uuid.uuid4())
         self.name = name
         self.x = x
-        self.y = y
         self.z = z
         self.velocity_x = 0
         self.velocity_z = 0

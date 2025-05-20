@@ -71,15 +71,13 @@ class Simulation:
         self.min_x, self.min_z = ba.begin[0], ba.begin[2]
         self.max_x, self.max_z = ba.end[0] - 1, ba.end[2] - 1
 
-        """for i in range(self.config["nodeAgents"][0]):
+        for i in range(self.config["nodeAgents"][0]):
             x = randint(self.min_x, self.max_x)
             z = randint(self.min_z, self.max_z)
-            c = self.abl.get_chunk(x, z)
-            y = c.getGroundHeight(x, z)
-            agent = Agent(self, x=x, y=y, z=z, name=self.names.pop(self.names.index(random.choice(self.names).strip())))
+            agent = Agent(self, x=x, z=z, name=random.choice(self.names).strip())
             self.agents.append(agent)
 
-        self.show_message("Simulation ready.")"""
+        self.show_message("Simulation ready.")
 
     def run(self, agent):
         agent.logfile = LogFile(fpath="logs/ongoing", fname=f"{str(agent.id)}.csv")
