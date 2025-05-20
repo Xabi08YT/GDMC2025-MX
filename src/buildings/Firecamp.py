@@ -70,16 +70,21 @@ class Firecamp(Building):
         return best_spot[0], best_spot[1], best_spot[2]
 
     def build(self):
-        matrix_center_point = (3, 1, 3)
-        super().add_block_to_matrix(matrix_center_point[0], matrix_center_point[1], matrix_center_point[2], self.simulation.params["villageCenterBlock"])
+        super().add_block_to_matrix(3, 1, 3, self.simulation.params["villageCenterBlock"])
         plaza_floor = self.simulation.params["centerPlazaFloor"]
         for dx in range(-1, 2):
             for dz in range(-1, 2):
-                x, z = matrix_center_point[0] + dx, matrix_center_point[2] + dz
-                if x == matrix_center_point[0] and z == matrix_center_point[2]:
+                rel_x, rel_z = 3 + dx, 3 + dz
+                if rel_x == 3 and rel_z == 3:
                     continue
-                super().add_block_to_matrix(x, self.simulation.abl.get_height_map_excluding("air")[x][z], z, plaza_floor)
+                abs_x, abs_z = self.center_point[0] + dx, self.center_point[2] + dz
+                y = self.simulation.abl.get_height_map_excluding("air")[abs_x][abs_z] - self.center_point[1] + 1
+                super().add_block_to_matrix(rel_x, y, rel_z, plaza_floor)
                 if random.randint(0, 10) < 5:
-                    extra_x, extra_z = random.choice([-1, 1]), random.choice([-1, 1])
-                    super().add_block_to_matrix(x + extra_x, self.simulation.abl.get_height_map_excluding("air")[extra_x][extra_z], z + extra_z, plaza_floor)
+                    extra_dx, extra_dz = random.choice([-1, 1]), random.choice([-1, 1])
+                    rel_extra_x, rel_extra_z = rel_x + extra_dx, rel_z + extra_dz
+                    abs_extra_x, abs_extra_z = abs_x + extra_dx, abs_z + extra_dz
+                    y_extra = self.simulation.abl.get_height_map_excluding("air")[abs_extra_x][abs_extra_z] - \
+                              self.center_point[1] + 1
+                    super().add_block_to_matrix(rel_extra_x, y_extra, rel_extra_z, plaza_floor)
         super().built()
