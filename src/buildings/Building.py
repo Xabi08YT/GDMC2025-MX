@@ -87,7 +87,7 @@ class Building:
         return trespassing
 
     def add_block_to_matrix(self, x: int, y: int, z: int, block: str):
-        self.matrix[x][y][z] = block
+        self.matrix[x][z][y] = block
 
     def matrix_to_files(self):
         data = {
