@@ -11,7 +11,11 @@ class Building:
                  built: bool = False, folder="generated", width = 5, height = 5, depth = 5):
         self.built = built
         self.orientation = orientation
-        self.center_point = center_point
+        self.width = width
+        self.height = height
+        self.depth = depth
+        if center_point is not None:
+            self.place(center_point)
         self.radius = 10
         if agent is not None and center_point is not None:
             self.lowest_y = agent.simulation.heightmap[center_point[0] - self.radius:center_point[0] + self.radius,
@@ -21,9 +25,6 @@ class Building:
             self.agent = agent
         self.name = name
         self.folder = folder
-        self.width = width
-        self.height = height
-        self.depth = depth
         self.matrix = np.zeros((self.width, self.depth, self.height), dtype=object)
         Building.BUILDINGS.append(self)
 
@@ -69,6 +70,14 @@ class Building:
         entrance_z = z + offset[1]
 
         return entrance_x, entrance_z
+
+    def place(self,center_point: tuple[int, int]):
+        self.center_point = center_point
+        self.agent.simulation.buildings[
+            center_point[0] - self.width//2 - 1:center_point[0] + self.width//2 +1,
+            center_point[0] - self.width//2 - 1:center_point[0] + self.width//2 +1
+        ] = True
+        return
 
     def __str__(self):
         return f"{self.name}"

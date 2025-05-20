@@ -68,7 +68,7 @@ class Simulation:
         self.abl = AbstractionLayer(ba)
         [self.walkable, self.wood, self.water, self.lava, self.heightmap] = self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv)
 
-        self.buildings = np.zeros(self.heightmap.shape)
+        self.buildings = np.zeros(self.heightmap.shape,dtype=bool)
         self.show_message("Done. Preparing simulation...")
 
         self.min_x, self.min_z = ba.begin[0], ba.begin[2]
