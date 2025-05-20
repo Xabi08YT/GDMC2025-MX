@@ -86,5 +86,5 @@ class Firecamp(Building):
                     abs_extra_x, abs_extra_z = abs_x + extra_dx, abs_z + extra_dz
                     y_extra = self.simulation.abl.get_height_map_excluding("air")[abs_extra_x][abs_extra_z] - \
                               self.center_point[1] + 1
-                    super().add_block_to_matrix(rel_extra_x, y_extra, rel_extra_z, plaza_floor)
+                    super().add_block_to_matrix(rel_extra_x % 5, y_extra % 2, rel_extra_z % 5, plaza_floor)
         super().built()

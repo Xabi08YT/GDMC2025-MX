@@ -145,21 +145,24 @@ class AbstractionLayer:
             return
 
         meta = json.load(open(os.path.join(args[0],args[1],"metadata.json")))
-        blocks = np.load(os.path.join(args[0],args[1],"matrix"))
+        blocks = np.load(os.path.join(args[0],args[1],"matrix"), allow_pickle=True)
 
-        x = meta["x"] - blocks.shape[0]
+
+        x = meta["x"] - blocks.shape[0] // 2
         mcx = x + self.buildArea.begin[0]
-        z = meta["z"] - blocks.shape[1]
+        z = meta["z"] - blocks.shape[1] // 2
         mcz = z + self.buildArea.begin[2]
-        mcy = args[2][x:x+blocks.shape[0],z:z+blocks.shape[1]].min()
+        mcy = args[2][x:x+blocks.shape[0],z:z+blocks.shape[1]].min().item()
 
         gdpcblocks = []
+        print(mcx,mcy,mcz)
 
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
                 for my in range(blocks.shape[2]):
                     gdpcblocks.append(((mcx+mx, mcy+my,mcz+mz), Block(blocks[mx,mz,my])))
 
+        print(gdpcblocks)
         interface.placeBlocks(gdpcblocks)
 
 

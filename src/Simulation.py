@@ -1,5 +1,6 @@
 import json, os, sys
 import random
+from shutil import rmtree
 from time import time
 from buildings.Firecamp import Firecamp
 from simLogic.Relationships import Relationships
@@ -98,13 +99,6 @@ class Simulation:
         firecamp.build()
         self.firecamp_coords = firecamp.get_coords()
 
-        editor = Editor(buffering=True)
-        editor.runCommand(
-            f'tellraw @a [{{"text":"GDMC","color":"aqua"}},{{"text":" - Center of the village: ","color":"white"}},{{"text":"({firecamp.center_point.x}, {firecamp.center_point.y}, {firecamp.center_point.z})","color":"yellow","clickEvent":{{"action":"run_command","value":"/tp @s {firecamp.center_point.x} {firecamp.center_point.y} {firecamp.center_point.z}"}},"hoverEvent":{{"action":"show_text","value":"Click to teleport"}}}}]')
-
-        print(
-            f"{ANSIColors.OKBLUE}[SIMULATION INFO] Firecamp has been placed at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.firecamp_coords[0], self.firecamp_coords[1], self.firecamp_coords[2]}{ANSIColors.ENDC}")
-
         p = Pool(cpu_count())
         p.map_async(self.run, self.agents).get()
         p.close()
@@ -143,8 +137,8 @@ class Simulation:
         if os.path.exists(".hasfarmer"):
             os.remove(".hasfarmer")
 
-        for file in os.listdir("generated"):
-            os.remove(f"generated/{file}")
+        for folder in os.listdir("generated"):
+            rmtree(f"generated/{folder}")
 
         if os.path.exists(".notCleaned"):
             os.remove(".notCleaned")

@@ -24,7 +24,7 @@ class Building:
         self.width = width
         self.height = height
         self.depth = depth
-        self.matrix = np.zeros((self.width, self.depth, self.height), dtype=str)
+        self.matrix = np.zeros((self.width, self.depth, self.height), dtype=object)
         Building.BUILDINGS.append(self)
 
     def built(self):
@@ -92,10 +92,9 @@ class Building:
     def matrix_to_files(self):
         data = {
             "name": self.name,
-            "agent": self.agent.name,
-            "x": self.center_point,
-            "y": self.orientation,
-            "z": self.radius,
+            "x": self.center_point[0],
+            "y": self.center_point[1],
+            "z": self.center_point[2],
             "built": self.built
         }
         folder_path = os.path.join(self.folder, self.name)
@@ -104,5 +103,4 @@ class Building:
         with open(json_file, "w") as f:
             json.dump(data, f)
         matrix_file = os.path.join(folder_path, "matrix")
-        with open(matrix_file, "w") as f:
-            self.matrix.dump(f)
+        self.matrix.dump(matrix_file)
