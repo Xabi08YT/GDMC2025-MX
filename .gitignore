@@ -178,5 +178,6 @@ cython_debug/
 
 **/logs
 **/.hasfarmer
+**/.notCleaned
 
 **/*Matrix
