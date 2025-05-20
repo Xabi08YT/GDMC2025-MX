@@ -196,5 +196,5 @@ class Agent:
         if self.job.job_type == JobType.UNEMPLOYED:
             self.job.get_new_job(self, priority)
         self.observe_environment()
-        if self.turn > 10 and self.home.center_point is None:
+        if self.turn > 10 and hasattr(self.home,"center_point") and self.home.center_point is None:
             self.place_house()

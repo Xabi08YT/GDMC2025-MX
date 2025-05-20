@@ -152,7 +152,7 @@ class AbstractionLayer:
         mcx = x + self.buildArea.begin[0]
         z = meta["z"] - blocks.shape[1] // 2
         mcz = z + self.buildArea.begin[2]
-        mcy = args[2][x:x+blocks.shape[0],z:z+blocks.shape[1]].min().item()
+        mcy = args[2][x:x+blocks.shape[0],z:z+blocks.shape[1]].min().item() - 1
 
         gdpcblocks = []
         print(mcx,mcy,mcz)

@@ -5,14 +5,13 @@ import random
 class Firecamp(Building):
     def __init__(self, simulation):
         self.simulation = simulation
-        super().__init__(self.get_best_location(), None, "Firecamp", width=5, height=2, depth=5)
+        super().__init__(None, None, "Firecamp", width=5, height=2, depth=5)
+        self.place(self.get_best_location(),self.simulation)
 
     def get_coords(self) -> ivec3:
         return self.center_point
 
-    def get_best_location(self) -> tuple[int,int,int]:
-        begin_x, begin_y, begin_z = self.simulation.abl.buildArea.begin
-        end_x, end_y, end_z = self.simulation.abl.buildArea.end
+    def get_best_location(self) -> tuple[int,int]:
 
         best_spot = None
         best_score = float('-inf')
@@ -32,10 +31,7 @@ class Firecamp(Building):
 
             y = height_map[x][z]
 
-            score = 0
-
-            if self.simulation.water[x][z]:
-                score -= .50
+            score = - self.simulation.water[x-self.width//2-1:x+self.width//2+1,z-self.depth//2-1:z+self.depth//2+1].sum()
 
             flatness = 0
             neighbors = 0
@@ -64,10 +60,9 @@ class Firecamp(Building):
         if best_spot is None:
             center_x = (min_x + max_x - 1) // 2
             center_z = (min_z + max_z - 1) // 2
-            center_y = height_map[center_x][center_z]
-            best_spot = (center_x, center_y, center_z)
+            best_spot = (center_x, center_z)
 
-        return best_spot[0], best_spot[1].item(), best_spot[2]
+        return best_spot[0], best_spot[1]
 
     def build(self):
         super().add_block_to_matrix(3, 1, 3, self.simulation.params["villageCenterBlock"])
@@ -77,8 +72,8 @@ class Firecamp(Building):
                 rel_x, rel_z = 3 + dx, 3 + dz
                 if rel_x == 3 and rel_z == 3:
                     continue
-                abs_x, abs_z = self.center_point[0] + dx, self.center_point[2] + dz
-                y = self.simulation.abl.get_height_map_excluding("air")[abs_x][abs_z].item() - (self.center_point[1] + 1)
+                abs_x, abs_z = self.center_point[0] + dx, self.center_point[1].item() + dz
+                y = 0
                 super().add_block_to_matrix(rel_x, y, rel_z, plaza_floor)
                 if random.randint(0, 10) < 5 and False:
                     extra_dx, extra_dz = random.choice([-1, 1]), random.choice([-1, 1])

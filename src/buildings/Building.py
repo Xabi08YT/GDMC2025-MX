@@ -5,6 +5,7 @@ from utils.math_methods import distance_xz
 import json
 
 class Building:
+
     BUILDINGS = []
 
     def __init__(self, center_point: tuple[int, int] | None, agent, name: str, orientation: str = "south",
@@ -26,7 +27,7 @@ class Building:
         self.name = name
         self.folder = folder
         self.matrix = np.zeros((self.width, self.depth, self.height), dtype=object)
-        Building.BUILDINGS.append(self)
+        self.BUILDINGS.append(self)
 
     def built(self):
         self.built = True
@@ -71,40 +72,33 @@ class Building:
 
         return entrance_x, entrance_z
 
-    def place(self,center_point: tuple[int, int]):
+    def place(self,center_point: tuple[int, int], sim = None):
         self.center_point = center_point
-        self.agent.simulation.buildings[
-            center_point[0] - self.width//2 - 1:center_point[0] + self.width//2 +1,
-            center_point[0] - self.width//2 - 1:center_point[0] + self.width//2 +1
-        ] = True
+        if hasattr(self,"agent") and self.agent is not None:
+            self.agent.simulation.buildings[
+                center_point[0] - self.width//2 - 1:center_point[0] + self.width//2 +1,
+                center_point[0] - self.width//2 - 1:center_point[0] + self.width//2 +1
+            ] = True
+        else:
+            sim.buildings[
+                center_point[0] - self.width // 2 - 1:center_point[0] + self.width // 2 + 1,
+                center_point[0] - self.width // 2 - 1:center_point[0] + self.width // 2 + 1
+            ] = True
         return
 
     def __str__(self):
         return f"{self.name}"
 
-    def detect_trespassing(self, x, z):
-        if self.center_point is None:
-            return False
-        return distance_xz(self.center_point[0], self.center_point[1], x, z) <= self.radius * 2
-
-    @staticmethod
-    def detect_all_trespassing(x, z):
-        trespassing = []
-        for b in Building.BUILDINGS:
-            if b.detect_trespassing(x, z):
-                trespassing.append(b)
-        return trespassing
-
     def add_block_to_matrix(self, x: int, y: int, z: int, block: str):
         self.matrix[x][z][y] = block
 
     def matrix_to_files(self):
-        if self.center_point is None:
+        if not hasattr(self, "center_point") or self.center_point is None:
             return
         data = {
             "name": self.name,
             "x": self.center_point[0],
-            "z": self.center_point[2],
+            "z": self.center_point[1].item(),
             "built": self.built
         }
         folder_path = os.path.join(self.folder, self.name)
