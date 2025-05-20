@@ -8,7 +8,7 @@ class Building:
     BUILDINGS = []
 
     def __init__(self, center_point: tuple[int, int] | None, agent, name: str, orientation: str = "south",
-                 built: bool = False, folder="generated"):
+                 built: bool = False, folder="generated", width = 5, height = 5, depth = 5):
         self.built = built
         self.orientation = orientation
         self.center_point = center_point
@@ -20,9 +20,9 @@ class Building:
         self.agent = agent
         self.name = name
         self.folder = folder
-        self.width = 5
-        self.height = 5
-        self.depth = 5
+        self.width = width
+        self.height = height
+        self.depth = depth
         self.matrix = np.array((self.height, self.width, self.depth), dtype=str)
         Building.BUILDINGS.append(self)
 
@@ -104,4 +104,4 @@ class Building:
             json.dump(data, f)
         matrix_file = os.path.join(folder_path, "matrix")
         with open(matrix_file, "w") as f:
-            self.matrix.dump(matrix_file)
+            self.matrix.dump(f)

@@ -5,7 +5,7 @@ import random
 class Firecamp(Building):
     def __init__(self, simulation):
         self.simulation = simulation
-        super().__init__(self.get_best_location(), None, "Firecamp")
+        super().__init__(self.get_best_location(), None, "Firecamp", width=5, height=5, depth=2)
 
     def get_coords(self) -> ivec3:
         return self.center_point
@@ -64,12 +64,13 @@ class Firecamp(Building):
         return ivec3(best_spot[0], best_spot[1], best_spot[2])
 
     def build(self):
-        super().add_block_to_matrix(self.center_point[0], self.center_point[1]+1, self.center_point[1], self.simulation.params["villageCenterBlock"])
+        matrix_center_point = (3, 1, 3)
+        super().add_block_to_matrix(matrix_center_point[0], matrix_center_point[1], matrix_center_point[2], self.simulation.params["villageCenterBlock"])
         plaza_floor = self.simulation.params["centerPlazaFloor"]
         for dx in range(-1, 2):
             for dz in range(-1, 2):
-                x, z = self.center_point[0] + dx, self.center_point[1] + dz
-                if x == self.center_point[0] and z == self.center_point[1]:
+                x, z = matrix_center_point[0] + dx, matrix_center_point[2] + dz
+                if x == matrix_center_point[0] and z == matrix_center_point[2]:
                     continue
                 super().add_block_to_matrix(x, self.simulation.abl.get_height_map_excluding("air")[x][z], z, plaza_floor)
                 if random.randint(0, 10) < 5:
