@@ -24,7 +24,7 @@ class Building:
         self.width = width
         self.height = height
         self.depth = depth
-        self.matrix = np.array((self.height, self.width, self.depth), dtype=str)
+        self.matrix = np.zeros((self.width, self.depth, self.height), dtype=str)
         Building.BUILDINGS.append(self)
 
     def built(self):
