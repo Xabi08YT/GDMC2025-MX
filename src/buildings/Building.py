@@ -13,7 +13,7 @@ class Building:
         self.orientation = orientation
         self.center_point = center_point
         self.radius = 10
-        if agent is not None:
+        if agent is not None and center_point is not None:
             self.lowest_y = agent.simulation.heightmap[center_point[0] - self.radius:center_point[0] + self.radius,
                             center_point[1] - self.radius:center_point[1] + self.radius].min().item() - 1
             self.highest_y = agent.simulation.heightmap[center_point[0] - self.radius:center_point[0] + self.radius,
