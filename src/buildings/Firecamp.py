@@ -10,7 +10,7 @@ class Firecamp(Building):
     def get_coords(self) -> ivec3:
         return self.center_point
 
-    def get_best_location(self) -> ivec3:
+    def get_best_location(self) -> tuple[int,int,int]:
         begin_x, begin_y, begin_z = self.simulation.abl.buildArea.begin
         end_x, end_y, end_z = self.simulation.abl.buildArea.end
 
@@ -44,7 +44,7 @@ class Firecamp(Building):
                     nx, nz = x + dx, z + dz
                     if min_x <= nx < max_x and min_z <= nz < max_z:
                         ny = height_map[nx][nz]
-                        flatness -= abs(y - ny)
+                        flatness -= abs(y.item() - ny.item())
                         neighbors += 1
 
             if neighbors > 0:
@@ -67,7 +67,7 @@ class Firecamp(Building):
             center_y = height_map[center_x][center_z]
             best_spot = (center_x, center_y, center_z)
 
-        return best_spot[0], best_spot[1], best_spot[2]
+        return best_spot[0], best_spot[1].item(), best_spot[2]
 
     def build(self):
         super().add_block_to_matrix(3, 1, 3, self.simulation.params["villageCenterBlock"])
@@ -78,7 +78,7 @@ class Firecamp(Building):
                 if rel_x == 3 and rel_z == 3:
                     continue
                 abs_x, abs_z = self.center_point[0] + dx, self.center_point[2] + dz
-                y = self.simulation.abl.get_height_map_excluding("air")[abs_x][abs_z] - (self.center_point[1] + 1)
+                y = self.simulation.abl.get_height_map_excluding("air")[abs_x][abs_z].item() - (self.center_point[1] + 1)
                 super().add_block_to_matrix(rel_x, y, rel_z, plaza_floor)
                 if random.randint(0, 10) < 5:
                     extra_dx, extra_dz = random.choice([-1, 1]), random.choice([-1, 1])
