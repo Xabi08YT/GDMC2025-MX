@@ -13,11 +13,12 @@ class Building:
         self.orientation = orientation
         self.center_point = center_point
         self.radius = 10
-        self.lowest_y = agent.simulation.heightmap[center_point[0] - self.radius:center_point[0] + self.radius,
-                        center_point[1] - self.radius:center_point[1] + self.radius].min().item() - 1
-        self.highest_y = agent.simulation.heightmap[center_point[0] - self.radius:center_point[0] + self.radius,
-                         center_point[1] - self.radius:center_point[1] + self.radius].max().item() - 1
-        self.agent = agent
+        if agent is not None:
+            self.lowest_y = agent.simulation.heightmap[center_point[0] - self.radius:center_point[0] + self.radius,
+                            center_point[1] - self.radius:center_point[1] + self.radius].min().item() - 1
+            self.highest_y = agent.simulation.heightmap[center_point[0] - self.radius:center_point[0] + self.radius,
+                             center_point[1] - self.radius:center_point[1] + self.radius].max().item() - 1
+            self.agent = agent
         self.name = name
         self.folder = folder
         self.width = width
