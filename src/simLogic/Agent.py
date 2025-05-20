@@ -9,6 +9,7 @@ from buildings.House import House
 from utils.utils import evaluate_spot
 from utils.ANSIColors import ANSIColors
 
+
 class Agent:
     def __init__(self, sim, x, z, name):
         self.simulation = sim
@@ -122,6 +123,9 @@ class Agent:
         elif self.attributes["health"] < 1 and self.nb_turn_fulfilled >= 3:
             self.attributes["health"] += self.decay_rates["health"]
 
+        if self.attributes["health"] < 0.5 and self.attributes["strength"] > self.base_attributes["strength"]:
+            self.attributes["strength"] -= self.decay_rates["strength"]
+
         self.attributes["social"] -= self.decay_rates["social"]
         self.happiness -= self.happiness_decay
 
@@ -149,7 +153,7 @@ class Agent:
             self.happiness += 0.01
 
     def move(self):
-        (fx, fz) = self.simulation.boids.apply_boids_behavior(self, []) # [] à remplacer par la liste de tous les agents
+        (fx, fz) = self.simulation.boids.apply_boids_behavior(self, self.simulation.agents)
         self.apply_force(fx, fz)
         self.update_position()
 
@@ -159,10 +163,11 @@ class Agent:
         if str((x, z)) in self.scores:
             return
 
-        score = self.simulation.wood[x-self.radius:x+self.radius,z-self.radius:z+self.radius].sum().item()
+        score = self.simulation.wood[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
         score -= self.simulation.water[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
         score -= self.simulation.lava[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
-        score -= self.simulation.buildings[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
+        score -= self.simulation.buildings[x - self.radius:x + self.radius,
+                 z - self.radius:z + self.radius].sum().item()
 
         self.scores[str((x, z))] = score
 
@@ -178,9 +183,9 @@ class Agent:
         if hasattr(self, 'home') and self.home in Building.BUILDINGS:
             Building.BUILDINGS.remove(self.home)
 
-        # Transform best_stop into tuple
-        # self.home = House(lll, self, self.name + "'s House")
-        #self.home.build()
+        spot_tuple = eval(best_spot)
+        self.home = House(spot_tuple, self, self.name + " House")
+        self.home.build()
         print(
             f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE} built a new house!{ANSIColors.ENDC}")
 
@@ -196,5 +201,5 @@ class Agent:
         if self.job.job_type == JobType.UNEMPLOYED:
             self.job.get_new_job(self, priority)
         self.observe_environment()
-        if self.turn > 10 and hasattr(self.home,"center_point") and self.home.center_point is None:
+        if self.turn > 10 and hasattr(self.home, "center_point") and self.home.center_point is None:
             self.place_house()
