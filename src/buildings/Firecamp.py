@@ -31,7 +31,7 @@ class Firecamp(Building):
 
             y = height_map[x][z]
 
-            score = - self.simulation.water[x-self.width//2-1:x+self.width//2+1,z-self.depth//2-1:z+self.depth//2+1].sum()
+            score = - self.simulation.water[x-self.width//2-1:x+self.width//2+1,z-self.depth//2-1:z+self.depth//2+1].sum().item()
 
             flatness = 0
             neighbors = 0
