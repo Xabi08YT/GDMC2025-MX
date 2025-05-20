@@ -95,7 +95,6 @@ class Building:
         data = {
             "name": self.name,
             "x": self.center_point[0],
-            "y": self.center_point[1],
             "z": self.center_point[2],
             "built": self.built
         }
