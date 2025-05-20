@@ -11,20 +11,26 @@ class Firecamp(Building):
         return self.center_point
 
     def get_best_location(self) -> ivec3:
-        min_x, min_y, min_z = self.simulation.abl.buildArea.begin
-        max_x, max_y, max_z = self.simulation.abl.buildArea.end
+        begin_x, begin_y, begin_z = self.simulation.abl.buildArea.begin
+        end_x, end_y, end_z = self.simulation.abl.buildArea.end
 
         best_spot = None
         best_score = float('-inf')
         num_candidates = 15
 
         temp_abl = self.simulation.abl
+        height_map = temp_abl.get_height_map_excluding("air")
+
+        min_x = begin_x - len(height_map[0])
+        max_x = end_x - len(height_map[0])
+        min_z = begin_z - len(height_map[1])
+        max_z = end_z - len(height_map[1])
 
         for _ in range(num_candidates):
             x = random.randint(min_x, max_x - 1)
             z = random.randint(min_z, max_z - 1)
 
-            y = temp_abl.get_height_map_excluding("air")[x][z]
+            y = height_map[x][z]
 
             score = 0
 
@@ -37,7 +43,7 @@ class Firecamp(Building):
                 for dz in range(-2, 3):
                     nx, nz = x + dx, z + dz
                     if min_x <= nx < max_x and min_z <= nz < max_z:
-                        ny = temp_abl.get_height_map_excluding("air")[nx][nz]
+                        ny = height_map[nx][nz]
                         flatness -= abs(y - ny)
                         neighbors += 1
 
@@ -56,12 +62,12 @@ class Firecamp(Building):
                 best_spot = (x, y, z)
 
         if best_spot is None:
-            center_x = (min_x + max_x) // 2
-            center_z = (min_z + max_z) // 2
-            center_y = self.simulation.abl.get_height_map_excluding("air")[center_x][center_z]
+            center_x = (min_x + max_x - 1) // 2
+            center_z = (min_z + max_z - 1) // 2
+            center_y = height_map[center_x][center_z]
             best_spot = (center_x, center_y, center_z)
 
-        return ivec3(best_spot[0], best_spot[1], best_spot[2])
+        return best_spot[0], best_spot[1], best_spot[2]
 
     def build(self):
         matrix_center_point = (3, 1, 3)
