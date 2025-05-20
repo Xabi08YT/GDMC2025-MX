@@ -12,6 +12,7 @@ from random import randint
 from simLogic.Agent import Agent
 from multiprocessing import Pool, cpu_count
 from simLogic.BoidsBehavior import BoidsBehavior
+import numpy as np
 
 class Simulation:
 
@@ -24,6 +25,7 @@ class Simulation:
         self.water = None
         self.lava = None
         self.heightmap = None
+        self.buildings = None
         self.relationships = Relationships()
 
         with open("config/config.json", mode="r") as cfg:
@@ -66,6 +68,7 @@ class Simulation:
         self.abl = AbstractionLayer(ba)
         [self.walkable, self.wood, self.water, self.lava, self.heightmap] = self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv)
 
+        self.buildings = np.zeros(self.heightmap.shape)
         self.show_message("Done. Preparing simulation...")
 
         self.min_x, self.min_z = ba.begin[0], ba.begin[2]

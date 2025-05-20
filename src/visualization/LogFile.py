@@ -30,9 +30,7 @@ class LogFile:
             "energy_decay",
             "health_decay",
             "attributes",
-            "relationships",
             "coord_x",
-            "coord_y",
             "coord_z"
         ])
         self.dictWriter.writeheader()
@@ -61,9 +59,7 @@ class LogFile:
             "energy_decay": agent.decay_rates["energy"],
             "health_decay": agent.decay_rates["health"],
             "attributes": agent.attributes,
-            "relationships": agent.relationships,
             "coord_x": agent.x,
-            "coord_y": agent.y,
             "coord_z": agent.z,
         }
 
@@ -94,9 +90,7 @@ class LogFile:
                     "energy_decay",
                     "health_decay",
                     "attributes",
-                    "relationships",
                     "coord_x",
-                    "coord_y",
                     "coord_z"
                 ])
                 for row in dict_reader:
