@@ -4,7 +4,7 @@ import os
 from simLogic import Agent
 from buildings.JobBuilding import JobBuilding, WorkshopBuilding, FarmBuilding, BlacksmithBuilding, CommunityBuilding
 
-from src.simLogic.Relationships import Relationships
+#from simLogic.Relationships import Relationships
 
 
 class JobCategory(Enum):
@@ -45,7 +45,7 @@ class Job:
         return f"Job: {self.job_type.value}"
 
     def get_new_job(self, agent, priority):
-        relationships = Relationships.get_all_relationships(agent)
+        relationships = {} #Relationships.get_all_relationships(agent)
         if relationships:
             job_counts = {}
             for rel_agent in relationships:

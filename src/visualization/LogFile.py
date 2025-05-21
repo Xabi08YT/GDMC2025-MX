@@ -6,12 +6,11 @@ from time import time
 class LogFile:
 
     def __init__(self, fpath="logs", fname=None):
-        csv.field_size_limit(sys.maxsize)
         try:
             mkdir(fpath)
         except FileExistsError:
             pass
-        self.file = open(path.join(getcwd(), fpath, f"{str(time()).split(".")[0]}.csv"),
+        self.file = open(path.join(getcwd(), fpath, f'{str(time()).split(".")[0]}.csv'),
                          "w+") if fname is None else open(path.join(getcwd(), fpath, fname), "w+")
         self.dictWriter = csv.DictWriter(self.file, fieldnames=[
             "id",

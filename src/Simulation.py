@@ -10,7 +10,6 @@ from gdpc import Editor
 from abstractionLayer.AbstractionLayer import AbstractionLayer
 from random import randint
 from simLogic.Agent import Agent
-from multiprocessing import Pool, cpu_count
 from simLogic.BoidsBehavior import BoidsBehavior
 import numpy as np
 
@@ -82,12 +81,15 @@ class Simulation:
 
         self.show_message("Simulation ready.")
 
-    def run(self, agent):
-        agent.logfile = LogFile(fpath="logs/ongoing", fname=f"{str(agent.id)}.csv")
+    def run(self, agents):
+        #for agent in agents:
+        #    agent.logfile = LogFile(fpath="logs/ongoing", fname=f"{str(agent.id)}.csv")
         for i in range(self.config["nbTurns"]):
-            agent.turn = i
-            agent.tick()
-        agent.logfile.close()
+            for agent in agents:
+                agent.turn = i
+                agent.tick()
+        #for agent in agents:
+        #    agent.logfile.close()
 
     def launch(self):
         self.show_message("Simulation launched. This may take a while to complete.")
@@ -98,12 +100,9 @@ class Simulation:
         firecamp = Firecamp(self)
         firecamp.get_best_location()
         firecamp.build()
-        self.firecamp_coords = firecamp.get_coords()
+        self.show_message(f"{firecamp.get_coords()}")
 
-        p = Pool(cpu_count())
-        p.map_async(self.run, self.agents).get()
-        p.close()
-        p.join()
+        self.run(self.agents)
 
         self.show_message("Simulation ended.")
 
@@ -113,10 +112,10 @@ class Simulation:
         self.abl.push()
         self.show_message("Changes pushed. Beginning cleanup...")
 
-        logfile = LogFile(fname=f"{str(self.creation_time).split(".")[0]}.csv")
+        #logfile = LogFile(fname=f'{str(self.creation_time).split(".")[0]}.csv')
 
-        logfile.merge_logs()
-        logfile.close()
+        #logfile.merge_logs()
+        #logfile.close()
 
         self.clean()
 
