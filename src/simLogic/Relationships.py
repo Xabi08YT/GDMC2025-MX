@@ -1,5 +1,3 @@
-from simLogic.Agent import Agent
-
 class Relationships:
     RELATIONSHIPS = {}
 
@@ -13,7 +11,7 @@ class Relationships:
         return "\n".join(result)
 
     @staticmethod
-    def add_relationship(agent1: Agent, agent2: Agent, initial_value: float = 0.0):
+    def add_relationship(agent1, agent2, initial_value: float = 0.0):
         initial_value = max(-1.0, min(1.0, initial_value))
         
         key = tuple(sorted([agent1.id, agent2.id]))
@@ -25,12 +23,12 @@ class Relationships:
         }
 
     @staticmethod
-    def get_relationship(agent1: Agent, agent2: Agent) -> float:
+    def get_relationship(agent1, agent2) -> float:
         key = tuple(sorted([agent1.id, agent2.id]))
         return Relationships.RELATIONSHIPS.get(key, {})
 
     @staticmethod
-    def get_status_relationship(agent1: Agent, agent2: Agent) -> str:
+    def get_status_relationship(agent1, agent2) -> str:
         key = tuple(sorted([agent1.id, agent2.id]))
         score = Relationships.RELATIONSHIPS.get(key, None)
         if score is None:
@@ -51,7 +49,7 @@ class Relationships:
             return "family"
 
     @staticmethod
-    def update_relationship(agent1: Agent, agent2: Agent, increment: float):
+    def update_relationship(agent1, agent2, increment: float):
         key = tuple(sorted([agent1.id, agent2.id]))
         if key in Relationships.RELATIONSHIPS:
             current = Relationships.RELATIONSHIPS[key]['value']
@@ -59,7 +57,7 @@ class Relationships:
             Relationships.RELATIONSHIPS[key]['value'] = new_value
 
     @staticmethod
-    def get_all_relationships(agent: Agent) -> dict:
+    def get_all_relationships(agent) -> dict:
         agent_relationships = {}
         for key, data in Relationships.RELATIONSHIPS.items():
             if agent.id in key:
@@ -70,7 +68,7 @@ class Relationships:
         return agent_relationships
 
     @staticmethod
-    def remove_relationship(agent1: Agent, agent2: Agent):
+    def remove_relationship(agent1, agent2):
         key = tuple(sorted([agent1.id, agent2.id]))
         if key in Relationships.RELATIONSHIPS:
             del Relationships.RELATIONSHIPS[key]

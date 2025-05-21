@@ -61,7 +61,7 @@ class AbstractionLayer:
 
         if config["GDMC_HTTP_URL"] is None:
             config["GDMC_HTTP_URL"] = "http://localhost:9000"
-        url = f"{config["GDMC_HTTP_URL"]}/heightmap?blocks={blocks}"
+        url = f'{config["GDMC_HTTP_URL"]}/heightmap?blocks={blocks}'
         heightmap = requests.get(url).json()
         return np.array(heightmap, dtype=np.uint)
 

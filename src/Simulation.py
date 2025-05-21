@@ -60,6 +60,8 @@ class Simulation:
         editor.runCommand('tellraw @a [{"text":"GDMC 2025 - MX","color":"aqua"}]')
         if not os.path.exists("generated"):
             os.mkdir("generated")
+        if not os.path.exists("logs"):
+            os.mkdir("logs")
 
         if os.path.exists(".hasfarmer"):
             os.remove(".hasfarmer")
@@ -113,7 +115,7 @@ class Simulation:
         self.abl.push()
         self.show_message("Changes pushed. Beginning cleanup...")
 
-        logfile = LogFile(fname=f"{str(self.creation_time).split(".")[0]}.csv")
+        logfile = LogFile(fname=f'{str(self.creation_time).split(".")[0]}.csv')
 
         logfile.merge_logs()
         logfile.close()
