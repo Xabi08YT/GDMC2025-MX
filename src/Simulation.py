@@ -98,9 +98,7 @@ class Simulation:
             file.close()
 
         firecamp = Firecamp(self)
-        firecamp.get_best_location()
         firecamp.build()
-        self.show_message(f"{firecamp.get_coords()}")
 
         self.run(self.agents)
 

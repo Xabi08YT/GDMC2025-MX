@@ -27,7 +27,7 @@ class AbstractionLayer:
     @staticmethod
     def pull_chunk(args: tuple[interface.Box,int,int, int, int, np.array, dict] ) -> tuple[int,int,np.array,np.array,np.array,np.array]:
         tmp = interface.getBlocks(
-            (args[0].begin[0] + args[1] * 16, args[3], args[0].begin[2] + args[2] * 16),
+            (args[0].begin[0] + args[1] * 16, args[3]-1, args[0].begin[2] + args[2] * 16),
             (16, args[4] - args[3], 16)
         )
 
@@ -155,14 +155,15 @@ class AbstractionLayer:
         mcy = args[2][x:x+blocks.shape[0],z:z+blocks.shape[1]].min().item() - 1
 
         gdpcblocks = []
-        print(mcx,mcy,mcz)
 
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
                 for my in range(blocks.shape[2]):
                     gdpcblocks.append(((mcx+mx, mcy+my,mcz+mz), Block(blocks[mx,mz,my])))
 
-        print(gdpcblocks)
+        for block in gdpcblocks:
+            if getattr(block[1], "id", None) == "minecraft:campfire":
+                print(f"firecamp : {block}")
         interface.placeBlocks(gdpcblocks)
 
 
