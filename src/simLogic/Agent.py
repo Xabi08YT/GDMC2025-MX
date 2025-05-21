@@ -191,13 +191,13 @@ class Agent:
 
     def tick(self):
         if self.dead:
-            #self.logfile.addLine(self, "DEAD")
+            self.logfile.addLine(self, "DEAD")
             return
         self.apply_decay()
         self.fulfill_needs()
         self.move()
         priority = self.determine_priority()
-        #self.logfile.addLine(self, priority)
+        self.logfile.addLine(self, priority)
         if self.job.job_type == JobType.UNEMPLOYED:
             self.job.get_new_job(self, priority)
         self.observe_environment()

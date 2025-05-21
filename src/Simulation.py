@@ -84,14 +84,14 @@ class Simulation:
         self.show_message("Simulation ready.")
 
     def run(self, agents):
-        #for agent in agents:
-        #    agent.logfile = LogFile(fpath="logs/ongoing", fname=f"{str(agent.id)}.csv")
+        for agent in agents:
+            agent.logfile = LogFile(fpath="logs/ongoing", fname=f"{str(agent.id)}.csv")
         for i in range(self.config["nbTurns"]):
             for agent in agents:
                 agent.turn = i
                 agent.tick()
-        #for agent in agents:
-        #    agent.logfile.close()
+        for agent in agents:
+            agent.logfile.close()
 
     def launch(self):
         self.show_message("Simulation launched. This may take a while to complete.")
@@ -112,10 +112,10 @@ class Simulation:
         self.abl.push()
         self.show_message("Changes pushed. Beginning cleanup...")
 
-        #logfile = LogFile(fname=f'{str(self.creation_time).split(".")[0]}.csv')
+        logfile = LogFile(fname=f'{str(self.creation_time).split(".")[0]}.csv')
 
-        #logfile.merge_logs()
-        #logfile.close()
+        logfile.merge_logs()
+        logfile.close()
 
         self.clean()
 

@@ -5,8 +5,8 @@ class BoidsBehavior:
     def __init__(self, 
                  separation_weight: float = 1.5,
                  cohesion_weight: float = 1.0,
-                 separation_radius: float = 2.0,
-                 cohesion_radius: float = 5.0):
+                 separation_radius: float = 250,
+                 cohesion_radius: float = 250):
         self.separation_weight = separation_weight
         self.cohesion_weight = cohesion_weight
         self.separation_radius = separation_radius
