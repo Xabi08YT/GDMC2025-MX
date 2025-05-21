@@ -4,16 +4,12 @@ from utils.math_methods import distance_xz
 class BoidsBehavior:
     def __init__(self, 
                  separation_weight: float = 1.5,
-                 alignment_weight: float = 1.0,
                  cohesion_weight: float = 1.0,
                  separation_radius: float = 2.0,
-                 alignment_radius: float = 5.0,
                  cohesion_radius: float = 5.0):
         self.separation_weight = separation_weight
-        self.alignment_weight = alignment_weight
         self.cohesion_weight = cohesion_weight
         self.separation_radius = separation_radius
-        self.alignment_radius = alignment_radius
         self.cohesion_radius = cohesion_radius
 
     @staticmethod
@@ -39,23 +35,6 @@ class BoidsBehavior:
         return force_x, force_z
 
     @staticmethod
-    def alignment(agent, neighbors) -> tuple[float, float]:
-        if not neighbors:
-            return .0, .0
-            
-        avg_vx = avg_vz = 0
-        for neighbor in neighbors:
-            avg_vx += neighbor.velocity_x
-            avg_vz += neighbor.velocity_z
-            
-        n = len(neighbors)
-        avg_vx /= n
-        avg_vz /= n
-        
-        return (avg_vx - agent.velocity_x,
-                avg_vz - agent.velocity_z)
-
-    @staticmethod
     def cohesion(agent, neighbors) -> tuple[float, float]:
         if not neighbors:
             return .0, .0
@@ -75,19 +54,15 @@ class BoidsBehavior:
     
     def apply_boids_behavior(self, agent, agents):
         separation_neighbors = self.get_neighbors(agent, agents, self.separation_radius)
-        alignment_neighbors = self.get_neighbors(agent, agents, self.alignment_radius)
         cohesion_neighbors = self.get_neighbors(agent, agents, self.cohesion_radius)
         
         separation_force = self.separation(agent, separation_neighbors)
-        alignment_force = self.alignment(agent, alignment_neighbors)
         cohesion_force = self.cohesion(agent, cohesion_neighbors)
         
         return (
             separation_force[0] * self.separation_weight +
-            alignment_force[0] * self.alignment_weight +
             cohesion_force[0] * self.cohesion_weight,
             
             separation_force[1] * self.separation_weight +
-            alignment_force[1] * self.alignment_weight +
             cohesion_force[1] * self.cohesion_weight
         )
