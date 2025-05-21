@@ -72,17 +72,17 @@ class Building:
 
         return entrance_x, entrance_z
 
-    def place(self,center_point: tuple[int, int], sim = None):
+    def place(self,center_point: tuple[int, int, int], sim = None):
         self.center_point = center_point
         if hasattr(self,"agent") and self.agent is not None:
             self.agent.simulation.buildings[
-                center_point[0] - self.width//2 - 1:center_point[0] + self.width//2 +1,
-                center_point[0] - self.width//2 - 1:center_point[0] + self.width//2 +1
+                center_point[0] - self.width//2 - 1:center_point[2] + self.width//2 +1,
+                center_point[0] - self.width//2 - 1:center_point[2] + self.width//2 +1
             ] = True
         else:
             sim.buildings[
-                center_point[0] - self.width // 2 - 1:center_point[0] + self.width // 2 + 1,
-                center_point[0] - self.width // 2 - 1:center_point[0] + self.width // 2 + 1
+                center_point[0] - self.width // 2 - 1:center_point[2] + self.width // 2 + 1,
+                center_point[0] - self.width // 2 - 1:center_point[2] + self.width // 2 + 1
             ] = True
         return
 
@@ -98,7 +98,7 @@ class Building:
         data = {
             "name": self.name,
             "x": self.center_point[0],
-            "z": self.center_point[1].item(),
+            "z": self.center_point[2],
             "built": self.built
         }
         folder_path = os.path.join(self.folder, self.name)

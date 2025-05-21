@@ -6,7 +6,6 @@ from time import time
 class LogFile:
 
     def __init__(self, fpath="logs", fname=None):
-        csv.field_size_limit(sys.maxsize)
         try:
             mkdir(fpath)
         except FileExistsError:

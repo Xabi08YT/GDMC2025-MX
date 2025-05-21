@@ -12,26 +12,38 @@ class Firecamp(Building):
         return self.center_point
 
     def get_best_location(self) -> tuple[int,int]:
-
         best_spot = None
         best_score = float('-inf')
-        num_candidates = 15
+        num_candidates = 50
 
         temp_abl = self.simulation.abl
-        height_map = temp_abl.get_height_map_excluding("air")
+        height_map = temp_abl.get_height_map_excluding("#air,sand,gravel,dirt,clay,grass_block")
 
         min_x = 0
-        max_x = len(height_map[0])
+        max_x = len(height_map)-1
         min_z = 0
-        max_z = len(height_map[1])
+        max_z = len(height_map[0])-1
 
         for _ in range(num_candidates):
             x = random.randint(min_x, max_x - 1)
             z = random.randint(min_z, max_z - 1)
-
             y = height_map[x][z]
 
-            score = - self.simulation.water[x-self.width//2-1:x+self.width//2+1,z-self.depth//2-1:z+self.depth//2+1].sum().item()
+            score = 0
+
+            water_nearby = False
+            for dx in range(-3, 4):
+                for dz in range(-3, 4):
+                    nx, nz = x + dx, z + dz
+                    if min_x <= nx < max_x and min_z <= nz < max_z:
+                        if self.simulation.water[nx][nz]:
+                            water_nearby = True
+                            break
+                if water_nearby:
+                    break
+
+            if water_nearby:
+                continue
 
             flatness = 0
             neighbors = 0
@@ -60,9 +72,10 @@ class Firecamp(Building):
         if best_spot is None:
             center_x = (min_x + max_x - 1) // 2
             center_z = (min_z + max_z - 1) // 2
-            best_spot = (center_x, center_z)
+            center_y = height_map[center_x][center_z].item()
+            best_spot = (center_x, center_y, center_z)
 
-        return best_spot[0], best_spot[1]
+        return best_spot
 
     def build(self):
         super().add_block_to_matrix(3, 1, 3, self.simulation.params["villageCenterBlock"])
