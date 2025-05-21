@@ -59,6 +59,8 @@ class Simulation:
         editor.runCommand('tellraw @a [{"text":"GDMC 2025 - MX","color":"aqua"}]')
         if not os.path.exists("generated"):
             os.mkdir("generated")
+        if not os.path.exists("logs"):
+            os.mkdir("logs")
 
         if os.path.exists(".hasfarmer"):
             os.remove(".hasfarmer")

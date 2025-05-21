@@ -1,10 +1,9 @@
 from enum import Enum
 from random import choice
 import os
-from simLogic import Agent
 from buildings.JobBuilding import JobBuilding, WorkshopBuilding, FarmBuilding, BlacksmithBuilding, CommunityBuilding
 
-#from simLogic.Relationships import Relationships
+from simLogic.Relationships import Relationships
 
 
 class JobCategory(Enum):
@@ -32,7 +31,7 @@ class JobType(Enum):
 
 
 class Job:
-    def __init__(self, agent: Agent, job_type: JobType = JobType.UNEMPLOYED, job_building: JobBuilding = None):
+    def __init__(self, agent, job_type: JobType = JobType.UNEMPLOYED, job_building: JobBuilding = None):
         self.agent: Agent = agent
         self.job_type: JobType = job_type
         self.job_building: JobBuilding = job_building
@@ -45,7 +44,7 @@ class Job:
         return f"Job: {self.job_type.value}"
 
     def get_new_job(self, agent, priority):
-        relationships = {} #Relationships.get_all_relationships(agent)
+        relationships = Relationships.get_all_relationships(agent)
         if relationships:
             job_counts = {}
             for rel_agent in relationships:
