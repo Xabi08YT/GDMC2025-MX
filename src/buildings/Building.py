@@ -15,14 +15,13 @@ class Building:
         self.width = width
         self.height = height
         self.depth = depth
-        if center_point is not None:
-            self.place(center_point)
         self.radius = 10
         if agent is not None and center_point is not None:
-            self.lowest_y = agent.simulation.heightmap[center_point[0] - self.radius:center_point[0] + self.radius,
-                            center_point[1] - self.radius:center_point[1] + self.radius].min().item() - 1
-            self.highest_y = agent.simulation.heightmap[center_point[0] - self.radius:center_point[0] + self.radius,
-                             center_point[1] - self.radius:center_point[1] + self.radius].max().item() - 1
+            self.place(center_point,agent.simulation)
+            self.lowest_y = agent.simulation.heightmap[center_point[0] - width:center_point[0] + width,
+                            center_point[1] - depth:center_point[1] + depth].min().item() - 1
+            self.highest_y = agent.simulation.heightmap[center_point[0] - width:center_point[0] + width,
+                             center_point[1] - depth:center_point[1] + depth].max().item() - 1
             self.agent = agent
         self.name = name
         self.folder = folder
@@ -72,18 +71,12 @@ class Building:
 
         return entrance_x, entrance_z
 
-    def place(self,center_point: tuple[int, int, int], sim = None):
+    def place(self,center_point: tuple[int, int], sim = None):
         self.center_point = center_point
-        if hasattr(self,"agent") and self.agent is not None:
-            self.agent.simulation.buildings[
-                center_point[0] - self.width//2 - 1:center_point[2] + self.width//2 +1,
-                center_point[0] - self.width//2 - 1:center_point[2] + self.width//2 +1
-            ] = True
-        else:
-            sim.buildings[
-                center_point[0] - self.width // 2 - 1:center_point[2] + self.width // 2 + 1,
-                center_point[0] - self.width // 2 - 1:center_point[2] + self.width // 2 + 1
-            ] = True
+        sim.buildings[
+            center_point[0] - self.width // 2 - 1:center_point[1] + self.width // 2 + 1,
+            center_point[0] - self.width // 2 - 1:center_point[1] + self.width // 2 + 1
+        ] = True
         return
 
     def __str__(self):
@@ -98,7 +91,7 @@ class Building:
         data = {
             "name": self.name,
             "x": self.center_point[0],
-            "z": self.center_point[2],
+            "z": self.center_point[1].item(),
             "built": self.built
         }
         folder_path = os.path.join(self.folder, self.name)

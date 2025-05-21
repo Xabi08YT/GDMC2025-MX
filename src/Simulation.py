@@ -72,12 +72,9 @@ class Simulation:
         self.buildings = np.zeros(self.heightmap.shape,dtype=bool)
         self.show_message("Done. Preparing simulation...")
 
-        self.min_x, self.min_z = ba.begin[0], ba.begin[2]
-        self.max_x, self.max_z = ba.end[0] - 1, ba.end[2] - 1
-
         for i in range(self.config["nodeAgents"][0]):
-            x = randint(self.min_x, self.max_x)
-            z = randint(self.min_z, self.max_z)
+            x = randint(0,self.heightmap.shape[0])
+            z = randint(0,self.heightmap.shape[1])
             agent = Agent(self, x=x, z=z, name=random.choice(self.names).strip())
             self.agents.append(agent)
 
@@ -101,6 +98,7 @@ class Simulation:
 
         firecamp = Firecamp(self)
         firecamp.build()
+        self.firecamp_coords = firecamp.center_point
 
         self.run(self.agents)
 

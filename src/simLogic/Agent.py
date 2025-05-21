@@ -174,7 +174,7 @@ class Agent:
         return
 
     def place_house(self):
-        if hasattr(self, 'home') and self.home.center_point is not None and self.home.built:
+        if hasattr(self, 'home') and hasattr(self.home, 'center_point') and self.home.center_point is not None and self.home.built:
             print(f"{self.name} already has a home")
             return
 
@@ -201,5 +201,5 @@ class Agent:
         if self.job.job_type == JobType.UNEMPLOYED:
             self.job.get_new_job(self, priority)
         self.observe_environment()
-        if self.turn > 10 and hasattr(self.home, "center_point") and self.home.center_point is None:
+        if self.turn > 10 and not hasattr(self.home, "center_point"):
             self.place_house()

@@ -128,15 +128,13 @@ class House(Building):
             return
 
         center_x = self.center_point[0]
-        center_y = self.center_point[1]
-        center_z = self.center_point[2]
+        center_z = self.center_point[1]
 
         half_w = self.width // 2
         half_d = self.depth // 2
 
         self.start_x = center_x - half_w
         self.start_z = center_z - half_d
-        self.top_y = center_y + self.height
 
         self.set_orientation_according_to_center(self.agent)
 
@@ -168,7 +166,7 @@ class House(Building):
 
     def setup_door_position(self):
         center_x = self.center_point[0]
-        center_z = self.center_point[2]
+        center_z = self.center_point[1]
 
         if self.orientation == "north":
             self.door_x, self.door_z = center_x, self.start_z
@@ -193,11 +191,11 @@ class House(Building):
 
     def setup_bed_position(self):
         center_x = self.center_point[0]
-        center_y = self.center_point[1]
-        center_z = self.center_point[2]
+        center_z = self.center_point[1]
+        center_y = self.highest_y-self.lowest_y
 
         if self.orientation == "north":
-            self.bed_pos = (center_x, center_y + 1, self.start_z + self.depth - 3)
+            self.bed_pos = (center_x,  + 1, center_y + 1, self.start_z + self.depth - 3)
         elif self.orientation == "south":
             self.bed_pos = (center_x, center_y + 1, self.start_z + 2)
         elif self.orientation == "east":
@@ -389,7 +387,7 @@ class House(Building):
         if progress_ratio > 0.3:
             for dy in range(roof_height):
                 overhang = roof_height - dy - 1
-                y = self.top_y + dy
+                y = self.height + dy
                 for dx in range(-overhang, self.width + overhang):
                     for dz in range(-overhang, self.depth + overhang):
                         is_west = dx == -overhang
@@ -457,9 +455,9 @@ class House(Building):
         if progress_ratio > 0.99 and random.randint(0, 1) < 0.2:
             chimney_x = self.start_x + self.width - random.randint(1, 3) - 1
             chimney_z = self.start_z + random.randint(1, 3)
-            super().add_block_to_matrix(chimney_x, self.top_y + 1, chimney_z, "bricks")
-            super().add_block_to_matrix(chimney_x, self.top_y + 2, chimney_z, "brick_wall")
-            super().add_block_to_matrix(chimney_x, self.top_y + 3, chimney_z, "flower_pot")
+            super().add_block_to_matrix(chimney_x, self.height + 1, chimney_z, "bricks")
+            super().add_block_to_matrix(chimney_x, self.height + 2, chimney_z, "brick_wall")
+            super().add_block_to_matrix(chimney_x, self.height + 3, chimney_z, "flower_pot")
 
     def build_furniture_progressive(self, progress_ratio):
         center_y = self.center_point[1]
