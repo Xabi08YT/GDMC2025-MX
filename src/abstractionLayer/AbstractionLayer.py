@@ -1,8 +1,10 @@
 from time import time
 
-from gdpc import interface, Editor
+from gdpc import interface, Editor, Block
 from multiprocessing import Pool, cpu_count
 import os, json
+
+from buildings.Building import Building
 from utils.math_methods import same_point
 from utils.ANSIColors import ANSIColors
 import numpy as np
@@ -25,7 +27,7 @@ class AbstractionLayer:
     @staticmethod
     def pull_chunk(args: tuple[interface.Box,int,int, int, int, np.array, dict] ) -> tuple[int,int,np.array,np.array,np.array,np.array]:
         tmp = interface.getBlocks(
-            (args[0].begin[0] + args[1] * 16, args[3], args[0].begin[2] + args[2] * 16),
+            (args[0].begin[0] + args[1] * 16, args[3]-1, args[0].begin[2] + args[2] * 16),
             (16, args[4] - args[3], 16)
         )
 
@@ -59,7 +61,7 @@ class AbstractionLayer:
 
         if config["GDMC_HTTP_URL"] is None:
             config["GDMC_HTTP_URL"] = "http://localhost:9000"
-        url = f"{config["GDMC_HTTP_URL"]}/heightmap?blocks={blocks}"
+        url = f'{config["GDMC_HTTP_URL"]}/heightmap?blocks={blocks}'
         heightmap = requests.get(url).json()
         return np.array(heightmap, dtype=np.uint)
 
@@ -76,9 +78,9 @@ class AbstractionLayer:
                 with open(os.path.join(os.getcwd(), "data", "areaData.json"), "r") as f:
                     data = json.load(f)
                     f.close()
-                if same_point(self.buildArea.begin, data["begin"]) and same_point(self.buildArea.end, data["end"] and os.path.exists("data/walkableMatrix") and os.path.exists("data/waterMatrix") and os.path.exists("data/lavaMatrix") and os.path.exists("data/woodMatrix")):
+                if same_point(self.buildArea.begin, data["begin"]) and same_point(self.buildArea.end, data["end"]) and os.path.exists("data/walkableMatrix") and os.path.exists("data/waterMatrix") and os.path.exists("data/lavaMatrix") and os.path.exists("data/woodMatrix"):
                     print(f"{ANSIColors.OKCYAN}[NOTE] Same area, skipping world pulling... If you want to pull it again, remove the folder or add the -fp argument to the launch command.{ANSIColors.ENDC}")
-                    return
+                    return [np.load("data/walkableMatrix",allow_pickle=True), np.load("data/woodMatrix",allow_pickle=True), np.load("data/waterMatrix",allow_pickle=True), np.load("data/lavaMatrix",allow_pickle=True), self.get_height_map_excluding("air&#leaves")]
                 print(f"{ANSIColors.WARNING}[WARN] Some files appears to be missing. Initiating pull... {ANSIColors.ENDC}")
             except json.JSONDecodeError:
                 print(f"{ANSIColors.WARNING}[WARN] Invalid cache JSON, resuming pulling...{ANSIColors.ENDC}")
@@ -138,8 +140,41 @@ class AbstractionLayer:
         print("[INFO] Minecraft world pulled in {:.2f} seconds.".format(end - start))
         return [walkable, wood, water, lava, heightmap]
 
+    def push_building(self,args):
+        if not os.path.isdir(os.path.join(args[0],args[1])):
+            return
+
+        meta = json.load(open(os.path.join(args[0],args[1],"metadata.json")))
+        blocks = np.load(os.path.join(args[0],args[1],"matrix"), allow_pickle=True)
+
+
+        x = meta["x"] - blocks.shape[0] // 2
+        mcx = x + self.buildArea.begin[0]
+        z = meta["z"] - blocks.shape[1] // 2
+        mcz = z + self.buildArea.begin[2]
+        mcy = args[2][x:x+blocks.shape[0],z:z+blocks.shape[1]].min().item() - 1
+
+        gdpcblocks = []
+
+        for mx in range(blocks.shape[0]):
+            for mz in range(blocks.shape[1]):
+                for my in range(blocks.shape[2]):
+                    gdpcblocks.append(((mcx+mx, mcy+my,mcz+mz), Block(blocks[mx,mz,my])))
+
+        for block in gdpcblocks:
+            if getattr(block[1], "id", None) == "minecraft:campfire":
+                print(f"firecamp : {block}")
+        interface.placeBlocks(gdpcblocks)
+
+
     def push(self, folder="generated"):
-        pass
+        for building in Building.BUILDINGS:
+            building.matrix_to_files()
+        p = Pool(cpu_count())
+        hmap = self.get_height_map_excluding("air&#leaves")
+        p.map_async(self.push_building, [(folder,target, hmap) for target in os.listdir(folder)]).get()
+        p.close()
+        p.join()
 
     @staticmethod
     def get_abstraction_layer_instance():

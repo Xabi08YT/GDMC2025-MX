@@ -2,15 +2,16 @@ import random
 import uuid
 import math
 from gdpc.vector_tools import ivec3
-from Job import JobType, Job
+from simLogic.Job import JobType, Job
 import os
-from src.buildings.Building import Building
-from src.buildings.House import House
-from src.utils.utils import evaluate_spot
-from src.utils.ANSIColors import ANSIColors
+from buildings.Building import Building
+from buildings.House import House
+from utils.utils import evaluate_spot
+from utils.ANSIColors import ANSIColors
+
 
 class Agent:
-    def __init__(self, sim, x, y, z, name):
+    def __init__(self, sim, x, z, name):
         self.simulation = sim
         self.dead = False
         self.base_attributes = {
@@ -50,7 +51,6 @@ class Agent:
         self.id = str(uuid.uuid4())
         self.name = name
         self.x = x
-        self.y = y
         self.z = z
         self.velocity_x = 0
         self.velocity_z = 0
@@ -64,13 +64,11 @@ class Agent:
         self.nb_turn_sleepy = 0
         self.nb_turn_fulfilled = 0
         self.logfile = None
-        self.observations = {
-            "terrain": {"wood": [], "water": [], "lava": []},
-            "structures": [],
-        }
+        self.scores = {}
+        self.radius = self.simulation.config["observationRange"]
 
     def get_position(self):
-        return self.x, self.y, self.z
+        return self.x, self.z
 
     def get_velocity(self):
         return self.velocity_x, self.velocity_z
@@ -125,6 +123,9 @@ class Agent:
         elif self.attributes["health"] < 1 and self.nb_turn_fulfilled >= 3:
             self.attributes["health"] += self.decay_rates["health"]
 
+        if self.attributes["health"] < 0.5 and self.attributes["strength"] > self.base_attributes["strength"]:
+            self.attributes["strength"] -= self.decay_rates["strength"]
+
         self.attributes["social"] -= self.decay_rates["social"]
         self.happiness -= self.happiness_decay
 
@@ -152,27 +153,23 @@ class Agent:
             self.happiness += 0.01
 
     def move(self):
-        (fx, fz) = self.simulation.boids.apply_boids_behavior(self, []) # [] à remplacer par la liste de tous les agents
+        (fx, fz) = self.simulation.boids.apply_boids_behavior(self, self.simulation.agents)
         self.apply_force(fx, fz)
         self.update_position()
 
     def observe_environment(self):
-        x, y, z = int(self.x), int(self.y), int(self.z)
+        x, z = int(self.x), int(self.z)
 
-        chunk = self.simulation.abl.get_chunk(x, z)
-        trespassing = Building.detect_all_trespassing(self.x, self.z)
-        self.observations["structures"] = list(dict.fromkeys(self.observations["structures"] + trespassing))
+        if str((x, z)) in self.scores:
+            return
 
-        interesting_blocks_config = [e for i in self.simulation.params["interestingTerrainChars"] for e in
-                                     self.simulation.params[i]]
-        for coord, block in chunk.chunk.items():
-            if block.id in interesting_blocks_config:
-                if block.id in self.simulation.params["wood"]:
-                    self.observations["terrain"]["wood"].append(coord)
-                elif block.id in self.simulation.params["water"]:
-                    self.observations["terrain"]["water"].append(coord)
-                elif block.id in self.simulation.params["lava"]:
-                    self.observations["terrain"]["lava"].append(coord)
+        score = self.simulation.wood[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
+        score -= self.simulation.water[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
+        score -= self.simulation.lava[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
+        score -= self.simulation.buildings[x - self.radius:x + self.radius,
+                 z - self.radius:z + self.radius].sum().item()
+
+        self.scores[str((x, z))] = score
 
         return
 
@@ -181,30 +178,13 @@ class Agent:
             print(f"{self.name} already has a home")
             return
 
-        num_spots = 10
-        best_spot = None
-        best_score = float('-inf')
-
-        for _ in range(num_spots):
-            ba = self.simulation.abl.getBuildArea()
-            min_x, min_z = ba.begin[0], ba.begin[2]
-            max_x, max_z = ba.end[0] - 1, ba.end[2] - 1
-            test_x = random.randint(min_x, max_x)
-            test_z = random.randint(min_z, max_z)
-
-            score = evaluate_spot(self, int(test_x), int(test_z))
-
-            if score > best_score:
-                best_score = score
-                best_spot = (test_x, test_z)
-
-        chunk = self.simulation.abl.get_chunk(int(best_spot[0]), int(best_spot[1]))
-        y = chunk.getGroundHeight(int(best_spot[0]), int(best_spot[1]))
+        best_spot = max(self.scores, key=self.scores.get)
 
         if hasattr(self, 'home') and self.home in Building.BUILDINGS:
             Building.BUILDINGS.remove(self.home)
 
-        self.home = House(ivec3(int(best_spot[0]), y, int(best_spot[1])), self, self.name + "'s House")
+        spot_tuple = eval(best_spot)
+        self.home = House(spot_tuple, self, self.name + " House")
         self.home.build()
         print(
             f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE} built a new house!{ANSIColors.ENDC}")
@@ -221,5 +201,5 @@ class Agent:
         if self.job.job_type == JobType.UNEMPLOYED:
             self.job.get_new_job(self, priority)
         self.observe_environment()
-        if self.turn > 10 and self.home.center_point is None:
+        if self.turn > 10 and hasattr(self.home, "center_point") and self.home.center_point is None:
             self.place_house()

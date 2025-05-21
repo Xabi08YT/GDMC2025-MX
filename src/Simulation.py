@@ -1,5 +1,6 @@
 import json, os, sys
 import random
+from shutil import rmtree
 from time import time
 from buildings.Firecamp import Firecamp
 from simLogic.Relationships import Relationships
@@ -9,8 +10,8 @@ from gdpc import Editor
 from abstractionLayer.AbstractionLayer import AbstractionLayer
 from random import randint
 from simLogic.Agent import Agent
-from multiprocessing import Pool, cpu_count
 from simLogic.BoidsBehavior import BoidsBehavior
+import numpy as np
 
 class Simulation:
 
@@ -23,12 +24,8 @@ class Simulation:
         self.water = None
         self.lava = None
         self.heightmap = None
+        self.buildings = None
         self.relationships = Relationships()
-        self.walkable = None
-        self.wood = None
-        self.water = None
-        self.lava = None
-        self.heightmap = None
 
         with open("config/config.json", mode="r") as cfg:
             self.config = json.load(cfg)
@@ -62,6 +59,8 @@ class Simulation:
         editor.runCommand('tellraw @a [{"text":"GDMC 2025 - MX","color":"aqua"}]')
         if not os.path.exists("generated"):
             os.mkdir("generated")
+        if not os.path.exists("logs"):
+            os.mkdir("logs")
 
         if os.path.exists(".hasfarmer"):
             os.remove(".hasfarmer")
@@ -70,27 +69,29 @@ class Simulation:
         self.abl = AbstractionLayer(ba)
         [self.walkable, self.wood, self.water, self.lava, self.heightmap] = self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv)
 
+        self.buildings = np.zeros(self.heightmap.shape,dtype=bool)
         self.show_message("Done. Preparing simulation...")
 
         self.min_x, self.min_z = ba.begin[0], ba.begin[2]
         self.max_x, self.max_z = ba.end[0] - 1, ba.end[2] - 1
 
-        """for i in range(self.config["nodeAgents"][0]):
+        for i in range(self.config["nodeAgents"][0]):
             x = randint(self.min_x, self.max_x)
             z = randint(self.min_z, self.max_z)
-            c = self.abl.get_chunk(x, z)
-            y = c.getGroundHeight(x, z)
-            agent = Agent(self, x=x, y=y, z=z, name=self.names.pop(self.names.index(random.choice(self.names).strip())))
+            agent = Agent(self, x=x, z=z, name=random.choice(self.names).strip())
             self.agents.append(agent)
 
-        self.show_message("Simulation ready.")"""
+        self.show_message("Simulation ready.")
 
-    def run(self, agent):
-        agent.logfile = LogFile(fpath="logs/ongoing", fname=f"{str(agent.id)}.csv")
+    def run(self, agents):
+        for agent in agents:
+            agent.logfile = LogFile(fpath="logs/ongoing", fname=f"{str(agent.id)}.csv")
         for i in range(self.config["nbTurns"]):
-            agent.turn = i
-            agent.tick()
-        agent.logfile.close()
+            for agent in agents:
+                agent.turn = i
+                agent.tick()
+        for agent in agents:
+            agent.logfile.close()
 
     def launch(self):
         self.show_message("Simulation launched. This may take a while to complete.")
@@ -99,21 +100,9 @@ class Simulation:
             file.close()
 
         firecamp = Firecamp(self)
-        firecamp.get_best_location()
         firecamp.build()
-        self.firecamp_coords = firecamp.get_coords()
 
-        editor = Editor(buffering=True)
-        editor.runCommand(
-            f'tellraw @a [{{"text":"GDMC","color":"aqua"}},{{"text":" - Center of the village: ","color":"white"}},{{"text":"({firecamp.center_point.x}, {firecamp.center_point.y}, {firecamp.center_point.z})","color":"yellow","clickEvent":{{"action":"run_command","value":"/tp @s {firecamp.center_point.x} {firecamp.center_point.y} {firecamp.center_point.z}"}},"hoverEvent":{{"action":"show_text","value":"Click to teleport"}}}}]')
-
-        print(
-            f"{ANSIColors.OKBLUE}[SIMULATION INFO] Firecamp has been placed at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.firecamp_coords[0], self.firecamp_coords[1], self.firecamp_coords[2]}{ANSIColors.ENDC}")
-
-        p = Pool(cpu_count())
-        p.map_async(self.run, self.agents).get()
-        p.close()
-        p.join()
+        self.run(self.agents)
 
         self.show_message("Simulation ended.")
 
@@ -123,7 +112,7 @@ class Simulation:
         self.abl.push()
         self.show_message("Changes pushed. Beginning cleanup...")
 
-        logfile = LogFile(fname=f"{str(self.creation_time).split(".")[0]}.csv")
+        logfile = LogFile(fname=f'{str(self.creation_time).split(".")[0]}.csv')
 
         logfile.merge_logs()
         logfile.close()
@@ -148,8 +137,8 @@ class Simulation:
         if os.path.exists(".hasfarmer"):
             os.remove(".hasfarmer")
 
-        for file in os.listdir("generated"):
-            os.remove(f"generated/{file}")
+        for folder in os.listdir("generated"):
+            rmtree(f"generated/{folder}")
 
         if os.path.exists(".notCleaned"):
             os.remove(".notCleaned")

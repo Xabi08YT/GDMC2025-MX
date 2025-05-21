@@ -6,12 +6,11 @@ from time import time
 class LogFile:
 
     def __init__(self, fpath="logs", fname=None):
-        csv.field_size_limit(sys.maxsize)
         try:
             mkdir(fpath)
         except FileExistsError:
             pass
-        self.file = open(path.join(getcwd(), fpath, f"{str(time()).split(".")[0]}.csv"),
+        self.file = open(path.join(getcwd(), fpath, f'{str(time()).split(".")[0]}.csv'),
                          "w+") if fname is None else open(path.join(getcwd(), fpath, fname), "w+")
         self.dictWriter = csv.DictWriter(self.file, fieldnames=[
             "id",
@@ -30,9 +29,7 @@ class LogFile:
             "energy_decay",
             "health_decay",
             "attributes",
-            "relationships",
             "coord_x",
-            "coord_y",
             "coord_z"
         ])
         self.dictWriter.writeheader()
@@ -61,9 +58,7 @@ class LogFile:
             "energy_decay": agent.decay_rates["energy"],
             "health_decay": agent.decay_rates["health"],
             "attributes": agent.attributes,
-            "relationships": agent.relationships,
             "coord_x": agent.x,
-            "coord_y": agent.y,
             "coord_z": agent.z,
         }
 
@@ -94,9 +89,7 @@ class LogFile:
                     "energy_decay",
                     "health_decay",
                     "attributes",
-                    "relationships",
                     "coord_x",
-                    "coord_y",
                     "coord_z"
                 ])
                 for row in dict_reader:
