@@ -42,7 +42,6 @@ class BoidsBehavior:
         center_x = center_y = center_z = 0
         for neighbor in neighbors:
             center_x += neighbor.x
-            center_y += neighbor.y
             center_z += neighbor.z
             
         n = len(neighbors)
