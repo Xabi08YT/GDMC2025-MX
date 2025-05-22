@@ -2,3 +2,6 @@ gdpc==8.1.0
 numpy==2.2.5
 pyglm==2.8.2
 matplotlib==3.10.3
+PyQt6==6.9.0
+pandas==2.2.3
+flask==3.1.0
