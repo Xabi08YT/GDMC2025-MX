@@ -39,8 +39,8 @@ class AbstractionLayer:
         for coord, block in tmp:
             bid = block.id
 
-            x = coord[0] - args[0].begin[0] - args[1] * 16
-            z = coord[2] - args[0].begin[2] - args[2] * 16
+            x = abs(coord[0] - args[0].begin[0]) - args[1] * 16
+            z = abs(coord[2] - args[0].begin[2]) - args[2] * 16
 
             if coord[1] == args[5][x][z]:
                 wood[x, z] = bid in args[6]["wood"]
