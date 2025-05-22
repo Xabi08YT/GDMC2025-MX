@@ -18,10 +18,12 @@ class Building:
         self.radius = 10
         if agent is not None and center_point is not None:
             self.place(center_point,agent.simulation)
-            self.lowest_y = agent.simulation.heightmap[center_point[0] - width:center_point[0] + width,
-                            center_point[1] - depth:center_point[1] + depth].min().item() - 1
-            self.highest_y = agent.simulation.heightmap[center_point[0] - width:center_point[0] + width,
-                             center_point[1] - depth:center_point[1] + depth].max().item() - 1
+            print(self.center_point)
+            print(width,depth,height)
+            self.lowest_y = agent.simulation.heightmap[self.center_point[0] - width:self.center_point[0] + width,
+                            self.center_point[1] - depth:self.center_point[1] + depth].min().item() - 1
+            self.highest_y = agent.simulation.heightmap[self.center_point[0] - width:self.center_point[0] + width,
+                             self.center_point[1] - depth:self.center_point[1] + depth].max().item() - 1
             self.agent = agent
         self.name = name
         self.folder = folder
@@ -72,6 +74,8 @@ class Building:
         return entrance_x, entrance_z
 
     def place(self,center_point: tuple[int, int], sim = None):
+        center_point = (max(center_point[0], self.width), max(center_point[1], sim.abl.buildArea.begin[2]+self.depth))
+        center_point = (min(center_point[0], sim.heightmap.shape[0]-self.width), min(center_point[1], sim.heightmap.shape[1]-self.depth))
         self.center_point = center_point
         sim.buildings[
             center_point[0] - self.width // 2 - 1:center_point[1] + self.width // 2 + 1,
@@ -88,10 +92,14 @@ class Building:
     def matrix_to_files(self):
         if not hasattr(self, "center_point") or self.center_point is None:
             return
+        if type(self.center_point[0]) is not int:
+            self.center_point = self.center_point[0].item(),self.center_point[1]
+        if type(self.center_point[1]) is not int:
+            self.center_point = self.center_point[0],self.center_point[1].item()
         data = {
             "name": self.name,
             "x": self.center_point[0],
-            "z": self.center_point[1].item(),
+            "z": self.center_point[1],
             "built": self.built
         }
         folder_path = os.path.join(self.folder, self.name)
