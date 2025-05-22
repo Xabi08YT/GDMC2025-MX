@@ -12,6 +12,7 @@ from random import randint
 from simLogic.Agent import Agent
 from simLogic.BoidsBehavior import BoidsBehavior
 import numpy as np
+from matplotlib import pyplot as plt
 
 class Simulation:
 
@@ -67,7 +68,14 @@ class Simulation:
         self.show_message("Pulling minecraft map... This may take several minutes...")
         ba = editor.getBuildArea()
         self.abl = AbstractionLayer(ba)
-        [self.walkable, self.wood, self.water, self.lava, self.heightmap] = self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv, "--showmatrix" in sys.argv or "-sm" in sys.argv or "-s" in sys.argv)
+        [self.walkable, self.wood, self.water, self.lava, self.heightmap] = self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv)
+
+        if "--showmatrix" in sys.argv or "-sm" in sys.argv or "-s" in sys.argv:
+            plt.matshow(self.walkable)
+            plt.matshow(self.wood)
+            plt.matshow(self.water)
+            plt.matshow(self.lava)
+            plt.show()
 
         self.buildings = np.zeros(self.heightmap.shape,dtype=bool)
         self.show_message("Done. Preparing simulation...")

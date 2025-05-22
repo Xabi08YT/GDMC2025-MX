@@ -39,8 +39,8 @@ class AbstractionLayer:
         for coord, block in tmp:
             bid = block.id
 
-            x = abs(coord[0] - args[0].begin[0]) - args[1] * 16
-            z = abs(coord[2] - args[0].begin[2]) - args[2] * 16
+            x = coord[0] - (args[0].begin[0] + args[1] * 16)
+            z = coord[2] - (args[0].begin[2] + args[2] * 16)
 
             if coord[1] == args[5][x][z]:
                 wood[x, z] = bid in args[6]["wood"]
@@ -65,7 +65,7 @@ class AbstractionLayer:
         heightmap = requests.get(url).json()
         return np.array(heightmap, dtype=np.uint)
 
-    def pull(self, forceReload:bool = False, show_matrix:bool = False):
+    def pull(self, forceReload:bool = False):
 
         # General setup
         start = time()
@@ -126,13 +126,6 @@ class AbstractionLayer:
         wood = wood[0:size[0], 0:size[2]]
         water = water[0:size[0], 0:size[2]]
         lava = lava[0:size[0], 0:size[2]]
-
-        if show_matrix == True:
-            plt.matshow(walkable)
-            plt.matshow(wood)
-            plt.matshow(water)
-            plt.matshow(lava)
-            plt.show()
 
         # Saving results to cache
         walkable.dump("data/walkableMatrix")
