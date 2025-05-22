@@ -14,24 +14,28 @@ class Firecamp(Building):
     def get_best_location(self) -> tuple[int,int]:
         best_spot = None
         best_score = float('-inf')
-        num_candidates = 50
 
         temp_abl = self.simulation.abl
-        height_map = temp_abl.get_height_map_excluding("#air,sand,gravel,dirt,clay,grass_block")
+        height_map = temp_abl.get_height_map_excluding("#air")
 
-        min_x = 0
-        max_x = len(height_map)-1
-        min_z = 0
-        max_z = len(height_map[0])-1
+        min_x = self.width // 2 + 1
+        max_x = self.simulation.heightmap.shape[0] - self.width//2-1
+        min_z = self.depth // 2 + 1
+        max_z = self.simulation.heightmap.shape[1] - self.depth//2-1
 
-        for _ in range(num_candidates):
+        while best_spot is None:
             x = random.randint(min_x, max_x - 1)
             z = random.randint(min_z, max_z - 1)
-            y = height_map[x][z]
+            y = self.simulation.heightmap[x][z]
 
             score = 0
 
-            water_nearby = False
+            tmp = self.simulation.water[x-self.width//2-1:x+self.width//2+1,z-self.depth//2-1:z+self.depth//2+1]
+            print(tmp)
+            if True in tmp:
+                continue
+
+            """water_nearby = False
             for dx in range(-3, 4):
                 for dz in range(-3, 4):
                     nx, nz = x + dx, z + dz
@@ -43,37 +47,16 @@ class Firecamp(Building):
                     break
 
             if water_nearby:
-                continue
+                continue"""
 
-            flatness = 0
-            neighbors = 0
-            for dx in range(-2, 3):
-                for dz in range(-2, 3):
-                    nx, nz = x + dx, z + dz
-                    if min_x <= nx < max_x and min_z <= nz < max_z:
-                        ny = height_map[nx][nz]
-                        flatness -= abs(y.item() - ny.item())
-                        neighbors += 1
-
-            if neighbors > 0:
-                score += flatness / neighbors * 0.5
-
-            for dx in range(-3, 4):
-                for dz in range(-3, 4):
-                    nx, nz = x + dx, z + dz
-                    if min_x <= nx < max_x and min_z <= nz < max_z:
-                        if self.simulation.lava[nx][nz]:
-                            score -= 100
+            print(x,z)
+            subhmap = self.simulation.heightmap[x-self.width//2+1:x+self.width//2+1,z-self.depth//2+1:z+self.depth//2+1]
+            score -= subhmap.max().item() - subhmap.min().item()
+            print(score)
 
             if score > best_score:
                 best_score = score
                 best_spot = (x, y, z)
-
-        if best_spot is None:
-            center_x = (min_x + max_x - 1) // 2
-            center_z = (min_z + max_z - 1) // 2
-            center_y = height_map[center_x][center_z].item()
-            best_spot = (center_x, center_y, center_z)
 
         return best_spot
 

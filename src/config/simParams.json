@@ -39,13 +39,193 @@
     "minecraft:cherry_log",
     "minecraft:pale_oak_log"
   ],
-  "water": ["minecraft:water","minecraft:flowing_water"],
-  "lava": ["minecraft:lava","minecraft:flowing_lava"],
+  "water": [
+    "minecraft:water",
+    "minecraft:flowing_water"
+  ],
+  "lava": [
+    "minecraft:lava",
+    "minecraft:flowing_lava"
+  ],
   "interestingTerrainChars": [
     "wood",
     "water",
     "lava"
   ],
   "villageCenterBlock": "minecraft:campfire",
-  "centerPlazaFloor": "minecraft:dirt_path"
+  "centerPlazaFloor": "minecraft:dirt_path",
+  "biome": {
+    "plains": {
+      "floor_options": [
+        "oak_planks",
+        "cobblestone",
+        "stone_bricks"
+      ],
+      "wall_options": {
+        "stone": [
+          "stone",
+          "stone_bricks",
+          "cracked_stone_bricks",
+          "mossy_stone_bricks"
+        ],
+        "cobblestone": [
+          "cobblestone",
+          "mossy_cobblestone"
+        ]
+      },
+      "log_options": [
+        "oak_log"
+      ]
+    },
+    "desert": {
+      "floor_options": [
+        "sandstone",
+        "cut_sandstone",
+        "smooth_sandstone"
+      ],
+      "wall_options": {
+        "sandstone": [
+          "sandstone",
+          "cut_sandstone",
+          "smooth_sandstone",
+          "chiseled_sandstone"
+        ],
+        "terracotta": [
+          "terracotta",
+          "white_terracotta",
+          "orange_terracotta"
+        ]
+      },
+      "log_options": [
+        "stripped_acacia_log",
+        "birch_log"
+      ]
+    },
+    "snowy_taiga": {
+      "floor_options": [
+        "spruce_planks",
+        "stone_bricks",
+        "cobblestone"
+      ],
+      "wall_options": {
+        "stone": [
+          "stone",
+          "stone_bricks",
+          "cracked_stone_bricks",
+          "mossy_stone_bricks"
+        ],
+        "cobblestone": [
+          "cobblestone",
+          "mossy_cobblestone"
+        ],
+        "wood": [
+          "spruce_planks"
+        ]
+      },
+      "log_options": [
+        "spruce_log"
+      ],
+      "door_options": [
+        "spruce_door"
+      ]
+    },
+    "taiga": {
+      "floor_options": [
+        "spruce_planks",
+        "stone_bricks",
+        "cobblestone"
+      ],
+      "wall_options": {
+        "stone": [
+          "stone",
+          "stone_bricks",
+          "cracked_stone_bricks",
+          "mossy_stone_bricks"
+        ],
+        "cobblestone": [
+          "cobblestone",
+          "mossy_cobblestone"
+        ],
+        "wood": [
+          "spruce_planks"
+        ]
+      },
+      "log_options": [
+        "spruce_log"
+      ],
+      "door_options": [
+        "spruce_door"
+      ]
+    },
+    "jungle": {
+      "floor_options": [
+        "jungle_planks",
+        "mossy_cobblestone",
+        "mossy_stone_bricks"
+      ],
+      "wall_options": {
+        "stone": [
+          "stone",
+          "mossy_cobblestone",
+          "mossy_stone_bricks"
+        ],
+        "wood": [
+          "jungle_planks"
+        ]
+      },
+      "log_options": [
+        "jungle_log"
+      ],
+      "door_options": [
+        "jungle_door"
+      ]
+    },
+    "savanna": {
+      "floor_options": [
+        "acacia_planks",
+        "terracotta",
+        "smooth_sandstone"
+      ],
+      "wall_options": {
+        "terracotta": [
+          "terracotta",
+          "white_terracotta",
+          "orange_terracotta"
+        ],
+        "wood": [
+          "acacia_planks"
+        ]
+      },
+      "log_options": [
+        "acacia_log"
+      ],
+      "door_options": [
+        "acacia_door"
+      ]
+    },
+    "swamp": {
+      "floor_options": [
+        "dark_oak_planks",
+        "mossy_cobblestone",
+        "mossy_stone_bricks"
+      ],
+      "wall_options": {
+        "stone": [
+          "stone",
+          "mossy_cobblestone",
+          "mossy_stone_bricks"
+        ],
+        "wood": [
+          "dark_oak_planks"
+        ]
+      },
+      "log_options": [
+        "dark_oak_log",
+        "oak_log"
+      ],
+      "door_options": [
+        "dark_oak_door"
+      ]
+    }
+  }
 }

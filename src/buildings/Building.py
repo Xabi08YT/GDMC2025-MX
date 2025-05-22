@@ -41,7 +41,7 @@ class Building:
             return
         village_center = agent.simulation.firecamp_coords
         orientations = {"north": [0, -1], "south": [0, 1], "east": [1, 0], "west": [-1, 0]}
-        score = {k: distance_xz(village_center[0], village_center[1], self.center_point[0] + self.radius * e[0],
+        score = {k: distance_xz(village_center[0], village_center[1].item(), self.center_point[0] + self.radius * e[0],
                                 self.center_point[1] + self.radius * e[1]) for k, e in orientations.items()}
 
         max_distance = max(score.values())
@@ -74,7 +74,7 @@ class Building:
         return entrance_x, entrance_z
 
     def place(self,center_point: tuple[int, int], sim = None):
-        center_point = (max(center_point[0], self.width), max(center_point[1], sim.abl.buildArea.begin[2]+self.depth))
+        center_point = (max(center_point[0], self.width), max(center_point[1], self.depth))
         center_point = (min(center_point[0], sim.heightmap.shape[0]-self.width), min(center_point[1], sim.heightmap.shape[1]-self.depth))
         self.center_point = center_point
         sim.buildings[

@@ -51,66 +51,24 @@ class House(Building):
         if self.center_point is not None:
             self.setup_positions()
 
-    @staticmethod
-    def choose_materials(biome: str = "plains"):
-        floor_options = ["oak_planks", "spruce_planks", "birch_planks", "dark_oak_planks", "acacia_planks"]
-        wall_options = {
-            "stone": ["stone", "stone_bricks", "cracked_stone_bricks", "mossy_stone_bricks"],
-            "cobblestone": ["cobblestone", "mossy_cobblestone"],
-            "bricks": ["bricks", "cracked_bricks"],
-            "wood": ["oak_planks", "spruce_planks", "birch_planks", "dark_oak_planks", "acacia_planks"]
-        }
-        log_options = ["oak_log", "spruce_log", "birch_log", "dark_oak_log", "acacia_log"]
+
+    def choose_materials(self,biome: str = "plains"):
         door_options = ["oak_door", "spruce_door", "birch_door", "dark_oak_door", "acacia_door"]
         bed_options = ["red_bed", "blue_bed", "green_bed", "yellow_bed", "black_bed"]
 
-        if biome == "plains":
-            floor_options = ["oak_planks", "cobblestone", "stone_bricks"]
-            wall_options = {
-                "stone": ["stone", "stone_bricks", "cracked_stone_bricks", "mossy_stone_bricks"],
-                "cobblestone": ["cobblestone", "mossy_cobblestone"]
-            }
-            log_options = ["oak_log"]
-        elif biome == "desert":
-            floor_options = ["sandstone", "cut_sandstone", "smooth_sandstone"]
-            wall_options = {
-                "sandstone": ["sandstone", "cut_sandstone", "smooth_sandstone", "chiseled_sandstone"],
-                "terracotta": ["terracotta", "white_terracotta", "orange_terracotta"]
-            }
-            log_options = ["stripped_acacia_log", "birch_log"]
-        elif biome == "taiga" or biome == "snowy_taiga":
-            floor_options = ["spruce_planks", "stone_bricks", "cobblestone"]
+        if biome in self.agent.simulation.params["biome"].keys():
+            floor_options = self.agent.simulation.params["biome"][biome]["floor_options"]
+            wall_options = self.agent.simulation.params["biome"][biome]["wall_options"]
+            log_options = self.agent.simulation.params["biome"][biome]["log_options"]
+        else:
+            floor_options = ["oak_planks", "spruce_planks", "birch_planks", "dark_oak_planks", "acacia_planks"]
             wall_options = {
                 "stone": ["stone", "stone_bricks", "cracked_stone_bricks", "mossy_stone_bricks"],
                 "cobblestone": ["cobblestone", "mossy_cobblestone"],
-                "wood": ["spruce_planks"]
+                "bricks": ["bricks", "cracked_bricks"],
+                "wood": ["oak_planks", "spruce_planks", "birch_planks", "dark_oak_planks", "acacia_planks"]
             }
-            log_options = ["spruce_log"]
-            door_options = ["spruce_door"]
-        elif biome == "jungle":
-            floor_options = ["jungle_planks", "mossy_cobblestone", "mossy_stone_bricks"]
-            wall_options = {
-                "stone": ["stone", "mossy_cobblestone", "mossy_stone_bricks"],
-                "wood": ["jungle_planks"]
-            }
-            log_options = ["jungle_log"]
-            door_options = ["jungle_door"]
-        elif biome == "savanna":
-            floor_options = ["acacia_planks", "terracotta", "smooth_sandstone"]
-            wall_options = {
-                "terracotta": ["terracotta", "white_terracotta", "orange_terracotta"],
-                "wood": ["acacia_planks"]
-            }
-            log_options = ["acacia_log"]
-            door_options = ["acacia_door"]
-        elif biome == "swamp":
-            floor_options = ["dark_oak_planks", "mossy_cobblestone", "mossy_stone_bricks"]
-            wall_options = {
-                "stone": ["stone", "mossy_cobblestone", "mossy_stone_bricks"],
-                "wood": ["dark_oak_planks"]
-            }
-            log_options = ["dark_oak_log", "oak_log"]
-            door_options = ["dark_oak_door"]
+            log_options = ["oak_log", "spruce_log", "birch_log", "dark_oak_log", "acacia_log"]
 
         wall_type = random.choice(list(wall_options.keys()))
         wall_variants = wall_options[wall_type]

@@ -153,6 +153,7 @@ class AbstractionLayer:
         z = meta["z"] - blocks.shape[1] // 2
         mcz = z + self.buildArea.begin[2]
         mcy = args[2][x:x+blocks.shape[0],z:z+blocks.shape[1]].min().item() - 1
+        print(meta["name"],mcx,mcy,mcz)
 
         gdpcblocks = []
 
@@ -182,6 +183,24 @@ class AbstractionLayer:
 
     def getBuildArea(self) -> interface.Box:
         return self.buildArea
+
+    def get_biome_map(self):
+
+        with open("config/config.json") as f:
+            config = json.load(f)
+            f.close()
+
+        if config["GDMC_HTTP_URL"] is None:
+            config["GDMC_HTTP_URL"] = "http://localhost:9000"
+        x = self.buildArea.begin.x
+        z = self.buildArea.begin.z
+        dx = self.buildArea.end.x - x
+        dz = self.buildArea.end.z - z
+        print(x, z, dx, dz)
+        url = f'{config["GDMC_HTTP_URL"]}/biomes?x={x}&z={z}&dx={dx}&dz={dz}&withinBuildArea=true'
+        biome = requests.get(url).json()
+        index_map = {(entry["x"], entry["z"]): entry["id"] for entry in biome}
+        return index_map
 
 if __name__ == "__main__":
     editor = Editor(buffering=True)
