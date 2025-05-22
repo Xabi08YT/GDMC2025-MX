@@ -67,7 +67,7 @@ class Simulation:
         self.show_message("Pulling minecraft map... This may take several minutes...")
         ba = editor.getBuildArea()
         self.abl = AbstractionLayer(ba)
-        [self.walkable, self.wood, self.water, self.lava, self.heightmap] = self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv)
+        [self.walkable, self.wood, self.water, self.lava, self.heightmap] = self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv, "--showmatrix" in sys.argv or "-sm" in sys.argv or "-s" in sys.argv)
 
         self.buildings = np.zeros(self.heightmap.shape,dtype=bool)
         self.show_message("Done. Preparing simulation...")

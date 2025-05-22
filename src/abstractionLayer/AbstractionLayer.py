@@ -3,7 +3,7 @@ from time import time
 from gdpc import interface, Editor, Block
 from multiprocessing import Pool, cpu_count
 import os, json
-
+import matplotlib.pyplot as plt
 from buildings.Building import Building
 from utils.math_methods import same_point
 from utils.ANSIColors import ANSIColors
@@ -65,7 +65,7 @@ class AbstractionLayer:
         heightmap = requests.get(url).json()
         return np.array(heightmap, dtype=np.uint)
 
-    def pull(self, forceReload:bool = False):
+    def pull(self, forceReload:bool = False, show_matrix:bool = False):
 
         # General setup
         start = time()
@@ -126,6 +126,13 @@ class AbstractionLayer:
         wood = wood[0:size[0], 0:size[2]]
         water = water[0:size[0], 0:size[2]]
         lava = lava[0:size[0], 0:size[2]]
+
+        if show_matrix == True:
+            plt.matshow(walkable)
+            plt.matshow(wood)
+            plt.matshow(water)
+            plt.matshow(lava)
+            plt.show()
 
         # Saving results to cache
         walkable.dump("data/walkableMatrix")
