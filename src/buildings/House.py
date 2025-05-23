@@ -48,6 +48,13 @@ class House(Building):
             "furniture": 2
         }
 
+        self.corners = [
+            [0, 0],
+            [0, self.depth - 1],
+            [self.width - 1, 0],
+            [self.width - 1, self.depth - 1]
+        ]
+
 
     def choose_materials(self,biome: str = "plains"):
         door_options = ["minecraft:oak_door", "minecraft:spruce_door", "minecraft:birch_door", "minecraft:dark_oak_door", "minecraft:acacia_door"]
@@ -129,8 +136,8 @@ class House(Building):
 
         if current_phase == "foundation":
             self.build_foundation_progressive(phase_ratio)
-        #elif current_phase == "walls":
-        #    self.build_walls_progressive(phase_ratio)
+        elif current_phase == "walls":
+            self.build_walls_progressive(phase_ratio)
         #elif current_phase == "roof":
         #    self.build_roof_progressive(phase_ratio)
         #elif current_phase == "furniture":
@@ -163,56 +170,46 @@ class House(Building):
             if progress_ratio > 0.8:
                 log = self.materials["log"]
                 for dy in range(self.height):
-                    super().add_block_to_matrix(0, dy, 0, log)
-                    super().add_block_to_matrix(0, dy, self.depth - 1, log)
-                    super().add_block_to_matrix(self.width - 1, dy, 0, log)
-                    super().add_block_to_matrix(self.width - 1, dy, self.depth - 1, log)
+                    for corner in self.corners:
+                        if dx == corner[0] and dz == corner[1]:
+                            super().add_block_to_matrix(dx, dy, dz, log)
 
     def build_walls_progressive(self, progress_ratio):
-        center_y = self.center_point[1]
-        log = self.materials["log"]
+        y = 1
 
         total_wall_blocks = (2 * (self.width + self.depth - 2)) * (self.height - 1)
         blocks_to_place = int(total_wall_blocks * progress_ratio)
 
-        block_count = 0
+        blocks = 0
         for dy in range(1, self.height):
             for dx in range(self.width):
                 for dz in range(self.depth):
-                    if block_count >= blocks_to_place:
+                    if blocks >= blocks_to_place:
                         return
 
-                    is_edge = dx == 0 or dx == self.width - 1 or dz == 0 or dz == self.depth - 1
-                    is_corner = (dx in (0, self.width - 1)) and (dz in (0, self.depth - 1))
+                    is_corner = [dx, dz] in self.corners
+                    is_wall = (dx == 0 or dx == self.width - 1 or dz == 0 or dz == self.depth - 1)
 
-                    x, z = self.start_x + dx, self.start_z + dz
+                    if not is_corner and is_wall:
+                        wall_block = random.choice(self.materials["wall"])
+                        super().add_block_to_matrix(dx, dy, dz, wall_block)
+                        blocks += 1
 
-                    if x == self.door_x and z == self.door_z and dy <= 2:
-                        continue
+        x, z = self.width // 2, self.depth // 2
+        if self.orientation == "north":
+            door_x, door_z = x + self.width // 2, z
+        elif self.orientation == "south":
+            door_x, door_z = x + self.width // 2, z + self.depth - 1
+        elif self.orientation == "east":
+            door_x, door_z = x + self.width - 1, z + self.depth // 2
+        elif self.orientation == "west":
+            door_x, door_z = x, z + self.depth // 2
+        else:
+            door_x, door_z = x + self.width // 2, z
 
-                    if is_corner:
-                        super().add_block_to_matrix(x, center_y + dy, z, log)
-                        block_count += 1
-                    elif is_edge:
-                        if dy == 1:
-                            wall_block = random.choice(self.materials["wall"])
-                        elif dy == self.height - 1:
-                            wall_block = random.choice(self.materials["wall"])
-                        else:
-                            if random.random() < 0.2:
-                                wall_block = random.choice(self.materials["wall"])
-                            else:
-                                wall_block = self.materials["wall"][0]
-
-                        super().add_block_to_matrix(x, center_y + dy, z, wall_block)
-                        block_count += 1
-
-        if progress_ratio > 0.25:
-            door = self.materials["door"]
-            super().add_block_to_matrix(self.door_x, center_y + 1, self.door_z,
-                                 f"{door};facing={self.bed_facing}")
-            super().add_block_to_matrix(self.door_x, center_y + 2, self.door_z,
-                                 f"{door}[facing={self.bed_facing};half=upper]")
+        #door_block = self.materials["door"] if "door" in self.materials else "minecraft:oak_door"
+        super().add_block_to_matrix(door_x - x, 1, door_z - z, "minecraft:air")
+        super().add_block_to_matrix(door_x - x, 2, door_z - z, "minecraft:air")
 
     def build_roof_progressive(self, progress_ratio):
         roof_material = random.choice(["oak_planks", "spruce_planks"])
