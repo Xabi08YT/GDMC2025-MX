@@ -80,7 +80,7 @@ class Simulation:
         self.buildings = np.zeros(self.heightmap.shape,dtype=bool)
         self.show_message("Done. Preparing simulation...")
 
-        for i in range(self.config["nodeAgents"][0]):
+        for i in range(self.config["nodeAgents"]):
             x = randint(0,self.heightmap.shape[0])
             z = randint(0,self.heightmap.shape[1])
             agent = Agent(self, x=x, z=z, name=random.choice(self.names).strip())

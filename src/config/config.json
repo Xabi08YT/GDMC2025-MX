@@ -1,10 +1,6 @@
 {
-  "distributed": false,
-  "cacheNode": false,
-  "nodeAgents": [22,3,3],
-  "houseGenIP": null,
+  "nodeAgents": 22,
   "GDMC_HTTP_URL": null,
-  "cacheURL": null,
   "radius": 20,
   "nbTurns": 100,
   "observationRange": 5
