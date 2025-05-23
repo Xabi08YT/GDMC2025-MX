@@ -47,17 +47,16 @@ class Firecamp(Building):
         return best_spot
 
     def build(self):
-        super().add_block_to_matrix(3, 1, 3, self.simulation.params["villageCenterBlock"])
         plaza_floor = self.simulation.params["centerPlazaFloor"]
         for dx in range(-1, 2):
             for dz in range(-1, 2):
                 rel_x, rel_z = 3 + dx, 3 + dz
-                if rel_x == 3 and rel_z == 3:
-                    continue
-                abs_x, abs_z = self.center_point[0] + dx, self.center_point[1] + dz
                 y = 0
+                super().add_block_to_matrix(rel_x, y + 1, rel_z, "minecraft:air")
                 super().add_block_to_matrix(rel_x, y, rel_z, plaza_floor)
                 if random.randint(0, 10) < 5:
                     extra_dx, extra_dz = random.choice([-1, 1]), random.choice([-1, 1])
                     super().add_block_to_matrix(min(rel_x + extra_dx,4), y, min(rel_z + extra_dz,4), plaza_floor)
+        super().add_block_to_matrix(3, 1, 3, self.simulation.params["villageCenterBlock"])
+        super().add_block_to_matrix(3, 0, 3, "minecraft:hay_block")
         super().built()
