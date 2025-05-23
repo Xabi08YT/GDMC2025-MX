@@ -1,3 +1,4 @@
+from math import inf
 from random import randint
 
 from buildings.JobBuilding import JobBuilding
