@@ -1,4 +1,9 @@
+from random import randint
+
 from buildings.JobBuilding import JobBuilding
+
+from utils.math_methods import distance_xz
+
 
 class CommunityBuilding(JobBuilding):
     def __init__(self, center_point: tuple[int,int,int] | None, agent, orientation: str = "north"):
@@ -10,3 +15,21 @@ class CommunityBuilding(JobBuilding):
                                         self.agent.simulation.heightmap[self.center_point[0], self.center_point[1]],
                                         self.center_point[2], "minecraft:bookshelf")
         super().check_built()
+
+    def place(self, nbtry, simulation):
+        best_spot = None
+        best_score = - inf
+        t = 0
+
+        while not best_spot is None or t < nbtry:
+            x = randint(0,self.heightmap.shape[0])
+            z = randint(0,self.heightmap.shape[1])
+
+            score = simulation.walkable[x-self.width//2-1:x+self.width//2+1,z-self.depth//2-1,z+self.depth//2+1].sum()
+            score += distance_xz(x,simulation.firecamp_coords[0],z,simulation.firecamp_coords[1])
+
+            if score > best_score:
+                best_score = score
+                best_spot = (x,z)
+
+        return best_spot
