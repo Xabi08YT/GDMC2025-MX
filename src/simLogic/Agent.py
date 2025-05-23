@@ -200,8 +200,14 @@ class Agent:
         self.move()
         priority = self.determine_priority()
         self.logfile.addLine(self, priority)
+
         if self.job.job_type == JobType.UNEMPLOYED:
             self.job.get_new_job(self, priority)
+
         self.observe_environment()
-        if self.attributes["energy"] < 0.3:
+
+        if self.attributes["energy"] < 0.3 and priority == "energy" or priority == "health":
             self.place_house()
+
+        if self.job.job_type != JobType.UNEMPLOYED and (self.job.job_building is None or self.job.job_building.built is False):
+            pass

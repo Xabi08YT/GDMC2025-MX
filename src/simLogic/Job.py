@@ -1,7 +1,11 @@
 from enum import Enum
 from random import choice
 import os
-from buildings.JobBuilding import JobBuilding, WorkshopBuilding, FarmBuilding, BlacksmithBuilding, CommunityBuilding
+from buildings.JobBuilding import JobBuilding
+from buildings.WorkshopBuilding import WorkshopBuilding
+from buildings.FarmBuilding import FarmBuilding
+from buildings.BlacksmithBuilding import BlacksmithBuilding
+from buildings.CommunityBuilding import CommunityBuilding
 
 from simLogic.Relationships import Relationships
 
@@ -32,7 +36,7 @@ class JobType(Enum):
 
 class Job:
     def __init__(self, agent, job_type: JobType = JobType.UNEMPLOYED, job_building: JobBuilding = None):
-        self.agent: Agent = agent
+        self.agent = agent
         self.job_type: JobType = job_type
         self.job_building: JobBuilding = job_building
         self.job_category: JobCategory = None
