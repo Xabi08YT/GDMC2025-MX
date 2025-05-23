@@ -32,7 +32,7 @@ class Agent:
         }
         self.decay_rates = {
             "hunger": random.uniform(0.1, 0.5),
-            "energy": random.uniform(0.1, 0.5),
+            "energy": random.uniform(0.12, 0.5),
             "health": random.uniform(0.1, 0.3),
             "social": random.uniform(-0.4, 0.5),
             "strength": random.uniform(0.1, 0.3),
@@ -151,6 +151,8 @@ class Agent:
         if self.home is not None and self.home.built:
             self.attributes["energy"] = 1
             self.happiness += 0.01
+        else:
+            self.attributes["energy"] += self.decay_rates["energy"] - 0.1
 
     def move(self):
         (fx, fz) = self.simulation.boids.apply_boids_behavior(self, self.simulation.agents)
