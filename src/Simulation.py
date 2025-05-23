@@ -26,6 +26,7 @@ class Simulation:
         self.lava = None
         self.heightmap = None
         self.buildings = None
+        self.hasfarmer = False
         self.relationships = Relationships()
 
         with open("config/config.json", mode="r") as cfg:
@@ -63,8 +64,6 @@ class Simulation:
         if not os.path.exists("logs"):
             os.mkdir("logs")
 
-        if os.path.exists(".hasfarmer"):
-            os.remove(".hasfarmer")
         self.show_message("Pulling minecraft map... This may take several minutes...")
         ba = editor.getBuildArea()
         self.abl = AbstractionLayer(ba)
@@ -141,9 +140,6 @@ class Simulation:
         except FileNotFoundError:
             pass
 
-        if os.path.exists(".hasfarmer"):
-            os.remove(".hasfarmer")
-
         for folder in os.listdir("generated"):
             rmtree(f"generated/{folder}")
 
@@ -154,5 +150,5 @@ class Simulation:
 if __name__ == "__main__":
     sim = Simulation()
     sim.prepare()
-    #sim.launch()
-    #sim.end()
+    sim.launch()
+    sim.end()

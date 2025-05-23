@@ -53,17 +53,12 @@ class Job:
                     job_counts[job] = job_counts.get(job, 0) + 1
             if job_counts:
                 most_common_job = max(job_counts, key=job_counts.get)
-        # use in the future most_common_job to decide which job the agent will likely obtains
-        if priority == "hunger" and not os.path.exists(".hasfarmer"):
+
+        if priority == "hunger" and not agent.simulation.hasfarmer:
             self.job_type = choice([JobType.FARMER, JobType.FISHERMAN, JobType.BUTCHER])
             self.job_category = JobCategory.FARM
             self.job_building = FarmBuilding(None, self.agent)
-            try:
-                with open(file=".hasfarmer", mode="x") as f:
-                    f.close()
-            except FileExistsError:
-                pass
-            return
+            agent.simulation.hasfarmer = True
         if agent.attributes["strength"] > 0.7:
             self.job_type = choice([JobType.ARMORER, JobType.WEAPONSMITH, JobType.TOOLSMITH, JobType.LEATHERWORKER])
             self.job_category = JobCategory.BLACKSMITH

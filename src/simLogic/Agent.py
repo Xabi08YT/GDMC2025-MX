@@ -145,7 +145,7 @@ class Agent:
         return min(tmp.keys(), key=lambda k: tmp[k])
 
     def fulfill_needs(self):
-        if os.path.exists(".hasfarmer"):
+        if self.simulation.hasfarmer:
             self.attributes["hunger"] = 1
             self.happiness += 0.01
         if self.home is not None and self.home.built:
@@ -201,5 +201,5 @@ class Agent:
         if self.job.job_type == JobType.UNEMPLOYED:
             self.job.get_new_job(self, priority)
         self.observe_environment()
-        if self.turn > 10 and not hasattr(self.home, "center_point"):
+        if self.attributes["energy"] < 0.3:
             self.place_house()
