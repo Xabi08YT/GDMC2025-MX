@@ -42,10 +42,8 @@ class AbstractionLayer:
             x = coord[0] - (args[0].begin[0] + args[1] * 16)
             z = coord[2] - (args[0].begin[2] + args[2] * 16)
 
-            if coord[1] == args[5][x][z]:
-                wood[x, z] = bid in args[6]["wood"]
-
             if coord[1] == args[5][x][z] - 1:
+                wood[x, z] = bid in args[6]["wood"]
                 lava[x, z] = bid in args[6]["lava"]
                 water[x, z] = bid in args[6]["water"]
                 walkable[x, z] = not wood[x, z] and not lava[x, z] and not water[x, z]
@@ -95,9 +93,9 @@ class AbstractionLayer:
         os.mkdir(os.path.join(os.getcwd(), "data"))
 
         # Getting height between which we will need to pull to have the hole surface
-        heightmap = self.get_height_map_excluding("air&#leaves")
-        miny = heightmap.astype(int).min()
-        maxy = heightmap.astype(int).max()
+        heightmap = self.get_height_map_excluding("air,#leaves")
+        miny = heightmap.astype(int).min().item()
+        maxy = heightmap.astype(int).max().item()
 
         # Creating arg list for multiprocessing
         chunks_grid = [(self.buildArea, x, y, miny, maxy, heightmap, self.simParams) for x in range(size[0] // 16 + 1) for y in range(size[2] // 16 + 1)]
@@ -172,7 +170,7 @@ class AbstractionLayer:
         for building in Building.BUILDINGS:
             building.matrix_to_files()
         p = Pool(cpu_count())
-        hmap = self.get_height_map_excluding("air&#leaves")
+        hmap = self.get_height_map_excluding("air,#leaves")
         p.map_async(self.push_building, [(folder,target, hmap) for target in os.listdir(folder)]).get()
         p.close()
         p.join()
