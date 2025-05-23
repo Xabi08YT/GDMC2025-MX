@@ -10,6 +10,8 @@ from utils.ANSIColors import ANSIColors
 import numpy as np
 import requests
 
+leaves = "oak_leaves,acacia_leaves,azalea_leaves,birch_leaves,cherry_leaves,dark_oak_leaves,flowering_azalea_leaves,jungle_leaves,mangrove_leaves,pale_oak_leaves,spruce_leaves"
+
 class AbstractionLayer:
 
     _AbstractionLayerInstance = None
@@ -38,11 +40,15 @@ class AbstractionLayer:
 
         for coord, block in tmp:
             bid = block.id
-
+            mx = coord[0] - args[0].begin[0]
+            mz = coord[2] - args[0].begin[2]
             x = coord[0] - (args[0].begin[0] + args[1] * 16)
             z = coord[2] - (args[0].begin[2] + args[2] * 16)
 
-            if coord[1] == args[5][x][z] - 1:
+            if mx >= args[5].shape[0] or mz >= args[5].shape[1]:
+                continue
+
+            if coord[1] == args[5][mx][mz] - 1:
                 wood[x, z] = bid in args[6]["wood"]
                 lava[x, z] = bid in args[6]["lava"]
                 water[x, z] = bid in args[6]["water"]
@@ -93,7 +99,7 @@ class AbstractionLayer:
         os.mkdir(os.path.join(os.getcwd(), "data"))
 
         # Getting height between which we will need to pull to have the hole surface
-        heightmap = self.get_height_map_excluding("air,#leaves")
+        heightmap = self.get_height_map_excluding(f"air,{leaves}")
         miny = heightmap.astype(int).min().item()
         maxy = heightmap.astype(int).max().item()
 
@@ -170,7 +176,7 @@ class AbstractionLayer:
         for building in Building.BUILDINGS:
             building.matrix_to_files()
         p = Pool(cpu_count())
-        hmap = self.get_height_map_excluding("air,#leaves")
+        hmap = self.get_height_map_excluding(f"air,{leaves}")
         p.map_async(self.push_building, [(folder,target, hmap) for target in os.listdir(folder)]).get()
         p.close()
         p.join()

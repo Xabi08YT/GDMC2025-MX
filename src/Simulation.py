@@ -75,6 +75,7 @@ class Simulation:
             plt.matshow(self.wood)
             plt.matshow(self.water)
             plt.matshow(self.lava)
+            plt.matshow(self.heightmap)
             plt.show()
 
         self.buildings = np.zeros(self.heightmap.shape,dtype=bool)
@@ -153,5 +154,5 @@ class Simulation:
 if __name__ == "__main__":
     sim = Simulation()
     sim.prepare()
-    sim.launch()
-    sim.end()
+    #sim.launch()
+    #sim.end()

@@ -41,7 +41,10 @@
   ],
   "water": [
     "minecraft:water",
-    "minecraft:flowing_water"
+    "minecraft:flowing_water",
+    "minecraft:kelp",
+    "minecraft:seagrass",
+    "minecraft:tall_seagrass"
   ],
   "lava": [
     "minecraft:lava",
