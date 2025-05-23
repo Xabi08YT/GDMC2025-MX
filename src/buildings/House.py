@@ -42,33 +42,30 @@ class House(Building):
         self.materials = self.choose_materials("plains")
 
         self.phase_times = {
-            "foundation": 40,
-            "walls": 30,
-            "roof": 20,
-            "furniture": 10
+            "foundation": 20,
+            "walls": 10,
+            "roof": 5,
+            "furniture": 2
         }
-
-        if self.center_point is not None:
-            self.setup_positions()
 
 
     def choose_materials(self,biome: str = "plains"):
-        door_options = ["oak_door", "spruce_door", "birch_door", "dark_oak_door", "acacia_door"]
-        bed_options = ["red_bed", "blue_bed", "green_bed", "yellow_bed", "black_bed"]
+        door_options = ["minecraft:oak_door", "minecraft:spruce_door", "minecraft:birch_door", "minecraft:dark_oak_door", "minecraft:acacia_door"]
+        bed_options = ["minecraft:red_bed", "minecraft:blue_bed", "minecraft:green_bed", "minecraft:yellow_bed", "minecraft:black_bed"]
 
         if biome in self.agent.simulation.params["biome"].keys():
             floor_options = self.agent.simulation.params["biome"][biome]["floor_options"]
             wall_options = self.agent.simulation.params["biome"][biome]["wall_options"]
             log_options = self.agent.simulation.params["biome"][biome]["log_options"]
         else:
-            floor_options = ["oak_planks", "spruce_planks", "birch_planks", "dark_oak_planks", "acacia_planks"]
+            floor_options = ["minecraft:oak_planks", "minecraft:spruce_planks", "minecraft:birch_planks", "minecraft:dark_oak_planks", "minecraft:acacia_planks"]
             wall_options = {
-                "stone": ["stone", "stone_bricks", "cracked_stone_bricks", "mossy_stone_bricks"],
-                "cobblestone": ["cobblestone", "mossy_cobblestone"],
-                "bricks": ["bricks", "cracked_bricks"],
-                "wood": ["oak_planks", "spruce_planks", "birch_planks", "dark_oak_planks", "acacia_planks"]
+                "stone": ["minecraft:stone", "minecraft:stone_bricks", "minecraft:cracked_stone_bricks", "minecraft:mossy_stone_bricks"],
+                "cobblestone": ["minecraft:cobblestone", "minecraft:mossy_cobblestone"],
+                "bricks": ["minecraft:bricks", "minecraft:cracked_bricks"],
+                "wood": ["minecraft:oak_planks", "minecraft:spruce_planks", "minecraft:birch_planks", "minecraft:dark_oak_planks", "minecraft:acacia_planks"]
             }
-            log_options = ["oak_log", "spruce_log", "birch_log", "dark_oak_log", "acacia_log"]
+            log_options = ["minecraft:oak_log", "minecraft:spruce_log", "minecraft:birch_log", "minecraft:dark_oak_log", "minecraft:acacia_log"]
 
         wall_type = random.choice(list(wall_options.keys()))
         wall_variants = wall_options[wall_type]
@@ -80,116 +77,6 @@ class House(Building):
             "door": random.choice(door_options),
             "bed": random.choice(bed_options)
         }
-
-    def setup_positions(self):
-        if self.center_point is None:
-            return
-
-        center_x = self.center_point[0]
-        center_z = self.center_point[1]
-
-        half_w = self.width // 2
-        half_d = self.depth // 2
-
-        self.start_x = center_x - half_w
-        self.start_z = center_z - half_d
-
-        self.set_orientation_according_to_center(self.agent)
-
-        self.bed_facing = {
-            "north": "south",
-            "south": "north",
-            "east": "west",
-            "west": "east"
-        }[self.orientation]
-
-        self.relatives = {
-            "north": (0, -1),
-            "south": (0, 1),
-            "east": (1, 0),
-            "west": (-1, 0)
-        }
-
-        self.sign_relatives = {
-            "north": (1, 0),
-            "south": (-1, 0),
-            "east": (0, 1),
-            "west": (0, -1)
-        }
-
-        self.setup_door_position()
-        self.setup_torch_position()
-        self.setup_bed_position()
-        self.setup_sign_position()
-
-    def setup_door_position(self):
-        center_x = self.center_point[0]
-        center_z = self.center_point[1]
-
-        if self.orientation == "north":
-            self.door_x, self.door_z = center_x, self.start_z
-        elif self.orientation == "south":
-            self.door_x, self.door_z = center_x, self.start_z + self.depth - 1
-        elif self.orientation == "east":
-            self.door_x, self.door_z = self.start_x + self.width - 1, center_z
-        elif self.orientation == "west":
-            self.door_x, self.door_z = self.start_x, center_z
-
-    def setup_torch_position(self):
-        center_y = self.center_point[1]
-
-        if self.orientation == "north":
-            self.torch_pos = (self.door_x, center_y + 3, self.door_z + 1)
-        elif self.orientation == "south":
-            self.torch_pos = (self.door_x, center_y + 3, self.door_z - 1)
-        elif self.orientation == "east":
-            self.torch_pos = (self.door_x - 1, center_y + 3, self.door_z)
-        elif self.orientation == "west":
-            self.torch_pos = (self.door_x + 1, center_y + 3, self.door_z)
-
-    def setup_bed_position(self):
-        center_x = self.center_point[0]
-        center_z = self.center_point[1]
-        center_y = self.highest_y-self.lowest_y
-
-        if self.orientation == "north":
-            self.bed_pos = (center_x,  + 1, center_y + 1, self.start_z + self.depth - 3)
-        elif self.orientation == "south":
-            self.bed_pos = (center_x, center_y + 1, self.start_z + 2)
-        elif self.orientation == "east":
-            self.bed_pos = (self.start_x + 2, center_y + 1, center_z)
-        else:
-            self.bed_pos = (self.start_x + self.width - 3, center_y + 1, center_z)
-
-        self.bed_pos = (
-            max(min(self.bed_pos[0], self.start_x + self.width - 2), self.start_x + 1),
-            self.bed_pos[1],
-            max(min(self.bed_pos[2], self.start_z + self.depth - 2), self.start_z + 1)
-        )
-
-        if self.orientation == "north":
-            self.bed_head_pos = (self.bed_pos[0], self.bed_pos[1], self.bed_pos[2] + 1)
-        elif self.orientation == "south":
-            self.bed_head_pos = (self.bed_pos[0], self.bed_pos[1], self.bed_pos[2] - 1)
-        elif self.orientation == "east":
-            self.bed_head_pos = (self.bed_pos[0] - 1, self.bed_pos[1], self.bed_pos[2])
-        else:
-            self.bed_head_pos = (self.bed_pos[0] + 1, self.bed_pos[1], self.bed_pos[2])
-
-    def setup_sign_position(self):
-        self.sign_x = self.door_x + self.sign_relatives[self.orientation][0]
-        self.sign_z = self.door_z + self.sign_relatives[self.orientation][1]
-
-        sign_adjustments = {
-            "north": (0, -1),
-            "east": (1, 0),
-            "west": (-1, 0),
-            "south": (0, 1)
-        }
-
-        if self.orientation in sign_adjustments:
-            self.sign_x += sign_adjustments[self.orientation][0]
-            self.sign_z += sign_adjustments[self.orientation][1]
 
     def get_construction_status(self) -> str:
         phases = ["foundation", "walls", "roof", "furniture"]
@@ -229,9 +116,6 @@ class House(Building):
         if self.center_point is None or self.built:
             return
 
-        if not hasattr(self, 'start_x'):
-            self.setup_positions()
-
         self.construction_ticks += 1
 
         current_phase = ["foundation", "walls", "roof", "furniture"][self.construction_phase]
@@ -245,12 +129,12 @@ class House(Building):
 
         if current_phase == "foundation":
             self.build_foundation_progressive(phase_ratio)
-        elif current_phase == "walls":
-            self.build_walls_progressive(phase_ratio)
-        elif current_phase == "roof":
-            self.build_roof_progressive(phase_ratio)
-        elif current_phase == "furniture":
-            self.build_furniture_progressive(phase_ratio)
+        #elif current_phase == "walls":
+        #    self.build_walls_progressive(phase_ratio)
+        #elif current_phase == "roof":
+        #    self.build_roof_progressive(phase_ratio)
+        #elif current_phase == "furniture":
+        #    self.build_furniture_progressive(phase_ratio)
 
         if self.construction_progress >= 100:
             self.construction_progress = 0
@@ -267,28 +151,22 @@ class House(Building):
             print(f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.agent.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE}'s house: {ANSIColors.ENDC}{ANSIColors.OKCYAN}{status}{helpers}{ANSIColors.ENDC}")
 
     def build_foundation_progressive(self, progress_ratio):
-        center_y = self.center_point[1]
+        y = 0
         floor = self.materials["floor"]
-
         total_blocks = self.width * self.depth
         blocks_to_place = int(total_blocks * progress_ratio)
-
         for i in range(blocks_to_place):
             dx = i % self.width
             dz = i // self.width
-            super().add_block_to_matrix(self.start_x + dx, center_y, self.start_z + dz, floor)
+            super().add_block_to_matrix(dx, y, dz, floor)
 
-        if progress_ratio > 0.5:
-            support_ratio = (progress_ratio - 0.5) * 2
-            num_supports = random.randint(4, 8)
-            supports_to_place = int(num_supports * support_ratio)
-
-            for i in range(supports_to_place):
-                dx = random.randint(0, self.width - 1)
-                dz = random.randint(0, self.depth - 1)
-                for dy in range(1, random.randint(2, 4)):
-                    super().add_block_to_matrix(self.start_x + dx, center_y - dy, self.start_z + dz,
-                                         self.materials["log"])
+            if progress_ratio > 0.8:
+                log = self.materials["log"]
+                for dy in range(self.height):
+                    super().add_block_to_matrix(0, dy, 0, log)
+                    super().add_block_to_matrix(0, dy, self.depth - 1, log)
+                    super().add_block_to_matrix(self.width - 1, dy, 0, log)
+                    super().add_block_to_matrix(self.width - 1, dy, self.depth - 1, log)
 
     def build_walls_progressive(self, progress_ratio):
         center_y = self.center_point[1]

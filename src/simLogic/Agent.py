@@ -187,6 +187,7 @@ class Agent:
 
         spot_tuple = eval(best_spot)
         self.home = House(spot_tuple, self, self.name + " House")
+        self.home.clear()
         self.home.build()
         print(
             f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE} built a new house!{ANSIColors.ENDC}")
@@ -206,8 +207,12 @@ class Agent:
 
         self.observe_environment()
 
-        if self.attributes["energy"] < 0.3 and priority == "energy" or priority == "health":
+        if not isinstance(self.home, House) and self.attributes["energy"] < 0.3 and (priority == "energy" or priority == "health"):
             self.place_house()
+
+        if isinstance(self.home, House) and self.home.built == False:
+            self.home.build()
 
         if self.job.job_type != JobType.UNEMPLOYED and (self.job.job_building is None or self.job.job_building.built is False):
             pass
+

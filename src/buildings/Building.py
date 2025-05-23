@@ -18,8 +18,6 @@ class Building:
         self.radius = 10
         if agent is not None and center_point is not None:
             self.place(center_point,agent.simulation)
-            print(self.center_point)
-            print(width,depth,height)
             self.lowest_y = agent.simulation.heightmap[self.center_point[0] - width:self.center_point[0] + width,
                             self.center_point[1] - depth:self.center_point[1] + depth].min().item() - 1
             self.highest_y = agent.simulation.heightmap[self.center_point[0] - width:self.center_point[0] + width,
@@ -82,6 +80,12 @@ class Building:
             center_point[0] - self.width // 2 - 1:center_point[1] + self.width // 2 + 1
         ] = True
         return
+
+    def clear(self):
+        for x in range(self.width):
+            for y in range(self.height):
+                for z in range(self.depth):
+                    self.add_block_to_matrix(x, y, z, "minecraft:air")
 
     def __str__(self):
         return f"{self.name}"

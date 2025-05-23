@@ -33,10 +33,8 @@ class Firecamp(Building):
             if False in tmp:
                 continue
 
-            print(x,z)
             subhmap = self.simulation.heightmap[x-self.width//2+1:x+self.width//2+1,z-self.depth//2+1:z+self.depth//2+1]
             score -= subhmap.max().item() - subhmap.min().item()
-            print(score)
 
             if score > best_score:
                 best_score = score
@@ -48,15 +46,15 @@ class Firecamp(Building):
 
     def build(self):
         plaza_floor = self.simulation.params["centerPlazaFloor"]
+        y = 0
         for dx in range(-1, 2):
             for dz in range(-1, 2):
-                rel_x, rel_z = 3 + dx, 3 + dz
-                y = 0
-                super().add_block_to_matrix(rel_x, y + 1, rel_z, "minecraft:air")
+                rel_x, rel_z = 2 + dx, 2 + dz
+                super().add_block_to_matrix(rel_x, 1, rel_z, "minecraft:air")
                 super().add_block_to_matrix(rel_x, y, rel_z, plaza_floor)
                 if random.randint(0, 10) < 5:
                     extra_dx, extra_dz = random.choice([-1, 1]), random.choice([-1, 1])
                     super().add_block_to_matrix(min(rel_x + extra_dx,4), y, min(rel_z + extra_dz,4), plaza_floor)
-        super().add_block_to_matrix(3, 1, 3, self.simulation.params["villageCenterBlock"])
-        super().add_block_to_matrix(3, 0, 3, "minecraft:hay_block")
+        super().add_block_to_matrix(2, 1, 2, self.simulation.params["villageCenterBlock"])
+        super().add_block_to_matrix(2, 0, 2, "minecraft:hay_block")
         super().built()
