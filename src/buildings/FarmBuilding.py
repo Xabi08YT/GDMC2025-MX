@@ -1,3 +1,4 @@
+import random
 from math import inf
 from random import randint
 
@@ -5,14 +6,25 @@ from buildings.JobBuilding import JobBuilding
 
 class FarmBuilding(JobBuilding):
     def __init__(self, center_point: tuple[int,int,int] | None, agent, orientation: str = "north"):
-        super().__init__(center_point, agent, agent.name + "'s FarmBuilding", orientation)
+        super().__init__(center_point, agent, agent.name + "'s FarmBuilding", orientation, width=random.randint(5, 10), depth=7, height=3)
         if center_point is None:
             center_point = self.best_spot(20,agent.simulation)
         self.place(center_point,agent.simulation)
 
     def build(self):
-        for i in range(self.step):
-            self.add_block_to_matrix(self.center_point[0], self.agent.simulation.heightmap[self.center_point[0], self.center_point[1]], self.center_point[2], "minecraft:hay_block")
+        for dx in range(self.width):
+            for dz in range(self.depth):
+                is_log = (dx == 0 or dx == self.width - 1 or dz == 0 or dz == self.depth - 1)
+                if is_log:
+                    self.add_block_to_matrix(dx, 1, dz, "minecraft:oak_log")
+                else:
+                    if dz == 3:
+                        self.add_block_to_matrix(dx, 1, dz, "minecraft:water")
+                    else:
+                        self.add_block_to_matrix(dx, 1, dz, "minecraft:farmland")
+                        self.add_block_to_matrix(dx, 2, dz, "minecraft:wheat")
+        self.add_block_to_matrix(0, 2, 3, "minecraft:torch")
+        self.add_block_to_matrix(self.width - 1, 2, 3, "minecraft:torch")
         self.check_built()
 
     def best_spot(self, nbtry, simulation):
