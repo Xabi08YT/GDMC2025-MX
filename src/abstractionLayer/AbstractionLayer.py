@@ -167,7 +167,7 @@ class AbstractionLayer:
 
         print(
             f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
-        interface.placeBlocks(gdpcblocks)
+        interface.placeBlocks(gdpcblocks, doBlockUpdates=meta["bupdates"])
 
 
     def push(self, folder="generated"):

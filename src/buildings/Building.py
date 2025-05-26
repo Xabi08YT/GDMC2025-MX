@@ -9,7 +9,7 @@ class Building:
     BUILDINGS = []
 
     def __init__(self, center_point: tuple[int, int] | None, agent, name: str, orientation: str = "south",
-                 built: bool = False, folder="generated", width = 5, height = 5, depth = 5):
+                 built: bool = False, folder="generated", width = 5, height = 5, depth = 5, bupdates = True):
         self.built = built
         self.orientation = orientation
         self.width = width
@@ -27,6 +27,7 @@ class Building:
         self.folder = folder
         self.matrix = np.zeros((self.width, self.depth, self.height), dtype=object)
         self.BUILDINGS.append(self)
+        self.bupdates = bupdates
 
     def built(self):
         self.built = True
@@ -104,7 +105,8 @@ class Building:
             "name": self.name,
             "x": self.center_point[0],
             "z": self.center_point[1],
-            "built": self.built
+            "built": self.built,
+            "bupdates": self.bupdates,
         }
         print(self.folder,self.name)
         folder_path = os.path.join(self.folder, self.name)

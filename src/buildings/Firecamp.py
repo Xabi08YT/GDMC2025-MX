@@ -6,7 +6,7 @@ import random
 class Firecamp(Building):
     def __init__(self, simulation):
         self.simulation = simulation
-        super().__init__(None, None, "Firecamp", width=5, height=2, depth=5)
+        super().__init__(None, None, "Firecamp", width=5, height=2, depth=5, bupdates=False)
         fx,fy,fz = self.get_best_location()
         self.place((fx,fz),self.simulation)
 
