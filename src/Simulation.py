@@ -81,8 +81,11 @@ class Simulation:
         self.show_message("Done. Preparing simulation...")
 
         for i in range(self.config["nodeAgents"]):
-            x = randint(0,self.heightmap.shape[0])
-            z = randint(0,self.heightmap.shape[1])
+            x,z = None,None
+            valid = False
+            while not valid:
+                x,z = randint(0,self.heightmap.shape[0]),randint(0,self.heightmap.shape[1])
+                valid = self.walkable[x,z]
             agent = Agent(self, x=x, z=z, name=random.choice(self.names).strip())
             self.agents.append(agent)
 
