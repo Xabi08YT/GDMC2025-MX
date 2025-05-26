@@ -10,8 +10,8 @@ from utils.ANSIColors import ANSIColors
 import numpy as np
 import requests
 
-leaves = "oak_leaves,acacia_leaves,azalea_leaves,birch_leaves,cherry_leaves,dark_oak_leaves,flowering_azalea_leaves,jungle_leaves,mangrove_leaves,pale_oak_leaves,spruce_leaves"
-
+leaves = "oak_leaves,acacia_leaves,azalea_leaves,birch_leaves,cherry_leaves,dark_oak_leaves,flowering_azalea_leaves,jungle_leaves,mangrove_leaves,pale_oak_leaves,spruce_leaves,mangrove_roots"
+wood = "oak_log,acacia_log,birch_log,cherry_log,dark_oak_log,jungle_log,mangrove_log,pale_oak_log,spruce_log"
 
 class AbstractionLayer:
     _AbstractionLayerInstance = None
@@ -90,7 +90,7 @@ class AbstractionLayer:
                     return [np.load("data/walkableMatrix", allow_pickle=True),
                             np.load("data/woodMatrix", allow_pickle=True),
                             np.load("data/waterMatrix", allow_pickle=True),
-                            np.load("data/lavaMatrix", allow_pickle=True), self.get_height_map_excluding("air&#leaves")]
+                            np.load("data/lavaMatrix", allow_pickle=True), self.get_height_map_excluding(f"air,{leaves}")]
                 print(
                     f"{ANSIColors.WARNING}[WARN] Some files appears to be missing. Initiating pull... {ANSIColors.ENDC}")
             except json.JSONDecodeError:
@@ -157,6 +157,10 @@ class AbstractionLayer:
             return
 
         meta = json.load(open(os.path.join(args[0], args[1], "metadata.json")))
+
+        if not meta["built"]:
+            return
+
         blocks = np.load(os.path.join(args[0], args[1], "matrix"), allow_pickle=True)
 
         x = meta["x"] - blocks.shape[0] // 2
@@ -167,8 +171,11 @@ class AbstractionLayer:
         mcminy = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]].min().item() - 1
 
         foundations = mcy - mcminy
+
         if "firecamp" in meta["name"].lower():
             foundations = 0
+            mcy = mcminy
+
         gdpcblocks = []
 
         for fy in range(foundations):
@@ -206,8 +213,8 @@ class AbstractionLayer:
         for building in Building.BUILDINGS:
             building.matrix_to_files()
         p = Pool(cpu_count())
-        hmap = self.get_height_map_excluding(f"air,{leaves}")
-        p.map_async(self.push_building, [(folder, target, hmap) for target in os.listdir(folder)]).get()
+        hmap = self.get_height_map_excluding(f"air,{leaves},{wood},#water,#lava,grass_block")
+        p.map_async(self.push_building, [(folder, target,hmap) for target in os.listdir(folder)]).get()
         p.close()
         p.join()
 
