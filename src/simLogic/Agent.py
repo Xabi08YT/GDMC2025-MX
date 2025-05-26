@@ -166,9 +166,9 @@ class Agent:
             return
 
         score = self.simulation.wood[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
-        score -= self.simulation.water[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
-        score -= self.simulation.lava[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
-        score -= self.simulation.buildings[x - self.radius:x + self.radius,
+        score -= 5 * self.simulation.water[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
+        score -= 5 * self.simulation.lava[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
+        score -= 10 * self.simulation.buildings[x - self.radius:x + self.radius,
                  z - self.radius:z + self.radius].sum().item()
 
         self.scores[str((x, z))] = score
@@ -210,9 +210,9 @@ class Agent:
         if not isinstance(self.home, House) and self.attributes["energy"] < 0.3 and (priority == "energy" or priority == "health"):
             self.place_house()
 
-        if isinstance(self.home, House) and self.home.built == False:
+        elif isinstance(self.home, House) and self.home.built == False:
             self.home.build()
 
-        if self.job.job_type != JobType.UNEMPLOYED and (self.job.job_building is None or self.job.job_building.built is False):
-            pass
-
+        #elif self.job.job_type != JobType.UNEMPLOYED and (self.job.job_building is None or self.job.job_building.built is False):
+        if self.job.job_type != JobType.UNEMPLOYED:
+            self.job.job_building.build()

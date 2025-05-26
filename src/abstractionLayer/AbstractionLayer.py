@@ -165,9 +165,8 @@ class AbstractionLayer:
                 for my in range(blocks.shape[2]):
                     gdpcblocks.append(((mcx+mx, mcy+my,mcz+mz), Block(blocks[mx,mz,my])))
 
-        for block in gdpcblocks:
-            if getattr(block[1], "id", None) == "minecraft:campfire":
-                print(f"firecamp : {block}")
+        print(
+            f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
         interface.placeBlocks(gdpcblocks)
 
 

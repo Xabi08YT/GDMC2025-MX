@@ -106,6 +106,7 @@ class Building:
             "z": self.center_point[1],
             "built": self.built
         }
+        print(self.folder,self.name)
         folder_path = os.path.join(self.folder, self.name)
         os.makedirs(folder_path, exist_ok=True)
         json_file = os.path.join(folder_path, "metadata.json")
