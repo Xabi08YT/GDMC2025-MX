@@ -8,20 +8,18 @@ from utils.ANSIColors import ANSIColors
 class House(Building):
     def __init__(self, center_point: tuple[int,int] | None, agent, name: str, orientation: str = "south",
                  built: bool = False, folder="generated"):
-        super().__init__(center_point, agent, name, orientation, built, folder)
+        super().__init__(center_point, agent, name, orientation, built, folder, height=random.randint(4, 7))
         self.construction_phase = 0
         self.construction_progress = 0
         self.construction_ticks = 0
         self.helping_agents = {}
         self.built_phases = set()
-        self.utility_blocks = [
-            "crafting_table"
-            "furnace",
-            "chest",
-            "barrel",
-            "loom",
-            "stonecutter"
-        ]
+        self.has_chimney = True #random.choice([True, False])
+        self.door = None
+        self.bed = None
+        self.roof_style = random.choice(["flat", "pyramid"])
+        self.furniture_counter = random.randint(1, 3)
+        self.furnitures = ["minecraft:crafting_table", "minecraft:chest", "minecraft:barrel", "minecraft:smithing_table", "minecraft:grindstone"]
 
         family_size = 1
         for rel in agent.simulation.relationships.RELATIONSHIPS.keys():
@@ -38,14 +36,12 @@ class House(Building):
             self.width = 9
             self.depth = 9
 
-        self.height = random.randint(4, 5)
         self.materials = self.choose_materials("plains")
 
         self.phase_times = {
             "foundation": 20,
             "walls": 10,
-            "roof": 5,
-            "furniture": 2
+            "roof": 5
         }
 
         self.corners = [
@@ -86,7 +82,7 @@ class House(Building):
         }
 
     def get_construction_status(self) -> str:
-        phases = ["foundation", "walls", "roof", "furniture"]
+        phases = ["foundation", "walls", "roof"]
         if self.construction_phase >= len(phases):
             return "Completed"
 
@@ -125,7 +121,7 @@ class House(Building):
 
         self.construction_ticks += 1
 
-        current_phase = ["foundation", "walls", "roof", "furniture"][self.construction_phase]
+        current_phase = ["foundation", "walls", "roof"][self.construction_phase]
         phase_time = self.phase_times[current_phase]
         construction_speed = self.calculate_construction_speed()
 
@@ -138,21 +134,20 @@ class House(Building):
             self.build_foundation_progressive(phase_ratio)
         elif current_phase == "walls":
             self.build_walls_progressive(phase_ratio)
-        #elif current_phase == "roof":
-        #    self.build_roof_progressive(phase_ratio)
-        #elif current_phase == "furniture":
-        #    self.build_furniture_progressive(phase_ratio)
+        elif current_phase == "roof":
+            self.build_roof_progressive(phase_ratio)
 
         if self.construction_progress >= 100:
             self.construction_progress = 0
             self.construction_phase += 1
 
-            if self.construction_phase >= 4:
+            if self.construction_phase >= 3:
+                self.build_furniture_progressive()
                 super().built()
                 self.helping_agents.clear()
                 print(f"{ANSIColors.OKBLUE}[SIMULATION INFO]{ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.agent.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE}'s house is complete!{ANSIColors.ENDC}")
 
-        if self.construction_phase < 4:
+        if self.construction_phase < 3:
             status = self.get_construction_status()
             helpers = f" with {len(self.helping_agents)} helpers" if self.helping_agents else ""
             print(f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.agent.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE}'s house: {ANSIColors.ENDC}{ANSIColors.OKCYAN}{status}{helpers}{ANSIColors.ENDC}")
@@ -181,7 +176,7 @@ class House(Building):
         blocks_to_place = int(total_wall_blocks * progress_ratio)
 
         blocks = 0
-        for dy in range(1, self.height):
+        for dy in range(1, self.height-1):
             for dx in range(self.width):
                 for dz in range(self.depth):
                     if blocks >= blocks_to_place:
@@ -207,195 +202,61 @@ class House(Building):
         else:
             door_x, door_z = x + self.width // 2, z
 
-        #door_block = self.materials["door"] if "door" in self.materials else "minecraft:oak_door"
-        super().add_block_to_matrix(door_x - x, 1, door_z - z, "minecraft:air")
-        super().add_block_to_matrix(door_x - x, 2, door_z - z, "minecraft:air")
+        if self.door is None:
+            super().add_block_to_matrix(door_x - x, 1, door_z - z, f'{self.materials["door"]}[half=lower]')
+            super().add_block_to_matrix(door_x - x, 2, door_z - z, f'{self.materials["door"]}[half=upper]')
+            self.door = (door_x - x, 1, door_z - z)
 
     def build_roof_progressive(self, progress_ratio):
         roof_material = random.choice(["oak_planks", "spruce_planks"])
         stairs_material = roof_material.replace("planks", "stairs")
 
-        roof_height = min(3, max(2, (self.width + self.depth) // 6))
-
-        if progress_ratio > 0.3:
-            for dy in range(roof_height):
-                overhang = roof_height - dy - 1
-                y = self.height + dy
-                for dx in range(-overhang, self.width + overhang):
-                    for dz in range(-overhang, self.depth + overhang):
-                        is_west = dx == -overhang
-                        is_east = dx == self.width + overhang - 1
-                        is_north = dz == -overhang
-                        is_south = dz == self.depth + overhang - 1
-                        is_corner = (is_west or is_east) and (is_north or is_south)
-                        if is_corner:
-                            facing = ""
-                            shape = ""
-                            if is_west and is_north:
+        if self.roof_style == "pyramid":
+            for turn, dy in enumerate(range(self.height - 2, self.height)):
+                offset = turn
+                for dx in range(offset, self.width - offset):
+                    for dz in range(offset, self.depth - offset):
+                        is_edge_x = dx == offset or dx == self.width - offset - 1
+                        is_edge_z = dz == offset or dz == self.depth - offset - 1
+                        if is_edge_x or is_edge_z:
+                            facing = "north"
+                            if dx == offset:
                                 facing = "east"
-                                shape = "outer_right"
-                            elif is_east and is_north:
-                                facing = "south"
-                                shape = "outer_right"
-                            elif is_east and is_south:
+                            elif dx == self.width - offset - 1:
                                 facing = "west"
-                                shape = "outer_right"
-                            elif is_west and is_south:
-                                facing = "north"
-                                shape = "outer_right"
-                            super().add_block_to_matrix(
-                                self.start_x + dx,
-                                y,
-                                self.start_z + dz,
-                                f"{stairs_material};facing={facing};shape={shape}"
-                            )
-                        elif is_west:
-                            super().add_block_to_matrix(
-                                self.start_x + dx,
-                                y,
-                                self.start_z + dz,
-                                f"{stairs_material};facing=east"
-                            )
-                        elif is_east:
-                            super().add_block_to_matrix(
-                                self.start_x + dx,
-                                y,
-                                self.start_z + dz,
-                                f"{stairs_material};facing=west"
-                            )
-                        elif is_north:
-                            super().add_block_to_matrix(
-                                self.start_x + dx,
-                                y,
-                                self.start_z + dz,
-                                f"{stairs_material};facing=south"
-                            )
-                        elif is_south:
-                            super().add_block_to_matrix(
-                                self.start_x + dx,
-                                y,
-                                self.start_z + dz,
-                                f"{stairs_material};facing=north"
-                            )
-                        elif -overhang < dx < self.width + overhang - 1 and -overhang < dz < self.depth + overhang - 1:
-                            super().add_block_to_matrix(
-                                self.start_x + dx,
-                                y,
-                                self.start_z + dz,
-                                roof_material
-                            )
+                            elif dz == offset:
+                                facing = "south"
 
-        if progress_ratio > 0.99 and random.randint(0, 1) < 0.2:
-            chimney_x = self.start_x + self.width - random.randint(1, 3) - 1
-            chimney_z = self.start_z + random.randint(1, 3)
-            super().add_block_to_matrix(chimney_x, self.height + 1, chimney_z, "bricks")
-            super().add_block_to_matrix(chimney_x, self.height + 2, chimney_z, "brick_wall")
-            super().add_block_to_matrix(chimney_x, self.height + 3, chimney_z, "flower_pot")
+                            stairs_block = f"minecraft:{stairs_material}[facing={facing}]"
+                            super().add_block_to_matrix(dx, dy, dz, stairs_block)
+                        else:
+                            super().add_block_to_matrix(dx, dy, dz, "minecraft:air")
+            super().add_block_to_matrix(2, self.height-1, 2, roof_material)
+            super().add_block_to_matrix(2, self.height - 2, 2, "minecraft:lantern[hanging=true]")
+        elif self.roof_style == "flat":
+            for dx in range(self.width):
+                for dz in range(self.depth):
+                        super().add_block_to_matrix(dx, self.height - 2, dz, roof_material)
+                        super().add_block_to_matrix(dx, self.height - 1, dz, "minecraft:air")
+            super().add_block_to_matrix(2, self.height - 3, 2, "minecraft:lantern[hanging=true]")
 
-    def build_furniture_progressive(self, progress_ratio):
-        center_y = self.center_point[1]
+            if progress_ratio > 0.5 and not self.has_chimney:
+                print("chimney not built")
+                #chimney_x = random.randint(2, self.width-2)
+                #chimney_z = random.randint(2, self.depth-2)
+                #super().add_block_to_matrix(chimney_x, self.height-2, chimney_z, "bricks")
+                #super().add_block_to_matrix(chimney_x, self.height-1, chimney_z, "brick_wall")
+                self.has_chimney = True
 
-        if progress_ratio > 0.5:
-            super().add_block_to_matrix(self.torch_pos[0], self.torch_pos[1], self.torch_pos[2],
-                                 f"minecraft:wall_torch;facing={self.bed_facing}")
+    def build_furniture_progressive(self):
+        if self.bed is None:
+            bed_x = random.randint(1, self.width - 2)
+            bed_z = random.randint(1, self.depth - 2)
+            super().add_block_to_matrix(bed_x, 1, bed_z, self.materials["bed"])
+            self.bed = (bed_x, 1, bed_z)
 
-        if progress_ratio > 0.75:
-            bed = self.materials["bed"]
-            super().add_block_to_matrix(self.bed_pos[0], self.bed_pos[1], self.bed_pos[2],
-                                 f"{bed};facing={self.bed_facing}")
-            super().add_block_to_matrix(self.bed_head_pos[0], self.bed_head_pos[1], self.bed_head_pos[2],
-                                 f"{bed};part=head;facing={self.bed_facing}")
-
-            num_blocks = random.randint(0, 1)
-            for _ in range(num_blocks):
-                if not self.utility_blocks:
-                    break
-
-                block_type = random.choice(self.utility_blocks)
-                self.utility_blocks.remove(block_type)
-
-                if self.orientation in ["north", "south"]:
-                    side = random.choice([-1, 1])
-                    x = self.bed_head_pos[0] + side
-                    z = self.bed_head_pos[2]
-                else:
-                    side = random.choice([-1, 1])
-                    x = self.bed_head_pos[0]
-                    z = self.bed_head_pos[2] + side
-
-                super().add_block_to_matrix(x, self.bed_head_pos[1], z, f"{block_type};facing={self.bed_facing}")
-
-        if progress_ratio > 0.9:
-            block = signBlock(
-                wall=True,
-                facing=self.orientation,
-                rotation=0,
-                frontLine2=self.agent.name,
-                frontLine3=self.agent.job.__str__(),
-            )
-            super().add_block_to_matrix(self.sign_x, center_y + 2, self.sign_z, block)
-
-    def get_door_position(self):
-        if self.center_point is None:
-            return None
-
-        if not hasattr(self, 'door_x'):
-            self.setup_positions()
-
-        return self.door_x, self.center_point[1], self.door_z
-
-    def evaluate_spot(self, x: int, z: int) -> float:
-        score = 0.0
-
-        center_distance = distance_xz(x, z, self.agent.center_village[0], self.agent.center_village[1])
-        center_score = max(0, 1 - (center_distance / 50))
-        score += center_score * 0.3
-
-        water_distance = float('inf')
-        for water_coord in self.agent.observations["terrain"]["water"]:
-            dist = distance_xz(x, z, water_coord[0], water_coord[2])
-            water_distance = min(water_distance, dist)
-        if water_distance != float('inf'):
-            water_score = max(0, 1 - (water_distance / 30))
-            score += water_score * 0.2
-
-        chunk = self.agent.abl.get_chunk(x, z)
-        y = chunk.getGroundHeight(x, z)
-        altitude_score = min(1, y / 100)
-        score += altitude_score * 0.2
-
-        relationship_score = 0
-        for other_agent in self.agent.all_agents:
-            if other_agent.id != self.agent.id and other_agent.does_have_house:
-                rel = self.agent.get_relationship(other_agent)
-                dist = distance_xz(x, z, other_agent.x, other_agent.z)
-                rel_score = rel.value * (1 - min(1, dist / 30))
-                relationship_score += rel_score
-        relationship_score = max(-1, min(1, relationship_score / len(self.agent.all_agents)))
-        score += (relationship_score + 1) * 0.15
-
-        if Building.detect_all_trespassing(x, z):
-            return -1
-
-        for other_agent in self.agent.all_agents:
-            if other_agent.id != self.agent.id and other_agent.does_have_house:
-                rel = self.agent.get_relationship(other_agent)
-                if rel.value < -0.5:
-                    if self.blocks_path_to_center(x, z, other_agent):
-                        return -1
-
-        return score
-
-    def blocks_path_to_center(self, x: int, z: int, other_agent) -> bool:
-        if not other_agent.does_have_house:
-            return False
-
-        house_to_center = (self.agent.center_village[0] - other_agent.x,
-                           self.agent.center_village[1] - other_agent.z)
-        spot_to_center = (self.agent.center_village[0] - x,
-                          self.agent.center_village[1] - z)
-
-        if (abs(spot_to_center[0]) < abs(house_to_center[0]) and
-                abs(spot_to_center[1]) < abs(house_to_center[1])):
-            return True
-        return False
+        for _ in range(self.furniture_counter):
+            x = random.randint(1, self.width - 2)
+            z = random.randint(1, self.depth - 2)
+            furniture = random.choice(self.furnitures)
+            super().add_block_to_matrix(x, 1, z, furniture)
