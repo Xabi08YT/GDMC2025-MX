@@ -12,12 +12,12 @@ import requests
 
 leaves = "oak_leaves,acacia_leaves,azalea_leaves,birch_leaves,cherry_leaves,dark_oak_leaves,flowering_azalea_leaves,jungle_leaves,mangrove_leaves,pale_oak_leaves,spruce_leaves"
 
-class AbstractionLayer:
 
+class AbstractionLayer:
     _AbstractionLayerInstance = None
 
     def __init__(self, buildArea: interface.Box):
-        if(AbstractionLayer._AbstractionLayerInstance is not None):
+        if (AbstractionLayer._AbstractionLayerInstance is not None):
             raise RuntimeError("AbstractionLayer._AbstractionLayerInstance already initialized")
         AbstractionLayer._AbstractionLayerInstance = self
         self.buildArea = buildArea
@@ -25,18 +25,18 @@ class AbstractionLayer:
             self.simParams = json.load(json_file)
             json_file.close()
 
-
     @staticmethod
-    def pull_chunk(args: tuple[interface.Box,int,int, int, int, np.array, dict] ) -> tuple[int,int,np.array,np.array,np.array,np.array]:
+    def pull_chunk(args: tuple[interface.Box, int, int, int, int, np.array, dict]) -> tuple[
+        int, int, np.array, np.array, np.array, np.array]:
         tmp = interface.getBlocks(
-            (args[0].begin[0] + args[1] * 16, args[3]-1, args[0].begin[2] + args[2] * 16),
+            (args[0].begin[0] + args[1] * 16, args[3] - 1, args[0].begin[2] + args[2] * 16),
             (16, args[4] - args[3], 16)
         )
 
-        walkable = np.zeros((16,16), np.bool)
-        wood = np.zeros((16,16), np.bool)
-        water = np.zeros((16,16), np.bool)
-        lava = np.zeros((16,16), np.bool)
+        walkable = np.zeros((16, 16), np.bool)
+        wood = np.zeros((16, 16), np.bool)
+        water = np.zeros((16, 16), np.bool)
+        lava = np.zeros((16, 16), np.bool)
 
         for coord, block in tmp:
             bid = block.id
@@ -54,8 +54,7 @@ class AbstractionLayer:
                 water[x, z] = bid in args[6]["water"]
                 walkable[x, z] = not wood[x, z] and not lava[x, z] and not water[x, z]
 
-        return args[1],args[2],wood,water,lava,walkable
-
+        return args[1], args[2], wood, water, lava, walkable
 
     def get_height_map_excluding(self, blocks):
 
@@ -69,7 +68,7 @@ class AbstractionLayer:
         heightmap = requests.get(url).json()
         return np.array(heightmap, dtype=np.uint)
 
-    def pull(self, forceReload:bool = False):
+    def pull(self, forceReload: bool = False):
 
         # General setup
         start = time()
@@ -82,10 +81,18 @@ class AbstractionLayer:
                 with open(os.path.join(os.getcwd(), "data", "areaData.json"), "r") as f:
                     data = json.load(f)
                     f.close()
-                if same_point(self.buildArea.begin, data["begin"]) and same_point(self.buildArea.end, data["end"]) and os.path.exists("data/walkableMatrix") and os.path.exists("data/waterMatrix") and os.path.exists("data/lavaMatrix") and os.path.exists("data/woodMatrix"):
-                    print(f"{ANSIColors.OKCYAN}[NOTE] Same area, skipping world pulling... If you want to pull it again, remove the folder or add the -fp argument to the launch command.{ANSIColors.ENDC}")
-                    return [np.load("data/walkableMatrix",allow_pickle=True), np.load("data/woodMatrix",allow_pickle=True), np.load("data/waterMatrix",allow_pickle=True), np.load("data/lavaMatrix",allow_pickle=True), self.get_height_map_excluding("air&#leaves")]
-                print(f"{ANSIColors.WARNING}[WARN] Some files appears to be missing. Initiating pull... {ANSIColors.ENDC}")
+                if same_point(self.buildArea.begin, data["begin"]) and same_point(self.buildArea.end,
+                                                                                  data["end"]) and os.path.exists(
+                        "data/walkableMatrix") and os.path.exists("data/waterMatrix") and os.path.exists(
+                        "data/lavaMatrix") and os.path.exists("data/woodMatrix"):
+                    print(
+                        f"{ANSIColors.OKCYAN}[NOTE] Same area, skipping world pulling... If you want to pull it again, remove the folder or add the -fp argument to the launch command.{ANSIColors.ENDC}")
+                    return [np.load("data/walkableMatrix", allow_pickle=True),
+                            np.load("data/woodMatrix", allow_pickle=True),
+                            np.load("data/waterMatrix", allow_pickle=True),
+                            np.load("data/lavaMatrix", allow_pickle=True), self.get_height_map_excluding("air&#leaves")]
+                print(
+                    f"{ANSIColors.WARNING}[WARN] Some files appears to be missing. Initiating pull... {ANSIColors.ENDC}")
             except json.JSONDecodeError:
                 print(f"{ANSIColors.WARNING}[WARN] Invalid cache JSON, resuming pulling...{ANSIColors.ENDC}")
             except KeyError:
@@ -104,7 +111,8 @@ class AbstractionLayer:
         maxy = heightmap.astype(int).max().item()
 
         # Creating arg list for multiprocessing
-        chunks_grid = [(self.buildArea, x, y, miny, maxy, heightmap, self.simParams) for x in range(size[0] // 16 + 1) for y in range(size[2] // 16 + 1)]
+        chunks_grid = [(self.buildArea, x, y, miny, maxy, heightmap, self.simParams) for x in range(size[0] // 16 + 1)
+                       for y in range(size[2] // 16 + 1)]
 
         # Multiprocessing
         p = Pool(cpu_count())
@@ -113,7 +121,7 @@ class AbstractionLayer:
         p.join()
 
         # Merging results
-        shape = (size[0] // 16 + 1) * 16,(size[2] // 16 + 1) * 16
+        shape = (size[0] // 16 + 1) * 16, (size[2] // 16 + 1) * 16
         walkable = np.zeros(shape, np.bool)
         wood = np.zeros(shape, np.bool)
         water = np.zeros(shape, np.bool)
@@ -144,38 +152,62 @@ class AbstractionLayer:
         print("[INFO] Minecraft world pulled in {:.2f} seconds.".format(end - start))
         return [walkable, wood, water, lava, heightmap]
 
-    def push_building(self,args):
-        if not os.path.isdir(os.path.join(args[0],args[1])):
+    def push_building(self, args):
+        if not os.path.isdir(os.path.join(args[0], args[1])):
             return
 
-        meta = json.load(open(os.path.join(args[0],args[1],"metadata.json")))
-        blocks = np.load(os.path.join(args[0],args[1],"matrix"), allow_pickle=True)
-
+        meta = json.load(open(os.path.join(args[0], args[1], "metadata.json")))
+        blocks = np.load(os.path.join(args[0], args[1], "matrix"), allow_pickle=True)
 
         x = meta["x"] - blocks.shape[0] // 2
         mcx = x + self.buildArea.begin[0]
         z = meta["z"] - blocks.shape[1] // 2
         mcz = z + self.buildArea.begin[2]
-        mcy = args[2][x:x+blocks.shape[0],z:z+blocks.shape[1]].min().item() - 1
+        mcy = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]].max().item() - 1
+        mcminy = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]].min().item() - 1
 
+        foundations = mcy - mcminy
+        if "firecamp" in meta["name"].lower():
+            foundations = 0
         gdpcblocks = []
+
+        for fy in range(foundations):
+            for fx in range(-1, blocks.shape[0] + 1):
+                for fz in range(-1, blocks.shape[2] + 1):
+                    if fy == foundations - 1:
+                        if fx == -1:
+                            gdpcblocks.append(
+                                ((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone_stairs[facing=east]")))
+                        elif fx == blocks.shape[0]:
+                            gdpcblocks.append(
+                                ((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone_stairs[facing=west]")))
+                        elif fz == blocks.shape[1]:
+                            gdpcblocks.append(
+                                ((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone_stairs[facing=north]")))
+                        elif fz == -1:
+                            gdpcblocks.append(
+                                ((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone_stairs[facing=south]")))
+                        else:
+                            gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone")))
+
+                    else:
+                        gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone")))
 
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
                 for my in range(blocks.shape[2]):
-                    gdpcblocks.append(((mcx+mx, mcy+my,mcz+mz), Block(blocks[mx,mz,my])))
+                    gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(blocks[mx, mz, my])))
 
         print(
             f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
         interface.placeBlocks(gdpcblocks, doBlockUpdates=meta["bupdates"])
-
 
     def push(self, folder="generated"):
         for building in Building.BUILDINGS:
             building.matrix_to_files()
         p = Pool(cpu_count())
         hmap = self.get_height_map_excluding(f"air,{leaves}")
-        p.map_async(self.push_building, [(folder,target, hmap) for target in os.listdir(folder)]).get()
+        p.map_async(self.push_building, [(folder, target, hmap) for target in os.listdir(folder)]).get()
         p.close()
         p.join()
 
@@ -202,6 +234,7 @@ class AbstractionLayer:
         biome = requests.get(url).json()
         index_map = {(entry["x"], entry["z"]): entry["id"] for entry in biome}
         return index_map
+
 
 if __name__ == "__main__":
     editor = Editor(buffering=True)
