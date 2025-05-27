@@ -39,12 +39,12 @@ class Agent:
             "adventurous": random.uniform(0.1, 0.3),
         }
         self.attributes_mod = {
-            "hunger": 0,
-            "energy": 0,
-            "health": 0,
-            "social": 0,
-            "strength": 0,
-            "adventurous": 0,
+            "hunger": .0,
+            "energy": .0,
+            "health": .0,
+            "social": .0,
+            "strength": .0,
+            "adventurous": .0,
         }
         self.happiness = 0
         self.happiness_decay = random.uniform(0.005, 0.03)
@@ -103,7 +103,7 @@ class Agent:
 
     def apply_decay(self):
         if self.attributes["hunger"] + self.attributes_mod["hunger"] > 0:
-            multiply = 1 + self.attributes["strength"]
+            multiply = 1 + self.attributes["strength"] + self.attributes_mod["strength"]
             self.attributes["hunger"] -= self.decay_rates["hunger"] * multiply
             self.nb_turn_hungry = 0
         else:
@@ -123,8 +123,10 @@ class Agent:
         elif self.attributes["health"] < 1 and self.nb_turn_fulfilled >= 3:
             self.attributes["health"] += self.decay_rates["health"]
 
-        if self.attributes["health"] < 0.5 and self.attributes["strength"] > self.base_attributes["strength"]:
-            self.attributes["strength"] -= self.decay_rates["strength"]
+        self.attributes["strength"] = max(self.attributes["strength"] - self.decay_rates["strength"],self.base_attributes["strength"])
+
+        if self.attributes["health"] < 0.5:
+            self.attributes_mod["strength"] = -random.uniform(0.1,0.5)
 
         self.attributes["social"] -= self.decay_rates["social"]
         self.happiness -= self.happiness_decay
