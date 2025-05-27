@@ -32,7 +32,7 @@ class Pathfinding:
         if not self.is_walkable(next_pos):
             return float('-inf')
 
-        height_diff = abs(self.heightmap[next_pos[0], next_pos[1]] - self.heightmap[current[0], current[1]])
+        height_diff = abs(self.heightmap[next_pos[0], next_pos[1]].item() - self.heightmap[current[0], current[1]].item())
         if height_diff > 1:
             return float('-inf')
         return 1 + height_diff * 0.1
@@ -83,12 +83,12 @@ class Pathfinding:
         
         return mst_cost
     
-    def find_path(self) -> Tuple[List[Tuple[int, int]], np.ndarray]:
+    def find_path(self) -> List[Tuple[int, int]]:
         start = (self.start[0], self.start[1])
         end = (self.end[0], self.end[1])
 
         if not self.is_walkable(start) or not self.is_walkable(end):
-            return [], np.zeros((self.grid.shape[0], self.grid.shape[1]), dtype=int)
+            return []
         
         open_list = [(0, start)]
         came_from = {}
@@ -103,7 +103,7 @@ class Pathfinding:
             if current == end:
                 path = self.reconstruct_path(came_from, end)
                 path_matrix = self.create_path_matrix(path)
-                return path, path_matrix
+                return path
             
             closed_set.add(current)
             
@@ -127,7 +127,7 @@ class Pathfinding:
                     f_score[neighbor] = tentative_g_score + h_score
                     heapq.heappush(open_list, (f_score[neighbor], neighbor))
         
-        return [], np.zeros((self.grid.shape[0], self.grid.shape[1]), dtype=int)
+        return []
     
     def reconstruct_path(self, came_from: Dict[Tuple[int, int], Tuple[int, int]], current: Tuple[int, int]) -> List[Tuple[int, int]]:
         path = [current]

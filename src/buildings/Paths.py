@@ -21,10 +21,12 @@ class Paths():
             if entrance is None:
                 continue
 
-            path = Pathfinding.find_path(self.simulation.walkable, entrance, self.simulation.firecamp_coords)
+            pclass = Pathfinding(self.simulation, entrance[0],entrance[1], self.simulation.firecamp_coords[0],self.simulation.firecamp_coords[1])
+            path = pclass.find_path()
             if path is None:
                 continue
 
+            print(path)
             for x, z in path:
                 self.matrix[x, z] = 1
 
