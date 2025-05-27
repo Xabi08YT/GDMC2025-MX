@@ -171,34 +171,40 @@ class AbstractionLayer:
         mcminy = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]].min().item() - 1
 
         foundations = mcy - mcminy
+        gdpcblocks = []
 
         if "firecamp" in meta["name"].lower():
-            foundations = 0
+            foundations = -1
             mcy = mcminy
+        else:
+            for mx in range(-1, blocks.shape[0] + 1):
+                for mz in range(-1, blocks.shape[1] + 1):
+                    for my in range(blocks.shape[2] + 1):
+                        gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block("minecraft:air")))
 
-        gdpcblocks = []
+            interface.placeBlocks(gdpcblocks)
+        gdpcblocks.clear()
 
         for fy in range(foundations):
             for fx in range(-1, blocks.shape[0] + 1):
-                for fz in range(-1, blocks.shape[2] + 1):
-                    if fy == foundations - 1:
-                        if fx == -1:
-                            gdpcblocks.append(
-                                ((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone_stairs[facing=east]")))
-                        elif fx == blocks.shape[0]:
-                            gdpcblocks.append(
-                                ((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone_stairs[facing=west]")))
-                        elif fz == blocks.shape[1]:
-                            gdpcblocks.append(
-                                ((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone_stairs[facing=north]")))
-                        elif fz == -1:
-                            gdpcblocks.append(
-                                ((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone_stairs[facing=south]")))
-                        else:
-                            gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone")))
+                for fz in range(-1, blocks.shape[1] + 1):
+                    gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone")))
 
-                    else:
-                        gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone")))
+        if foundations > 0:
+            for fx in range(-1, blocks.shape[0] + 1):
+                for fz in range(-1, blocks.shape[1] + 1):
+                    if fx == -1:
+                        gdpcblocks.append(
+                            ((mcx + fx, mcminy + foundations, mcz + fz), Block("minecraft:cobblestone_stairs[facing=east]")))
+                    elif fx == blocks.shape[0]:
+                        gdpcblocks.append(
+                            ((mcx + fx, mcminy + foundations, mcz + fz), Block("minecraft:cobblestone_stairs[facing=west]")))
+                    elif fz == blocks.shape[1]:
+                        gdpcblocks.append(
+                            ((mcx + fx, mcminy + foundations, mcz + fz), Block("minecraft:cobblestone_stairs[facing=north]")))
+                    elif fz == -1:
+                        gdpcblocks.append(
+                            ((mcx + fx, mcminy + foundations, mcz + fz), Block("minecraft:cobblestone_stairs[facing=south]")))
 
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
@@ -213,7 +219,7 @@ class AbstractionLayer:
         for building in Building.BUILDINGS:
             building.matrix_to_files()
         p = Pool(cpu_count())
-        hmap = self.get_height_map_excluding(f"air,{leaves},{wood},#water,#lava,grass_block")
+        hmap = self.get_height_map_excluding(f"air,{leaves},{wood},#water,#lava,grass_block,water,lava")
         p.map_async(self.push_building, [(folder, target,hmap) for target in os.listdir(folder)]).get()
         p.close()
         p.join()

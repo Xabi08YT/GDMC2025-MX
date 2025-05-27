@@ -46,7 +46,8 @@ class WorkshopBuilding(JobBuilding):
             score -= distance_xz(x,simulation.firecamp_coords[0],z,simulation.firecamp_coords[1])
             score += 0.5 * simulation.wood[x-self.width:x+self.width,z-self.depth:z+self.depth].sum()
 
-            if simulation.walkable[x-self.width//2-1:x+self.width//2+1,z-self.depth//2-1:z+self.depth//2+1].sum().item() < self.width * self.depth:
+            if simulation.walkable[x-self.width//2-1:x+self.width//2+1,z-self.depth//2-1:z+self.depth//2+1].sum().item() < self.width * self.depth or simulation.buildings[x - self.width:x + self.width,
+                          z - self.depth:z + self.depth].sum().item() > 0:
                 continue
 
             if score > best_score:
