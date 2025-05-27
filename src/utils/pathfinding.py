@@ -1,12 +1,16 @@
 import numpy as np
 import heapq
 from typing import List, Tuple, Dict
-from math_methods import distance_xz
+from utils.math_methods import distance_xz
 
 class Pathfinding:
-    def __init__(self, grid: np.array):
-        # Format: [[walkable, water, lava, wood, buildable]]
-        self.grid = grid
+    def __init__(self, simulation, x1, z1, x2, z2):
+        # np.array of boolean values indicating walkable blocks
+        self.grid = simulation.walkable
+        # np.array of height values for the terrain xz
+        self.heightmap = simulation.heightmap
+        self.start = (x1, z1)
+        self.end = (x2, z2)
         self.cost = 0
         self.directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
@@ -22,43 +26,21 @@ class Pathfinding:
         if not self.is_valid_position(pos):
             return False
         
-        x, z = pos
-        cell = self.grid[x, z]        
-        walkable = cell[1]
-        water = cell[2]
-        lava = cell[3]
-        
-        if lava == 1:
-            return False
-        
-        return walkable == 1 or water == 1
+        return self.grid[pos[0], pos[1]] == 1
     
     def get_movement_cost(self, current: Tuple[int, int], next_pos: Tuple[int, int]) -> float:
-        if not self.is_valid_position(next_pos) or not self.is_walkable(next_pos):
-            return float('inf')
-        
-        x, z = next_pos
-        cell = self.grid[x, z]
-        water = cell[2]
-        wood = cell[4]
-        
-        cost = 1.0
-        
-        if water == 1:
-            cost += 4.0
-        
-        if wood == 1:
-            cost += 0.5
-        
-        if current[0] != next_pos[0] and current[1] != next_pos[1]:
-            cost *= 1.4
-        
-        return cost
-    
+        if not self.is_walkable(next_pos):
+            return float('-inf')
+
+        height_diff = abs(self.heightmap[next_pos[0], next_pos[1]] - self.heightmap[current[0], current[1]])
+        if height_diff > 1:
+            return float('-inf')
+        return 1 + height_diff * 0.1
+
     def get_neighbors(self, pos: Tuple[int, int]) -> List[Tuple[int, int]]:
         neighbors = []
         x, z = pos
-        
+
         for dx, dz in self.directions:
             next_pos = (x + dx, z + dz)
             if self.is_walkable(next_pos):
@@ -101,10 +83,10 @@ class Pathfinding:
         
         return mst_cost
     
-    def find_path(self, start: Tuple[int, int], end: Tuple[int, int]) -> Tuple[List[Tuple[int, int]], np.ndarray]:
-        if not self.is_valid_position(start) or not self.is_valid_position(end):
-            return [], np.zeros((self.grid.shape[0], self.grid.shape[1]), dtype=int)
-        
+    def find_path(self) -> Tuple[List[Tuple[int, int]], np.ndarray]:
+        start = (self.start[0], self.start[1])
+        end = (self.end[0], self.end[1])
+
         if not self.is_walkable(start) or not self.is_walkable(end):
             return [], np.zeros((self.grid.shape[0], self.grid.shape[1]), dtype=int)
         

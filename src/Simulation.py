@@ -13,6 +13,7 @@ from simLogic.Agent import Agent
 from simLogic.BoidsBehavior import BoidsBehavior
 import numpy as np
 from matplotlib import pyplot as plt
+import buildings.Paths as Paths
 
 class Simulation:
 
@@ -112,6 +113,13 @@ class Simulation:
         self.firecamp_coords = firecamp.center_point
 
         self.run(self.agents)
+
+        for agent in self.agents:
+            if hasattr(agent, 'house') and agent.house.center_point:
+                house_x, _, house_z = agent.house.center_point
+                firecamp_x, _, firecamp_z = self.firecamp_coords
+                path = Paths.Paths(self, house_x, house_z, firecamp_x, firecamp_z)
+                path.build()
 
         self.show_message("Simulation ended.")
 
