@@ -156,7 +156,14 @@ class AbstractionLayer:
         mcx = x + self.buildArea.begin[0]
         z = meta["z"] - blocks.shape[1] // 2
         mcz = z + self.buildArea.begin[2]
-        mcy = args[2][x:x+blocks.shape[0],z:z+blocks.shape[1]].min().item() - 1
+
+        height_section = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]]
+        if height_section.size > 0:
+            mcy = height_section.min().item() - 1
+        else:
+            print(
+                f"{ANSIColors.WARNING}[WARN] Section vide pour le bâtiment {meta['name']} à ({x},{z}), utilisation de la hauteur par défaut{ANSIColors.ENDC}")
+            mcy = args[2].min().item() if args[2].size > 0 else 0
 
         gdpcblocks = []
 

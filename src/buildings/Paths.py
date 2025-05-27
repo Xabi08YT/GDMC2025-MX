@@ -1,6 +1,6 @@
 import numpy as np
 import utils.pathfinding as pathfinding
-import Building
+from buildings.Building import Building
 
 class Paths(Building):
     def __init__(self, simulation, x1, z1, x2, z2):
