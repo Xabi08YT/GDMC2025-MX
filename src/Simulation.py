@@ -4,6 +4,7 @@ from shutil import rmtree
 from time import time
 from buildings.Firecamp import Firecamp
 from simLogic.Relationships import Relationships
+from buildings.Building import Building
 from utils.ANSIColors import ANSIColors
 from visualization.LogFile import LogFile
 from gdpc import Editor
@@ -114,12 +115,9 @@ class Simulation:
 
         self.run(self.agents)
 
-        for agent in self.agents:
-            if hasattr(agent, 'house') and agent.house.center_point:
-                house_x, _, house_z = agent.house.center_point
-                firecamp_x, _, firecamp_z = self.firecamp_coords
-                path = Paths.Paths(self, house_x, house_z, firecamp_x, firecamp_z)
-                path.build()
+        path = Paths.Paths(self, Building.BUILDINGS)
+        path.build()
+        path.export()
 
         self.show_message("Simulation ended.")
 
