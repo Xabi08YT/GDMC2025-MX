@@ -1,18 +1,18 @@
 import numpy as np
-import utils.pathfinding as pathfinding
+from utils.Pathfinding import Pathfinding
 from buildings.Building import Building
 import os
 import json
 
 class Paths():
-    def __init__(self, simulation, buildinds):
+    def __init__(self, simulation, buildings):
         self.simulation = simulation
-        self.buildinds = buildinds
+        self.buildings = buildings
         self.matrix = np.zeros((simulation.walkable.shape[0], simulation.walkable.shape[1]), dtype=object)
 
     def build(self):
-        for building in self.buildinds:
-            if building.center_point is None:
+        for building in self.buildings:
+            if not hasattr(building, "center_point") or building.center_point is None:
                 continue
             if not self.simulation.walkable[building.center_point[0], building.center_point[1]]:
                 continue
@@ -21,7 +21,7 @@ class Paths():
             if entrance is None:
                 continue
 
-            path = pathfinding.find_path(self.simulation.walkable, entrance, self.simulation.firecamp_coords)
+            path = Pathfinding.find_path(self.simulation.walkable, entrance, self.simulation.firecamp_coords)
             if path is None:
                 continue
 
