@@ -26,7 +26,6 @@ class Paths():
             if path is None:
                 continue
 
-            print(path)
             for x, z in path:
                 self.matrix[x, z] = 1
 
