@@ -230,5 +230,13 @@
         "dark_oak_door"
       ]
     }
-  }
+  },
+  "path_blocks": [
+    "minecraft:path",
+    "minecraft:gravel",
+    "minecraft:cobblestone",
+    "minecraft:coarse_dirt",
+    "minecraft:grass_block",
+    "minecraft:moss_block"
+  ]
 }

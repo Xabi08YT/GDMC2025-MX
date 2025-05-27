@@ -1,3 +1,4 @@
+import random
 from time import time
 
 from gdpc import interface, Editor, Block
@@ -223,14 +224,38 @@ class AbstractionLayer:
             f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
         interface.placeBlocks(gdpcblocks, doBlockUpdates=meta["bupdates"])
 
+    def push_paths(self, folder, hmap):
+        if not os.path.isdir(os.path.join(folder, 'path')):
+            return
+
+        blocks = self.simParams["path_blocks"]
+        pathmap = np.load(os.path.join(folder,"path", 'pathmap'), allow_pickle=True)
+
+        mcx = self.buildArea.begin[0]
+        mcz = self.buildArea.begin[2]
+
+        gdpcblocks = []
+
+        for x in range(pathmap.shape[0]):
+            for z in range(pathmap.shape[1]):
+                if not pathmap[x,z]:
+                    continue
+                b = random.choice(blocks)
+                mcy = hmap[x,z]
+                gdpcblocks.append(((mcx+x, mcy-1, mcz+z), Block(b)))
+
+        interface.placeBlocks(gdpcblocks,doBlockUpdates=False)
+
     def push(self, folder="generated"):
         for building in Building.BUILDINGS:
             building.matrix_to_files()
         p = Pool(cpu_count())
         hmap = self.get_height_map_excluding(f"air,{leaves},{wood},#water,#lava,grass_block,water,lava")
-        p.map_async(self.push_building, [(folder, target,hmap) for target in os.listdir(folder)]).get()
+        p.map_async(self.push_building, [(folder, target,hmap) for target in os.listdir(folder) if target != "path"]).get()
         p.close()
         p.join()
+
+        self.push_paths(folder,hmap)
 
     @staticmethod
     def get_abstraction_layer_instance():
