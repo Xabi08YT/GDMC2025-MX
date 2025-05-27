@@ -1,17 +1,35 @@
 import numpy as np
 import utils.pathfinding as pathfinding
 from buildings.Building import Building
+import os
+import json
 
-class Paths(Building):
-    def __init__(self, simulation, x1, z1, x2, z2):
+class Paths():
+    def __init__(self, simulation, buildinds):
         self.simulation = simulation
-        super().__init__(None, None, "Paths", width=self.simulation.walkable.shape[0], height=1, depth=self.simulation.shape[1])
-        self.pathfinding = pathfinding(simulation, x1, z1, x2, z2)
-        self.path, self.path_matrix = self.pathfinding.find_path()
-
+        self.buildinds = buildinds
+        self.matrix = np.zeros((simulation.walkable.shape[0], simulation.walkable.shape[1]), dtype=object)
 
     def build(self):
-        for x, z in self.path:
-            if self.simulation.walkable[x, z]:
-                super().add_block_to_matrix(x, 0, z, "minecraft:dirt_path")
-        super().built()
+        for building in self.buildinds:
+            if building.center_point is None:
+                continue
+            if not self.simulation.walkable[building.center_point[0], building.center_point[1]]:
+                continue
+
+            entrance = building.get_entrance_coordinates()
+            if entrance is None:
+                continue
+
+            path = pathfinding.find_path(self.simulation.walkable, entrance, self.simulation.firecamp_coords)
+            if path is None:
+                continue
+
+            for x, z in path:
+                self.matrix[x, z] = 1
+
+    def export(self):
+        folder_path = os.path.join("generated", "path")
+        os.makedirs(folder_path, exist_ok=True)
+        matrix_file = os.path.join(folder_path, "pathmap")
+        self.matrix.dump(matrix_file)
