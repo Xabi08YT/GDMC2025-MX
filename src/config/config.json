@@ -3,5 +3,6 @@
   "GDMC_HTTP_URL": null,
   "radius": 20,
   "nbTurns": 100,
-  "observationRange": 5
+  "observationRange": 5,
+  "nbBuildingTries": 50
 }

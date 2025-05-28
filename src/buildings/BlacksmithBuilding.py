@@ -11,7 +11,7 @@ class BlacksmithBuilding(JobBuilding):
     def __init__(self, center_point: tuple[int,int,int] | None, agent, orientation: str = "north"):
         super().__init__(center_point, agent, agent.name + "'s BlacksmithBuilding", orientation, width=random.randint(5, 10), height=6, depth=random.randint(3, 10))
         if center_point is None:
-            center_point = self.best_spot(20,agent.simulation)
+            center_point = self.best_spot(agent.simulation.config["nbBuildingTries"],agent.simulation)
         self.place(center_point,agent.simulation)
         self.corners = [
             [0, 0],
