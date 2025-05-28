@@ -15,7 +15,7 @@ class FarmBuilding(JobBuilding):
         if center_point is None:
             center_point = self.best_spot(agent.simulation.config["nbBuildingTries"], agent.simulation)
         self.place(center_point, agent.simulation)
-
+        self.crops = random.choice(["minecraft:wheat", "minecraft:carrots", "minecraft:potatoes", "minecraft:beetroots"])
         FarmBuilding.INSTANCE = self
 
     def build(self):
@@ -31,7 +31,7 @@ class FarmBuilding(JobBuilding):
                         self.add_block_to_matrix(dx, 1, dz, "minecraft:water")
                     else:
                         self.add_block_to_matrix(dx, 1, dz, "minecraft:farmland")
-                        self.add_block_to_matrix(dx, 2, dz, "minecraft:wheat")
+                        self.add_block_to_matrix(dx, 2, dz, self.crops)
         self.add_block_to_matrix(0, 2, 3, "minecraft:torch")
         self.add_block_to_matrix(self.width - 1, 2, 3, "minecraft:torch")
         self.check_built()

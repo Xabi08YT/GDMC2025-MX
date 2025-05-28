@@ -14,6 +14,7 @@ import requests
 
 class AbstractionLayer:
     _AbstractionLayerInstance = None
+    wools = ["minecraft:red_wool", "minecraft:blue_wool", "minecraft:green_wool", "minecraft:yellow_wool", "minecraft:orange_wool", "minecraft:purple_wool", "minecraft:light_blue_wool", "minecraft:black_wool", "minecraft:white_wool", "minecraft:lime_wool", "minecraft:gray_wool", "minecraft:light_gray_wool", "minecraft:pink_wool"]
 
     def __init__(self, buildArea: interface.Box):
         if (AbstractionLayer._AbstractionLayerInstance is not None):
@@ -243,13 +244,14 @@ class AbstractionLayer:
 
         for x in range(pathmap.shape[0]):
             for z in range(pathmap.shape[1]):
-                if not pathmap[x, z]:
+                if pathmap[x, z] == 0:
                     continue
-                if random.randint(0,101) < 26:
+                if random.randint(0,101) < 11:
                     continue
                 b = random.choice(blocks)
                 mcy = hmap[x, z]
                 gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
+                gdpcblocks.append(((mcx + x, 200, mcz + z), Block(AbstractionLayer.wools[pathmap[x, z] % len(AbstractionLayer.wools)])))
 
         interface.placeBlocks(gdpcblocks, doBlockUpdates=False)
 

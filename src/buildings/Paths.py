@@ -11,7 +11,9 @@ class Paths():
         self.matrix = np.zeros((simulation.walkable.shape[0], simulation.walkable.shape[1]), dtype=object)
 
     def build(self):
+        i = 0
         for building in self.buildings:
+            i+= 1
             if not hasattr(building, "center_point") or building.center_point is None:
                 continue
             if not self.simulation.walkable[building.center_point[0], building.center_point[1]]:
@@ -28,7 +30,7 @@ class Paths():
 
             for x, z in path:
                 self.matrix[max(0,x-1):min(self.simulation.heightmap.shape[0],x+2),
-                max(0,z-1):min(self.simulation.heightmap.shape[1],z+2)] = 1
+                max(0,z-1):min(self.simulation.heightmap.shape[1],z+2)] = i
 
     def export(self):
         folder_path = os.path.join("generated", "path")
