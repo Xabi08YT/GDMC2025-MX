@@ -196,12 +196,15 @@ class AbstractionLayer:
             interface.placeBlocks(gdpcblocks)
         gdpcblocks.clear()
 
-        for fy in range(foundations):
-            for fx in range(-1, blocks.shape[0] + 1):
-                for fz in range(-1, blocks.shape[1] + 1):
-                    gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone")))
+        for fy in range(foundations): # I changed from (-1, shape+1) to (0, shape) but edit if needed
+            for fx in range(blocks.shape[0]):
+                for fz in range(blocks.shape[1]):
+                    if (fx == 0 or fx == blocks.shape[0]-1) and (fz == 0 or fz == blocks.shape[1]-1):
+                        gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block(meta["corner"])))
+                    else:
+                        gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone")))
 
-        if foundations > 0:
+        """if foundations > 0:
             for fx in range(-1, blocks.shape[0] + 1):
                 for fz in range(-1, blocks.shape[1] + 1):
                     if fx == -1:
@@ -219,7 +222,7 @@ class AbstractionLayer:
                     elif fz == -1:
                         gdpcblocks.append(
                             ((mcx + fx, mcminy + foundations, mcz + fz),
-                             Block("minecraft:cobblestone_stairs[facing=south]")))
+                             Block("minecraft:cobblestone_stairs[facing=south]")))"""
 
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):

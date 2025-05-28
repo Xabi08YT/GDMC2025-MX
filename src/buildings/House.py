@@ -20,6 +20,7 @@ class House(Building):
         self.roof_style = random.choice(["flat", "pyramid"])
         self.furniture_counter = random.randint(1, 2)
         self.furnitures = ["minecraft:crafting_table", "minecraft:chest", "minecraft:barrel", "minecraft:smithing_table", "minecraft:grindstone"]
+        self.corner_block = "minecraft:oak_log"
 
         family_size = 1
         for rel in agent.simulation.relationships.RELATIONSHIPS.keys():

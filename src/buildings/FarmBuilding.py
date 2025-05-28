@@ -17,6 +17,7 @@ class FarmBuilding(JobBuilding):
         self.place(center_point, agent.simulation)
         self.crops = random.choice(["minecraft:wheat", "minecraft:carrots", "minecraft:potatoes", "minecraft:beetroots"])
         FarmBuilding.INSTANCE = self
+        self.corner_block = "minecraft:oak_log"
 
     def build(self):
         for dx in range(self.width):

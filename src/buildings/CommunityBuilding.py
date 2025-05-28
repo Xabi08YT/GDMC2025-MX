@@ -22,7 +22,7 @@ class CommunityBuilding(JobBuilding):
             [self.width - 1, 0],
             [self.width - 1, self.depth - 1]
         ]
-
+        self.corner_block = "minecraft:bricks"
         CommunityBuilding.INSTANCE = self
 
     def build(self):

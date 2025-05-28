@@ -28,6 +28,7 @@ class Building:
         self.matrix = np.zeros((self.width, self.depth, self.height), dtype=object)
         self.BUILDINGS.append(self)
         self.bupdates = bupdates
+        self.corner = "minecraft:oak_log"
 
     def built(self):
         self.built = True
@@ -107,6 +108,7 @@ class Building:
             "z": self.center_point[1],
             "built": self.built,
             "bupdates": self.bupdates,
+            "corner": self.corner
         }
         print(self.folder,self.name)
         folder_path = os.path.join(self.folder, self.name)
