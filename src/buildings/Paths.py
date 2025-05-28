@@ -27,7 +27,8 @@ class Paths():
                 continue
 
             for x, z in path:
-                self.matrix[x, z] = 1
+                self.matrix[max(0,x-1):min(self.simulation.heightmap.shape[0],x+2),
+                max(0,z-1):min(self.simulation.heightmap.shape[1],z+2)] = 1
 
     def export(self):
         folder_path = os.path.join("generated", "path")

@@ -185,7 +185,7 @@ class AbstractionLayer:
 
         if "firecamp" in meta["name"].lower():
             foundations = -1
-            mcy = mcminy
+            mcy = args[2][x:x + blocks.shape[0],z:z + blocks.shape[1]].min().item() - 1
         else:
             for mx in range(-1, blocks.shape[0] + 1):
                 for mz in range(-1, blocks.shape[1] + 1):
