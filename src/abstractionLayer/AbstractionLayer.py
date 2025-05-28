@@ -11,8 +11,6 @@ from utils.ANSIColors import ANSIColors
 import numpy as np
 import requests
 
-leaves = "oak_leaves,acacia_leaves,azalea_leaves,birch_leaves,cherry_leaves,dark_oak_leaves,flowering_azalea_leaves,jungle_leaves,mangrove_leaves,pale_oak_leaves,spruce_leaves,mangrove_roots"
-wood = "oak_log,acacia_log,birch_log,cherry_log,dark_oak_log,jungle_log,mangrove_log,pale_oak_log,spruce_log"
 
 class AbstractionLayer:
     _AbstractionLayerInstance = None
@@ -84,14 +82,15 @@ class AbstractionLayer:
                     f.close()
                 if same_point(self.buildArea.begin, data["begin"]) and same_point(self.buildArea.end,
                                                                                   data["end"]) and os.path.exists(
-                        "data/walkableMatrix") and os.path.exists("data/waterMatrix") and os.path.exists(
-                        "data/lavaMatrix") and os.path.exists("data/woodMatrix"):
+                    "data/walkableMatrix") and os.path.exists("data/waterMatrix") and os.path.exists(
+                    "data/lavaMatrix") and os.path.exists("data/woodMatrix"):
                     print(
                         f"{ANSIColors.OKCYAN}[NOTE] Same area, skipping world pulling... If you want to pull it again, remove the folder or add the -fp argument to the launch command.{ANSIColors.ENDC}")
                     return [np.load("data/walkableMatrix", allow_pickle=True),
                             np.load("data/woodMatrix", allow_pickle=True),
                             np.load("data/waterMatrix", allow_pickle=True),
-                            np.load("data/lavaMatrix", allow_pickle=True), self.get_height_map_excluding(f"air,{leaves}")]
+                            np.load("data/lavaMatrix", allow_pickle=True),
+                            self.get_height_map_excluding("air,%23leaves")]
                 print(
                     f"{ANSIColors.WARNING}[WARN] Some files appears to be missing. Initiating pull... {ANSIColors.ENDC}")
             except json.JSONDecodeError:
@@ -107,7 +106,7 @@ class AbstractionLayer:
         os.mkdir(os.path.join(os.getcwd(), "data"))
 
         # Getting height between which we will need to pull to have the hole surface
-        heightmap = self.get_height_map_excluding(f"air,{leaves}")
+        heightmap = self.get_height_map_excluding("air,%23leaves")
         miny = heightmap.astype(int).min().item()
         maxy = heightmap.astype(int).max().item()
 
@@ -168,8 +167,10 @@ class AbstractionLayer:
         mcx = x + self.buildArea.begin[0]
         z = meta["z"] - blocks.shape[1] // 2
         mcz = z + self.buildArea.begin[2]
-        mcy = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]].max().item() - 1
-        mcminy = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]].min().item() - 1
+        mcy = args[2][max(x - 1, 0):min(args[2].shape[0], x + blocks.shape[0] + 1),
+              max(z - 1, 0):min(args[2].shape[0], z + blocks.shape[1] + 1)].max().item() - 1
+        mcminy = args[3][max(x - 1, 0):min(args[2].shape[0], x + blocks.shape[0] + 1),
+                 max(z - 1, 0):min(args[2].shape[0], z + blocks.shape[1] + 1)].min().item() - 1
 
         """height_section = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]]
         if height_section.size > 0:
@@ -204,16 +205,20 @@ class AbstractionLayer:
                 for fz in range(-1, blocks.shape[1] + 1):
                     if fx == -1:
                         gdpcblocks.append(
-                            ((mcx + fx, mcminy + foundations, mcz + fz), Block("minecraft:cobblestone_stairs[facing=east]")))
+                            ((mcx + fx, mcminy + foundations, mcz + fz),
+                             Block("minecraft:cobblestone_stairs[facing=east]")))
                     elif fx == blocks.shape[0]:
                         gdpcblocks.append(
-                            ((mcx + fx, mcminy + foundations, mcz + fz), Block("minecraft:cobblestone_stairs[facing=west]")))
+                            ((mcx + fx, mcminy + foundations, mcz + fz),
+                             Block("minecraft:cobblestone_stairs[facing=west]")))
                     elif fz == blocks.shape[1]:
                         gdpcblocks.append(
-                            ((mcx + fx, mcminy + foundations, mcz + fz), Block("minecraft:cobblestone_stairs[facing=north]")))
+                            ((mcx + fx, mcminy + foundations, mcz + fz),
+                             Block("minecraft:cobblestone_stairs[facing=north]")))
                     elif fz == -1:
                         gdpcblocks.append(
-                            ((mcx + fx, mcminy + foundations, mcz + fz), Block("minecraft:cobblestone_stairs[facing=south]")))
+                            ((mcx + fx, mcminy + foundations, mcz + fz),
+                             Block("minecraft:cobblestone_stairs[facing=south]")))
 
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
@@ -229,7 +234,7 @@ class AbstractionLayer:
             return
 
         blocks = self.simParams["path_blocks"]
-        pathmap = np.load(os.path.join(folder,"path", 'pathmap'), allow_pickle=True)
+        pathmap = np.load(os.path.join(folder, "path", 'pathmap'), allow_pickle=True)
 
         mcx = self.buildArea.begin[0]
         mcz = self.buildArea.begin[2]
@@ -238,24 +243,26 @@ class AbstractionLayer:
 
         for x in range(pathmap.shape[0]):
             for z in range(pathmap.shape[1]):
-                if not pathmap[x,z]:
+                if not pathmap[x, z]:
                     continue
                 b = random.choice(blocks)
-                mcy = hmap[x,z]
-                gdpcblocks.append(((mcx+x, mcy-1, mcz+z), Block(b)))
+                mcy = hmap[x, z]
+                gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
 
-        interface.placeBlocks(gdpcblocks,doBlockUpdates=False)
+        interface.placeBlocks(gdpcblocks, doBlockUpdates=False)
 
     def push(self, folder="generated"):
         for building in Building.BUILDINGS:
             building.matrix_to_files()
+
+        hmap = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers")
+        hmapsolid = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,%23dirt")
+        self.push_paths(folder, hmap)
         p = Pool(cpu_count())
-        hmap = self.get_height_map_excluding(f"air,{leaves},{wood},#water,#lava,grass_block,water,lava")
-        p.map_async(self.push_building, [(folder, target,hmap) for target in os.listdir(folder) if target != "path"]).get()
+        p.map_async(self.push_building,
+                    [(folder, target, hmap, hmapsolid) for target in os.listdir(folder) if target != "path"]).get()
         p.close()
         p.join()
-
-        self.push_paths(folder,hmap)
 
     @staticmethod
     def get_abstraction_layer_instance():
