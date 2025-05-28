@@ -21,7 +21,7 @@ class Firecamp(Building):
         max_x = self.simulation.heightmap.shape[0] - self.width//2-1
         min_z = self.depth // 2 + 1
         max_z = self.simulation.heightmap.shape[1] - self.depth//2-1
-        try_number = 0
+        try_number = self.simulation.config["nbBuildingTries"]
 
         while best_spot is None or try_number < 20:
             x = random.randint(min_x, max_x - 1)

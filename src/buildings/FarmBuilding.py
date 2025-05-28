@@ -10,7 +10,7 @@ class FarmBuilding(JobBuilding):
         super().__init__(center_point, agent, agent.name + "'s FarmBuilding", orientation, width=random.randint(5, 10),
                          depth=7, height=3)
         if center_point is None:
-            center_point = self.best_spot(20, agent.simulation)
+            center_point = self.best_spot(agent.simulation.config["nbBuildingTries"], agent.simulation)
         self.place(center_point, agent.simulation)
 
     def build(self):
