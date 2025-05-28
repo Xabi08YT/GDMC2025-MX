@@ -245,6 +245,8 @@ class AbstractionLayer:
             for z in range(pathmap.shape[1]):
                 if not pathmap[x, z]:
                     continue
+                if random.randint(0,101) < 26:
+                    continue
                 b = random.choice(blocks)
                 mcy = hmap[x, z]
                 gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))

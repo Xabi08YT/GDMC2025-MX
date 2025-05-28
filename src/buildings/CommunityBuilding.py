@@ -8,6 +8,9 @@ from utils.math_methods import distance_xz
 
 
 class CommunityBuilding(JobBuilding):
+
+    INSTANCE = None
+
     def __init__(self, center_point: tuple[int,int,int] | None, agent, orientation: str = "north"):
         super().__init__(center_point, agent, agent.name + "'s CommunityBuilding", orientation, width=random.randint(5, 10), height=6, depth=random.randint(3, 10))
         if center_point is None:
@@ -19,6 +22,8 @@ class CommunityBuilding(JobBuilding):
             [self.width - 1, 0],
             [self.width - 1, self.depth - 1]
         ]
+
+        CommunityBuilding.INSTANCE = self
 
     def build(self):
         for dx in range(self.width):
@@ -60,3 +65,9 @@ class CommunityBuilding(JobBuilding):
             t += 1
 
         return best_spot
+
+    @staticmethod
+    def get_instance(center_point: tuple[int, int, int] | None, agent, orientation: str = "north"):
+        if CommunityBuilding.INSTANCE is None:
+            return CommunityBuilding(center_point, agent, orientation)
+        return CommunityBuilding.INSTANCE

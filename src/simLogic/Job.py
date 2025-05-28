@@ -61,23 +61,23 @@ class Job:
         if priority == "hunger" and not agent.simulation.hasfarmer or agent.decay_rates["hunger"] > 0.45:
             self.job_type = choice([JobType.FARMER, JobType.FISHERMAN, JobType.BUTCHER])
             self.job_category = JobCategory.FARM
-            self.job_building = FarmBuilding(None, agent)
+            self.job_building = FarmBuilding.get_instance(None, agent)
             agent.simulation.hasfarmer = True
             return
-        if agent.attributes["strength"] > 0.7:
+        if agent.attributes["strength"] > 0.4:
             self.job_type = choice([JobType.ARMORER, JobType.WEAPONSMITH, JobType.TOOLSMITH, JobType.LEATHERWORKER])
             self.job_category = JobCategory.BLACKSMITH
-            self.job_building = BlacksmithBuilding(None, agent)
+            self.job_building = BlacksmithBuilding.get_instance(None, agent)
             return
         if agent.decay_rates["social"] < 0.05:
             self.job_type = choice([JobType.CARTOGRAPHER, JobType.CLERIC, JobType.LIBRARIAN])
             self.job_category = JobCategory.COMMUNITY
-            self.job_building = CommunityBuilding(None, agent)
+            self.job_building = CommunityBuilding.get_instance(None, agent)
             return
         if agent.decay_rates["energy"] < 0.3:
             self.job_type = choice([JobType.MASON, JobType.SHEPHERD, JobType.FLETCHER])
             self.job_category = JobCategory.WORKSHOP
-            self.job_building = WorkshopBuilding(None, agent)
+            self.job_building = WorkshopBuilding.get_instance(None, agent)
             return
         self.job_type = JobType.UNEMPLOYED
 

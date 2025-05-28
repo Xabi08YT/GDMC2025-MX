@@ -233,14 +233,10 @@
   },
   "path_blocks": [
     "minecraft:path",
-    "minecraft:grass_block",
     "minecraft:gravel",
     "minecraft:cobblestone",
-    "minecraft:grass_block",
     "minecraft:coarse_dirt",
-    "minecraft:grass_block",
     "minecraft:moss_block",
-    "minecraft:dirt_path",
-    "minecraft:grass_block"
+    "minecraft:dirt_path"
   ]
 }

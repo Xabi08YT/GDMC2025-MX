@@ -6,12 +6,17 @@ from buildings.JobBuilding import JobBuilding
 
 
 class FarmBuilding(JobBuilding):
+
+    INSTANCE = None
+
     def __init__(self, center_point: tuple[int, int, int] | None, agent, orientation: str = "north"):
-        super().__init__(center_point, agent, agent.name + "'s FarmBuilding", orientation, width=random.randint(5, 10),
+        super().__init__(center_point, agent, "Farm Building", orientation, width=random.randint(5, 10),
                          depth=7, height=3)
         if center_point is None:
             center_point = self.best_spot(agent.simulation.config["nbBuildingTries"], agent.simulation)
         self.place(center_point, agent.simulation)
+
+        FarmBuilding.INSTANCE = self
 
     def build(self):
         for dx in range(self.width):
@@ -57,3 +62,9 @@ class FarmBuilding(JobBuilding):
             t += 1
 
         return best_spot
+
+    @staticmethod
+    def get_instance(center_point: tuple[int, int, int] | None, agent, orientation: str = "north"):
+        if FarmBuilding.INSTANCE is None:
+            return FarmBuilding(center_point, agent, orientation)
+        return FarmBuilding.INSTANCE

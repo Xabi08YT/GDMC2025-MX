@@ -9,6 +9,9 @@ import random
 
 
 class WorkshopBuilding(JobBuilding):
+
+    INSTANCE = None
+
     def __init__(self, center_point: tuple[int,int,int] | None, agent, orientation: str = "north"):
         super().__init__(center_point, agent, agent.name + "'s WorkshopBuilding", orientation, width=random.randint(5, 10), height=6, depth=random.randint(3, 10))
         if center_point is None:
@@ -20,6 +23,8 @@ class WorkshopBuilding(JobBuilding):
             [self.width - 1, 0],
             [self.width - 1, self.depth - 1]
         ]
+
+        WorkshopBuilding.INSTANCE = self
 
     def build(self):
         for dx in range(self.width):
@@ -57,3 +62,9 @@ class WorkshopBuilding(JobBuilding):
             t += 1
 
         return best_spot
+
+    @staticmethod
+    def get_instance(center_point: tuple[int, int, int] | None, agent, orientation: str = "north"):
+        if WorkshopBuilding.INSTANCE is None:
+            return WorkshopBuilding(center_point, agent, orientation)
+        return WorkshopBuilding.INSTANCE
