@@ -185,6 +185,9 @@ class AbstractionLayer:
                 for k in range(mcy,320):
                     gdpcblocks.append(((mcx + i, k, mcz + j), Block("minecraft:air")))
 
+        interface.placeBlocks(gdpcblocks)
+        gdpcblocks.clear()
+
         """height_section = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]]
         if height_section.size > 0:
             mcy = height_section.min().item() - 1
