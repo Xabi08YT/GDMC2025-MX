@@ -30,11 +30,11 @@ class Pathfinding:
     
     def get_movement_cost(self, current: Tuple[int, int], next_pos: Tuple[int, int]) -> float:
         if not self.is_walkable(next_pos):
-            return float('-inf')
+            return float('inf')
 
         height_diff = abs(self.heightmap[next_pos[0], next_pos[1]].item() - self.heightmap[current[0], current[1]].item())
         if height_diff > 1:
-            return float('-inf')
+            return float('inf')
         return 1 + height_diff * 0.1
 
     def get_neighbors(self, pos: Tuple[int, int]) -> List[Tuple[int, int]]:
