@@ -153,6 +153,11 @@ class AbstractionLayer:
         print("[INFO] Minecraft world pulled in {:.2f} seconds.".format(end - start))
         return [walkable, wood, water, lava, heightmap]
 
+    def add_foundation_pillar_to_layer(self,mcx,mcz,mcy,gdpcblocks):
+        for fx in range(-1, 1):
+            for fz in range(-1, 1):
+                gdpcblocks.append(((mcx + fx, mcy, mcz + fz), Block("minecraft:polished_andesite")))
+
     def push_building(self, args):
         if not os.path.isdir(os.path.join(args[0], args[1])):
             return
@@ -186,7 +191,7 @@ class AbstractionLayer:
 
         if "firecamp" in meta["name"].lower():
             foundations = -1
-            mcy = args[2][x:x + blocks.shape[0],z:z + blocks.shape[1]].min().item() - 1
+            mcy = int(np.average(args[2][x:x + blocks.shape[0],z:z + blocks.shape[1]]).item() - 1)
         else:
             for mx in range(-1, blocks.shape[0] + 1):
                 for mz in range(-1, blocks.shape[1] + 1):
@@ -196,33 +201,22 @@ class AbstractionLayer:
             interface.placeBlocks(gdpcblocks)
         gdpcblocks.clear()
 
-        for fy in range(foundations): # I changed from (-1, shape+1) to (0, shape) but edit if needed
+        for fy in range(foundations):
             for fx in range(blocks.shape[0]):
                 for fz in range(blocks.shape[1]):
-                    if (fx == 0 or fx == blocks.shape[0]-1) and (fz == 0 or fz == blocks.shape[1]-1):
-                        gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block(meta["corner"])))
-                    else:
-                        gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone")))
+                    gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone")))
 
-        """if foundations > 0:
+            self.add_foundation_pillar_to_layer(mcx,mcz,mcminy + fy, gdpcblocks)
+            self.add_foundation_pillar_to_layer(mcx,mcz + blocks.shape[1],mcminy + fy, gdpcblocks)
+            self.add_foundation_pillar_to_layer(mcx + blocks.shape[0],mcz,mcminy + fy, gdpcblocks)
+            self.add_foundation_pillar_to_layer(mcx + blocks.shape[0],mcz + blocks.shape[1],mcminy + fy, gdpcblocks)
+
+        if foundations > 0:
             for fx in range(-1, blocks.shape[0] + 1):
                 for fz in range(-1, blocks.shape[1] + 1):
-                    if fx == -1:
-                        gdpcblocks.append(
-                            ((mcx + fx, mcminy + foundations, mcz + fz),
-                             Block("minecraft:cobblestone_stairs[facing=east]")))
-                    elif fx == blocks.shape[0]:
-                        gdpcblocks.append(
-                            ((mcx + fx, mcminy + foundations, mcz + fz),
-                             Block("minecraft:cobblestone_stairs[facing=west]")))
-                    elif fz == blocks.shape[1]:
-                        gdpcblocks.append(
-                            ((mcx + fx, mcminy + foundations, mcz + fz),
-                             Block("minecraft:cobblestone_stairs[facing=north]")))
-                    elif fz == -1:
-                        gdpcblocks.append(
-                            ((mcx + fx, mcminy + foundations, mcz + fz),
-                             Block("minecraft:cobblestone_stairs[facing=south]")))"""
+                    gdpcblocks.append(
+                        ((mcx + fx, mcminy + foundations, mcz + fz),
+                        Block("minecraft:polished_andesite")))
 
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
@@ -262,8 +256,8 @@ class AbstractionLayer:
         for building in Building.BUILDINGS:
             building.matrix_to_files()
 
-        hmap = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers")
-        hmapsolid = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,%23dirt")
+        hmap = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,sugar_cane")
+        hmapsolid = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,%23dirt,sugar_cane")
         self.push_paths(folder, hmap)
         p = Pool(cpu_count())
         p.map_async(self.push_building,
