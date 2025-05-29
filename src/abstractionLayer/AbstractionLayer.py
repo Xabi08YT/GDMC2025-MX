@@ -201,22 +201,23 @@ class AbstractionLayer:
             interface.placeBlocks(gdpcblocks)
         gdpcblocks.clear()
 
-        for fy in range(foundations):
-            for fx in range(blocks.shape[0]):
-                for fz in range(blocks.shape[1]):
-                    gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone")))
+        if "bridge" not in meta["name"].lower():
+            for fy in range(foundations):
+                for fx in range(blocks.shape[0]):
+                    for fz in range(blocks.shape[1]):
+                        gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone")))
 
-            self.add_foundation_pillar_to_layer(mcx,mcz,mcminy + fy, gdpcblocks)
-            self.add_foundation_pillar_to_layer(mcx,mcz + blocks.shape[1],mcminy + fy, gdpcblocks)
-            self.add_foundation_pillar_to_layer(mcx + blocks.shape[0],mcz,mcminy + fy, gdpcblocks)
-            self.add_foundation_pillar_to_layer(mcx + blocks.shape[0],mcz + blocks.shape[1],mcminy + fy, gdpcblocks)
+                self.add_foundation_pillar_to_layer(mcx,mcz,mcminy + fy, gdpcblocks)
+                self.add_foundation_pillar_to_layer(mcx,mcz + blocks.shape[1],mcminy + fy, gdpcblocks)
+                self.add_foundation_pillar_to_layer(mcx + blocks.shape[0],mcz,mcminy + fy, gdpcblocks)
+                self.add_foundation_pillar_to_layer(mcx + blocks.shape[0],mcz + blocks.shape[1],mcminy + fy, gdpcblocks)
 
-        if foundations > 0:
-            for fx in range(-1, blocks.shape[0] + 1):
-                for fz in range(-1, blocks.shape[1] + 1):
-                    gdpcblocks.append(
-                        ((mcx + fx, mcminy + foundations, mcz + fz),
-                        Block("minecraft:polished_andesite")))
+            if foundations > 0:
+                for fx in range(-1, blocks.shape[0] + 1):
+                    for fz in range(-1, blocks.shape[1] + 1):
+                        gdpcblocks.append(
+                            ((mcx + fx, mcminy + foundations, mcz + fz),
+                            Block("minecraft:polished_andesite")))
 
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
