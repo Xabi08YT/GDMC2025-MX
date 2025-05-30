@@ -26,6 +26,7 @@ class Simulation:
         self.wood = None
         self.water = None
         self.lava = None
+        self.biomes = None
         self.heightmap = None
         self.buildings = None
         self.hasfarmer = False
@@ -54,7 +55,6 @@ class Simulation:
         self.clean()
         print(f"{ANSIColors.OKGREEN}[INFO] Post-crash cleanup done.{ANSIColors.ENDC}")
 
-
     def prepare(self):
         if os.path.exists(".notCleaned"):
             self.post_crash_cleanup()
@@ -69,7 +69,7 @@ class Simulation:
         self.show_message("Pulling minecraft map... This may take several minutes...")
         ba = editor.getBuildArea()
         self.abl = AbstractionLayer(ba)
-        [self.walkable, self.wood, self.water, self.lava, self.heightmap] = self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv)
+        [self.walkable, self.wood, self.water, self.lava, self.heightmap, self.biomes] = self.abl.pull("--force-pull" in sys.argv or "-fp" in sys.argv)
 
         if "--showmatrix" in sys.argv or "-sm" in sys.argv or "-s" in sys.argv:
             plt.matshow(self.walkable)
@@ -91,12 +91,17 @@ class Simulation:
             agent = Agent(self, x=x, z=z, name=random.choice(self.names).strip())
             self.agents.append(agent)
 
+        Relationships.initialize_relationships(self)
         self.show_message("Simulation ready.")
 
     def run(self, agents):
         for agent in agents:
             agent.logfile = LogFile(fpath="logs/ongoing", fname=f"{str(agent.id)}.csv")
         for i in range(self.config["nbTurns"]):
+            if i % 2 == 0:
+                Relationships.generate_social_events(self)
+                Relationships.update_social_attributes(self)
+
             for agent in agents:
                 agent.turn = i
                 agent.tick()
@@ -119,16 +124,14 @@ class Simulation:
         path.build()
         path.export()
 
-        self.show_message("Simulation ended.")
+        self.show_message(f"Simulation ended with {Relationships.get_relationship_count()} relationships between {len(self.agents)} agents.")
 
     def end(self):
-
         self.show_message("Pushing changes to Minecraft... This may take several minutes.")
         self.abl.push()
         self.show_message("Changes pushed. Beginning cleanup...")
 
         logfile = LogFile(fname=f'{str(self.creation_time).split(".")[0]}.csv')
-
         logfile.merge_logs()
         logfile.close()
 

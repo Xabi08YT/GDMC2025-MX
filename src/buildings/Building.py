@@ -110,7 +110,6 @@ class Building:
             "bupdates": self.bupdates,
             "corner": self.corner
         }
-        print(self.folder,self.name)
         folder_path = os.path.join(self.folder, self.name)
         os.makedirs(folder_path, exist_ok=True)
         json_file = os.path.join(folder_path, "metadata.json")

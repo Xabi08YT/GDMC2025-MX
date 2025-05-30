@@ -84,14 +84,16 @@ class AbstractionLayer:
                 if same_point(self.buildArea.begin, data["begin"]) and same_point(self.buildArea.end,
                                                                                   data["end"]) and os.path.exists(
                     "data/walkableMatrix") and os.path.exists("data/waterMatrix") and os.path.exists(
-                    "data/lavaMatrix") and os.path.exists("data/woodMatrix"):
+                    "data/lavaMatrix") and os.path.exists("data/woodMatrix") and os.path.exists("data/biomeMatrix"):
                     print(
                         f"{ANSIColors.OKCYAN}[NOTE] Same area, skipping world pulling... If you want to pull it again, remove the folder or add the -fp argument to the launch command.{ANSIColors.ENDC}")
                     return [np.load("data/walkableMatrix", allow_pickle=True),
                             np.load("data/woodMatrix", allow_pickle=True),
                             np.load("data/waterMatrix", allow_pickle=True),
                             np.load("data/lavaMatrix", allow_pickle=True),
-                            self.get_height_map_excluding("air,%23leaves")]
+                            np.load("data/woodMatrix", allow_pickle=True),
+                            self.get_height_map_excluding("air,%23leaves"),
+                            np.load("data/biomeMatrix", allow_pickle=True)]
                 print(
                     f"{ANSIColors.WARNING}[WARN] Some files appears to be missing. Initiating pull... {ANSIColors.ENDC}")
             except json.JSONDecodeError:
@@ -139,19 +141,21 @@ class AbstractionLayer:
         wood = wood[0:size[0], 0:size[2]]
         water = water[0:size[0], 0:size[2]]
         lava = lava[0:size[0], 0:size[2]]
+        biomes = self.get_biome_map()
 
         # Saving results to cache
         walkable.dump("data/walkableMatrix")
         lava.dump("data/lavaMatrix")
         water.dump("data/waterMatrix")
         wood.dump("data/woodMatrix")
+        biomes.dump("data/biomeMatrix")
 
         with open(os.path.join(os.getcwd(), "data", "areaData.json"), "w+") as f:
             json.dump({"begin": self.buildArea.begin.to_list(), "end": self.buildArea.end.to_list()}, f)
             f.close()
         end = time()
         print("[INFO] Minecraft world pulled in {:.2f} seconds.".format(end - start))
-        return [walkable, wood, water, lava, heightmap]
+        return [walkable, wood, water, lava, heightmap, biomes]
 
     def add_foundation_pillar_to_layer(self,mcx,mcz,mcy,gdpcblocks):
         for fx in range(-1, 1):
@@ -259,12 +263,93 @@ class AbstractionLayer:
 
         hmap = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,sugar_cane")
         hmapsolid = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,%23dirt,sugar_cane")
+
+        self.clear_trees_for_buildings(folder)
+
         self.push_paths(folder, hmap)
         p = Pool(cpu_count())
         p.map_async(self.push_building,
                     [(folder, target, hmap, hmapsolid) for target in os.listdir(folder) if target != "path"]).get()
         p.close()
         p.join()
+
+    def clear_trees_for_buildings(self, folder="generated"):
+        print(f"{ANSIColors.OKCYAN}[INFO] Clearing trees for buildings...{ANSIColors.ENDC}")
+        buildings_data = []
+
+        for target in os.listdir(folder):
+            if target == "path":
+                continue
+
+            if not os.path.isdir(os.path.join(folder, target)):
+                continue
+
+            try:
+                meta = json.load(open(os.path.join(folder, target, "metadata.json")))
+
+                if not meta["built"]:
+                    continue
+
+                blocks = np.load(os.path.join(folder, target, "matrix"), allow_pickle=True)
+
+                x = meta["x"] - blocks.shape[0] // 2
+                z = meta["z"] - blocks.shape[1] // 2
+                mcx = x + self.buildArea.begin[0]
+                mcz = z + self.buildArea.begin[2]
+
+                buildings_data.append({
+                    "name": meta["name"],
+                    "x": mcx,
+                    "z": mcz,
+                    "width": blocks.shape[0],
+                    "length": blocks.shape[1],
+                    "height": blocks.shape[2]
+                })
+            except (json.JSONDecodeError, FileNotFoundError, KeyError) as e:
+                print(f"{ANSIColors.WARNING}[WARN] Error processing building {target}: {e}{ANSIColors.ENDC}")
+
+        hmap = self.get_height_map_excluding("air")
+
+        gdpcblocks = []
+        trees_cleared = 0
+
+        for building in buildings_data:
+            buffer = 1
+            min_x = building["x"] - buffer
+            max_x = building["x"] + building["width"] + buffer
+            min_z = building["z"] - buffer
+            max_z = building["z"] + building["length"] + buffer
+
+            rel_x_start = max(0, min_x - self.buildArea.begin[0])
+            rel_x_end = min(hmap.shape[0], max_x - self.buildArea.begin[0])
+            rel_z_start = max(0, min_z - self.buildArea.begin[2])
+            rel_z_end = min(hmap.shape[1], max_z - self.buildArea.begin[2])
+
+            if rel_x_end <= rel_x_start or rel_z_end <= rel_z_start:
+                continue
+
+            height_section = hmap[rel_x_start:rel_x_end, rel_z_start:rel_z_end]
+            if height_section.size == 0:
+                continue
+
+            for x in range(min_x, max_x):
+                for z in range(min_z, max_z):
+                    rel_x = x - self.buildArea.begin[0]
+                    rel_z = z - self.buildArea.begin[2]
+
+                    if 0 <= rel_x < hmap.shape[0] and 0 <= rel_z < hmap.shape[1]:
+                        y_base = hmap[rel_x, rel_z]
+                        for y in range(y_base, y_base + 20):
+                            gdpcblocks.append(((x, y, z), Block("minecraft:air")))
+
+            trees_cleared += 1
+
+            if len(gdpcblocks) > 10000:
+                interface.placeBlocks(gdpcblocks)
+                gdpcblocks = []
+
+        if gdpcblocks:
+            interface.placeBlocks(gdpcblocks)
 
     @staticmethod
     def get_abstraction_layer_instance():
@@ -274,21 +359,27 @@ class AbstractionLayer:
         return self.buildArea
 
     def get_biome_map(self):
-
         with open("config/config.json") as f:
             config = json.load(f)
             f.close()
 
         if config["GDMC_HTTP_URL"] is None:
             config["GDMC_HTTP_URL"] = "http://localhost:9000"
+
         x = self.buildArea.begin.x
         z = self.buildArea.begin.z
         dx = self.buildArea.end.x - x
         dz = self.buildArea.end.z - z
+
         url = f'{config["GDMC_HTTP_URL"]}/biomes?x={x}&z={z}&dx={dx}&dz={dz}&withinBuildArea=true'
-        biome = requests.get(url).json()
-        index_map = {(entry["x"], entry["z"]): entry["id"] for entry in biome}
-        return index_map
+        biome_data = requests.get(url).json()
+        biome_matrix = np.zeros((dx, dz), dtype=str)
+        for entry in biome_data:
+            rel_x = entry["x"] - x
+            rel_z = entry["z"] - z
+            if 0 <= rel_x < dx and 0 <= rel_z < dz:
+                biome_matrix[rel_x, rel_z] = entry["id"]
+        return biome_matrix
 
 
 if __name__ == "__main__":

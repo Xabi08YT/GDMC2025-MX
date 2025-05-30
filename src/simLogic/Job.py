@@ -48,16 +48,6 @@ class Job:
         return f"Job: {self.job_type.value}"
 
     def get_new_job(self, agent, priority):
-        relationships = Relationships.get_all_relationships(agent)
-        if relationships:
-            job_counts = {}
-            for rel_agent in relationships:
-                job = getattr(rel_agent.job, "job_type", None)
-                if job:
-                    job_counts[job] = job_counts.get(job, 0) + 1
-            if job_counts:
-                most_common_job = max(job_counts, key=job_counts.get)
-
         if priority == "hunger" and not agent.simulation.hasfarmer or agent.decay_rates["hunger"] > 0.45:
             self.job_type = choice([JobType.FARMER, JobType.FISHERMAN, JobType.BUTCHER])
             self.job_category = JobCategory.FARM

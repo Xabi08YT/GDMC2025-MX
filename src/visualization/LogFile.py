@@ -2,6 +2,8 @@ import csv, sys, os
 from os import getcwd, path, mkdir
 from time import time
 
+from simLogic.Relationships import Relationships
+
 
 class LogFile:
 
@@ -12,7 +14,7 @@ class LogFile:
             pass
         self.file = open(path.join(getcwd(), fpath, f'{str(time()).split(".")[0]}.csv'),
                          "w+") if fname is None else open(path.join(getcwd(), fpath, fname), "w+")
-        self.dictWriter = csv.DictWriter(self.file, fieldnames=[
+        self.fieldnames = [
             "id",
             "name",
             "action",
@@ -30,8 +32,10 @@ class LogFile:
             "health_decay",
             "attributes",
             "coord_x",
-            "coord_z"
-        ])
+            "coord_z",
+            "relationships"
+        ]
+        self.dictWriter = csv.DictWriter(self.file, fieldnames=self.fieldnames)
         self.dictWriter.writeheader()
 
     def addLine(self, agent, priority_need: str):
@@ -60,6 +64,7 @@ class LogFile:
             "attributes": agent.attributes,
             "coord_x": agent.x,
             "coord_z": agent.z,
+            "relationships": Relationships.get_all_relationships(agent),
         }
 
         self.dictWriter.writerow(data)
@@ -72,29 +77,26 @@ class LogFile:
             if not file.endswith(".csv"):
                 continue
             with open(path.join(getcwd(), fpath, file), "r") as f:
-                dict_reader = csv.DictReader(f, fieldnames=[
-                    "id",
-                    "name",
-                    "action",
-                    "turn",
-                    "job",
-                    "hunger",
-                    "social",
-                    "energy",
-                    "health",
-                    "happiness",
-                    "happiness_decay",
-                    "hunger_decay",
-                    "social_decay",
-                    "energy_decay",
-                    "health_decay",
-                    "attributes",
-                    "coord_x",
-                    "coord_z"
-                ])
+                reader_fieldnames = self.fieldnames.copy()
+
+                with open(path.join(getcwd(), fpath, file), "r") as check_file:
+                    first_line = check_file.readline().strip()
+                    has_relationships = "relationships" in first_line
+
+                dict_reader = csv.DictReader(f)
+
                 for row in dict_reader:
-                    if row["id"] == "id":
+                    if row.get("id") == "id":
                         continue
+
+                    if "relationships" not in row or row["relationships"] is None:
+                        row["relationships"] = "{}"
+
+                    for field in self.fieldnames:
+                        if field not in row:
+                            row[field] = ""
+
                     self.dictWriter.writerow(row)
+
                 f.close()
         return

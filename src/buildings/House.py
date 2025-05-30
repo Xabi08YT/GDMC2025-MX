@@ -14,29 +14,12 @@ class House(Building):
         self.construction_ticks = 0
         self.helping_agents = {}
         self.built_phases = set()
-        self.has_chimney = True #random.choice([True, False])
         self.door = None
         self.bed = None
         self.roof_style = random.choice(["flat", "pyramid"])
         self.furniture_counter = random.randint(1, 2)
         self.furnitures = ["minecraft:crafting_table", "minecraft:chest", "minecraft:barrel", "minecraft:smithing_table", "minecraft:grindstone"]
         self.corner_block = "minecraft:oak_log"
-
-        family_size = 1
-        for rel in agent.simulation.relationships.RELATIONSHIPS.keys():
-            if rel['value'] >= 0.8:
-                family_size += 1
-
-        if family_size <= 2:
-            self.width = 5
-            self.depth = 5
-        elif family_size <= 4:
-            self.width = 7
-            self.depth = 7
-        else:
-            self.width = 9
-            self.depth = 9
-
         self.materials = self.choose_materials("plains")
 
         self.phase_times = {
