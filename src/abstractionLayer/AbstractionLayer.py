@@ -195,6 +195,8 @@ class AbstractionLayer:
         if "firecamp" in meta["name"].lower():
             foundations = -1
             mcy = int(np.average(args[2][x:x + blocks.shape[0],z:z + blocks.shape[1]]).item() - 1)
+        if "bridge" in meta["name"].lower():
+            mcy = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]].min().item() - 1
         else:
             for mx in range(-1, blocks.shape[0] + 1):
                 for mz in range(-1, blocks.shape[1] + 1):
