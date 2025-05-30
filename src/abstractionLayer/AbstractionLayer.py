@@ -91,7 +91,6 @@ class AbstractionLayer:
                             np.load("data/woodMatrix", allow_pickle=True),
                             np.load("data/waterMatrix", allow_pickle=True),
                             np.load("data/lavaMatrix", allow_pickle=True),
-                            np.load("data/woodMatrix", allow_pickle=True),
                             self.get_height_map_excluding("air,%23leaves"),
                             np.load("data/biomeMatrix", allow_pickle=True)]
                 print(
@@ -155,7 +154,7 @@ class AbstractionLayer:
             f.close()
         end = time()
         print("[INFO] Minecraft world pulled in {:.2f} seconds.".format(end - start))
-        return [walkable, wood, water, lava, heightmap, biomes]
+        return walkable, wood, water, lava, heightmap, biomes
 
     def add_foundation_pillar_to_layer(self,mcx,mcz,mcy,gdpcblocks):
         for fx in range(-1, 1):
