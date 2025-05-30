@@ -49,6 +49,8 @@ class FarmBuilding(JobBuilding):
             score = -simulation.lava[x - self.width // 2 - 1:x + self.width // 2 + 1,
                      z - self.depth // 2 - 1:z + self.depth // 2 + 1].sum()
             score += 0.5 * simulation.water[x - self.width:x + self.width, z - self.depth:z + self.depth].sum()
+            score -= 10 * simulation.buildings[x - self.radius:x + self.radius,
+                          z - self.radius:z + self.radius].sum().item()
 
             if simulation.walkable[x - self.width // 2 - 1:x + self.width // 2 + 1,
                z - self.depth // 2 - 1:z + self.depth // 2 + 1].sum().item() < self.width * self.depth or simulation.buildings[
