@@ -58,6 +58,12 @@ class Job:
             if job_counts:
                 most_common_job = max(job_counts, key=job_counts.get)
 
+        if True:
+            self.job_type = choice([JobType.CARTOGRAPHER, JobType.CLERIC, JobType.LIBRARIAN])
+            self.job_category = JobCategory.COMMUNITY
+            self.job_building = CommunityBuilding.get_instance(None, agent)
+            return
+
         if priority == "hunger" and not agent.simulation.hasfarmer or agent.decay_rates["hunger"] > 0.45:
             self.job_type = choice([JobType.FARMER, JobType.FISHERMAN, JobType.BUTCHER])
             self.job_category = JobCategory.FARM
