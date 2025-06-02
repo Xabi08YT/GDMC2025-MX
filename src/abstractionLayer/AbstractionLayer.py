@@ -215,15 +215,11 @@ class AbstractionLayer:
             interface.placeBlocks(gdpcblocks)
         gdpcblocks.clear()
 
-        for fy in range(foundations):
-            for fx in range(blocks.shape[0]):
-                for fz in range(blocks.shape[1]):
-                    gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block(random.choice(self.simParams["foundations"]["main_blocks"]))))
         if "bridge" not in meta["name"].lower():
             for fy in range(foundations):
                 for fx in range(blocks.shape[0]):
                     for fz in range(blocks.shape[1]):
-                        gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block("minecraft:cobblestone")))
+                        gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block(random.choice(self.simParams["foundations"]["main_blocks"]))))
 
                 self.add_foundation_pillar_to_layer(mcx,mcz,mcminy + fy, gdpcblocks)
                 self.add_foundation_pillar_to_layer(mcx,mcz + blocks.shape[1],mcminy + fy, gdpcblocks)
