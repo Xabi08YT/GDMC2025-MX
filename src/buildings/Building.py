@@ -108,7 +108,8 @@ class Building:
             "z": self.center_point[1],
             "built": self.built,
             "bupdates": self.bupdates,
-            "corner": self.corner
+            "corner": self.corner,
+            "happiness": self.agent.happiness if hasattr(self, "agent") and self.agent is not None else 0,
         }
         folder_path = os.path.join(self.folder, self.name)
         os.makedirs(folder_path, exist_ok=True)
