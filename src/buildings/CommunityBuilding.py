@@ -280,29 +280,6 @@ class CommunityBuilding(JobBuilding):
 
         return best_spot
 
-    # def make_gradual_roof(self, start_x, start_y, start_z, width, depth, inclination=2, orientation='north'):
-    #     """
-    #     Builds a straight inclined roof of oak_slabs along the depth (z axis) or width (x axis), depending on orientation.
-    #     inclination: number of horizontal blocks per vertical step (higher = shallower roof)
-    #     orientation: 'north'/'south' (roof slopes along +z), 'east'/'west' (roof slopes along +x)
-    #     """
-    #     if orientation in ['north', 'south']:
-    #         # Roof slopes along z axis (depth)
-    #         for dz in range(0, depth):
-    #             y = start_y + dz // inclination
-    #             z = start_z + dz if orientation == 'north' else start_z + depth - 1 - dz
-    #             for x in range(start_x, start_x + width):
-    #                 self.add_block_to_matrix(x, y, z, 'oak_slab')
-    #     elif orientation in ['east', 'west']:
-    #         # Roof slopes along x axis (width)
-    #         for dx in range(0, width):
-    #             y = start_y + dx // inclination
-    #             x = start_x + dx if orientation == 'east' else start_x + width - 1 - dx
-    #             for z in range(start_z, start_z + depth):
-    #                 self.add_block_to_matrix(x, y, z, 'oak_slab')
-    #     else:
-    #         raise ValueError(f"Unknown orientation: {orientation}")
-
     @staticmethod
     def get_instance(center_point: tuple[int, int, int] | None, agent, orientation: str = "north"):
         if CommunityBuilding.INSTANCE is None:
