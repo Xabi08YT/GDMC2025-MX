@@ -97,6 +97,7 @@ class CommunityBuilding(JobBuilding):
                 rblocks.append("oak_slab[type=bottom]")
                 rublocks.append("oak_slab[type=top]")
 
+        # For symmetry, we reverse the lists
         tmprblocks = rblocks.copy()
         tmprblocks.reverse()
         tmprublocks = rublocks.copy()
@@ -105,6 +106,8 @@ class CommunityBuilding(JobBuilding):
         tmpmods.reverse()
         tmpumods = umods.copy()
         tmpumods.reverse()
+
+        # Adding center row
         if rblocks[-1] == "oak_slab[type=top]":
             rblocks.append("oak_slab[type=bottom]")
             rublocks.append("oak_slab[type=top]")
@@ -115,6 +118,7 @@ class CommunityBuilding(JobBuilding):
             rublocks.append("oak_planks")
             mods.append(mods[-1])
             umods.append(umods[-1]+1)
+        # Adding the reversed lists
         rublocks += tmprublocks
         rblocks += tmprblocks
         mods += tmpmods
@@ -207,6 +211,10 @@ class CommunityBuilding(JobBuilding):
                 for i,b in enumerate(counter):
                     self.add_block_to_matrix(counterpos[self.orientation],1, 2 + i, b)
 
+                self.add_block_to_matrix(5, 5, 3, 'lantern[hanging=true]')
+                self.add_block_to_matrix(5, 5, self.depth-4, 'lantern[hanging=true]')
+
+
         elif self.orientation in ['east', 'west']:
             zpos = {
                 "east": [self.depth - 4, 5],
@@ -234,6 +242,9 @@ class CommunityBuilding(JobBuilding):
                 self.add_block_to_matrix(2, 1, tablepos[self.orientation], 'cartography_table')
                 for i,b in enumerate(counter):
                     self.add_block_to_matrix( 2 + i,1,counterpos[self.orientation], b)
+
+            self.add_block_to_matrix(3, 5, 5, 'lantern[hanging=true]')
+            self.add_block_to_matrix(self.width - 4,5,5, 'lantern[hanging=true]')
 
         self.built = True
         return
