@@ -159,7 +159,7 @@ class AbstractionLayer:
     def add_foundation_pillar_to_layer(self,mcx,mcz,mcy,gdpcblocks):
         for fx in range(-1, 1):
             for fz in range(-1, 1):
-                gdpcblocks.append(((mcx + fx, mcy, mcz + fz), Block("minecraft:polished_andesite")))
+                gdpcblocks.append(((mcx + fx, mcy, mcz + fz), Block(self.simParams["foundations"]["accent_block"])))
 
     def push_building(self, args):
         if not os.path.isdir(os.path.join(args[0], args[1])):
@@ -181,6 +181,16 @@ class AbstractionLayer:
         mcminy = args[3][max(x - 1, 0):min(args[2].shape[0], x + blocks.shape[0] + 1),
                  max(z - 1, 0):min(args[2].shape[0], z + blocks.shape[1] + 1)].min().item() - 1
 
+        gdpcblocks = []
+
+        for i in range(blocks.shape[0]):
+            for j in range(blocks.shape[1]):
+                for k in range(mcy,320):
+                    gdpcblocks.append(((mcx + i, k, mcz + j), Block("minecraft:air")))
+
+        interface.placeBlocks(gdpcblocks)
+        gdpcblocks.clear()
+
         """height_section = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]]
         if height_section.size > 0:
             mcy = height_section.min().item() - 1
@@ -190,7 +200,6 @@ class AbstractionLayer:
             mcy = args[2].min().item() if args[2].size > 0 else 0"""
 
         foundations = mcy - mcminy
-        gdpcblocks = []
 
         if "firecamp" in meta["name"].lower():
             foundations = -1
@@ -206,6 +215,10 @@ class AbstractionLayer:
             interface.placeBlocks(gdpcblocks)
         gdpcblocks.clear()
 
+        for fy in range(foundations):
+            for fx in range(blocks.shape[0]):
+                for fz in range(blocks.shape[1]):
+                    gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block(random.choice(self.simParams["foundations"]["main_blocks"]))))
         if "bridge" not in meta["name"].lower():
             for fy in range(foundations):
                 for fx in range(blocks.shape[0]):
