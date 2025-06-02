@@ -132,6 +132,8 @@ class FarmBuilding(JobBuilding):
 
 
     def build(self):
+        if self.built:
+            return
         crops = ["minecraft:wheat", "minecraft:carrots", "minecraft:potatoes", "minecraft:beetroots"]
         choice = random.choice(crops)
         for x in range(self.width):
@@ -175,7 +177,9 @@ class FarmBuilding(JobBuilding):
                     self.add_block_to_matrix(x, 2, z, f"minecraft:oak_door[facing={pf[self.orientation]},half=upper]")
 
                 # Storage area
-                if self.is_storage_area(x, z):
+                tmp = randint(1,32768)//3%2
+                print(tmp)
+                if randint(1,32768)//3%2 == 0 and self.is_storage_area(x, z):
                     self.add_block_to_matrix(x, 1, z, 'barrel[facing=up]')
 
         # Roof
