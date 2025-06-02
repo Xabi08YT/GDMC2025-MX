@@ -80,7 +80,50 @@ class CommunityBuilding(JobBuilding):
         }
         return orientations[self.orientation]
 
+    def define_roof_outline(self):
+        rwidth = self.width // 2 if self.orientation in ["north", "south"] else self.depth // 2
+        rblocks = []
+        rublocks = []
+        mods = []
+        umods = []
+        for i in range(rwidth):
+            mods.append((i+1)//2)
+            umods.append(i//2)
+            if i % 2 == 0:
+                rblocks.append("oak_slab[type=top]")
+                if i != 0:
+                    rublocks.append("oak_planks")
+            else:
+                rblocks.append("oak_slab[type=bottom]")
+                rublocks.append("oak_slab[type=top]")
+
+        tmprblocks = rblocks.copy()
+        tmprblocks.reverse()
+        tmprublocks = rublocks.copy()
+        tmprublocks.reverse()
+        tmpmods = mods.copy()
+        tmpmods.reverse()
+        tmpumods = umods.copy()
+        tmpumods.reverse()
+        if rblocks[-1] == "oak_slab[type=top]":
+            rblocks.append("oak_slab[type=bottom]")
+            rublocks.append("oak_slab[type=top]")
+            mods.append(mods[-1]+1)
+            umods.append(umods[-1])
+        else:
+            rblocks.append("oak_slab[type=top]")
+            rublocks.append("oak_planks")
+            mods.append(mods[-1])
+            umods.append(umods[-1]+1)
+        rublocks += tmprublocks
+        rblocks += tmprblocks
+        mods += tmpmods
+        umods += tmpumods
+        return rblocks, rublocks,mods, umods
+
     def build(self):
+        if self.built:
+            return
         for x in range(1, self.width - 1):
             for z in range(1, self.depth - 1):
                 # Floor
@@ -89,7 +132,8 @@ class CommunityBuilding(JobBuilding):
                 # Walls
                 if 1 <= x <= self.width - 2 and z in [1, self.depth - 2] \
                         or 1 <= z <= self.depth - 2 and x in [1, self.width - 2]:
-                    for y in range(1, self.height - 3):
+                    mod =  (2 < x < self.width - 3 and self.orientation in ["north", "south"] or (2 < z < self.width - 3 and self.orientation in ['east', 'west']))
+                    for y in range(1, self.height - 3 + mod):
                         self.add_block_to_matrix(x, y, z, 'oak_planks')
 
                 # Pillars
@@ -114,9 +158,27 @@ class CommunityBuilding(JobBuilding):
                     self.add_block_to_matrix(x, 2, z, f'oak_door[half=upper,facing={self.get_door_orientation()}]')
 
         # Roof
+        rblocks, rublocks, mods, umods = self.define_roof_outline()
+        if self.orientation in ["north", "south"]:
+            for x in range(self.width):
+                for z in range(self.depth):
+                    self.add_block_to_matrix(x, self.height - 4 + mods[x], z, rblocks[x])
+                    if (x not in [0,self.width - 1] and not self.need_log(x, z)
+                            and z in [0,1, self.depth - 2,self.depth - 1]):
+                        if z in [1, self.depth - 2] and rublocks[x-1] == "oak_planks" or z in [0,self.depth - 1]:
+                            self.add_block_to_matrix(x, self.height - 4 + umods[x], z, rublocks[x-1])
+        else:
+            for z in range(self.depth):
+                for x in range(self.width):
+                    self.add_block_to_matrix(z, self.height - 4 + mods[z], x, rblocks[z])
+                    if (z not in [0,self.width - 1] and not self.need_log(z, x)
+                            and x in [0,1, self.depth - 2,self.depth - 1]):
+                        if x in [1, self.depth - 2] and rublocks[z-1] == "oak_planks" or x in [0,self.depth - 1]:
+                            self.add_block_to_matrix(z, self.height - 4 + umods[z], x, rublocks[z-1])
 
 
         # Interior
+        counter = ["minecraft:oak_slab[type=top]"] * 3 + ["oak_planks"]
         if self.orientation in ["north", "south"]:
             xpos = {
                 "north": [self.width - 4, 5],
@@ -134,24 +196,44 @@ class CommunityBuilding(JobBuilding):
                 for z in range(3, self.depth - 3):
                     for y in range(3):
                         self.add_block_to_matrix(x, 1+y, z, 'bookshelf')
-            counter = ["oak_slab[type=upper]"] * 3 + ["oak_planks"]
+
             if random.randint(0, 100) % 2 == 0:
-                counter.reverse()
-                #self.matrix[counterpos[self.orientation],self.depth-3:self.depth-8,1] = counter
                 self.add_block_to_matrix(tablepos[self.orientation], 1, self.depth - 3, 'cartography_table')
+                for i,b in enumerate(counter):
+                    self.add_block_to_matrix(counterpos[self.orientation],1, self.depth - 3 - i, b)
+
             else:
                 self.add_block_to_matrix(tablepos[self.orientation], 1, 2, 'cartography_table')
-                #self.matrix[counterpos[self.orientation],2:6,1] = counter
+                for i,b in enumerate(counter):
+                    self.add_block_to_matrix(counterpos[self.orientation],1, 2 + i, b)
 
         elif self.orientation in ['east', 'west']:
             zpos = {
                 "east": [self.depth - 4, 5],
                 "west": [3, 5]
+            },
+            counterpos = {
+                "east": 3,
+                "west": self.depth - 4,
+            }
+            tablepos = {
+                "east": 2,
+                "west": self.depth - 3,
             }
             for z in zpos[self.orientation]:
                 for x in range(3, self.width - 3):
                     for y in range(3):
                         self.add_block_to_matrix(x, 1+y, z, 'bookshelf')
+
+            if random.randint(0, 100) % 2 == 0:
+                self.add_block_to_matrix(self.depth - 3, 1, tablepos[self.orientation], 'cartography_table')
+                for i,b in enumerate(counter):
+                    self.add_block_to_matrix(self.depth - 3 - i,1, counterpos[self.orientation], b)
+
+            else:
+                self.add_block_to_matrix(2, 1, tablepos[self.orientation], 'cartography_table')
+                for i,b in enumerate(counter):
+                    self.add_block_to_matrix( 2 + i,1,counterpos[self.orientation], b)
 
         self.built = True
         return
