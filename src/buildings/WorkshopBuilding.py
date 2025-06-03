@@ -141,8 +141,58 @@ class WorkshopBuilding(JobBuilding):
             return x == self.width - 6 and 1 < z < self.depth - 2
         return None
 
+    def is_stonecutter(self, x, z):
+        if self.orientation == "north":
+            return z == 3 and x == self.width -4
+        elif self.orientation == "south":
+            return z == self.depth - 4 and x == self.width - 4
+        elif self.orientation == "east":
+            return x == 3 and z == self.depth - 4
+        elif self.orientation == "west":
+            return x == self.width - 4 and z == 3
+        return None
+
+    def is_other_utility(self, x, z):
+        if self.orientation == "north":
+            return x == 2 and  1 < z < 5
+        elif self.orientation == "south":
+            return x == 2 and self.depth - 6 < z < self.depth - 2
+        elif self.orientation == "east":
+            return z == 2 and 1 < x < 5
+        elif self.orientation == "west":
+            return z == 2 and self.width - 6 < x < self.width - 2
+        return None
+
+    def define_roof_outline(self):
+        rwidth = self.width // 2 + 2 if self.orientation in ["north", "south"] else self.depth // 2 + 2
+        rblocks = []
+        rublocks = []
+        mods = []
+        umods = []
+        for i in range(rwidth):
+            mods.append((i + 1) // 2)
+            umods.append(i // 2)
+            if i % 2 == 0:
+                rblocks.append("oak_slab[type=top]")
+                if i != 0:
+                    rublocks.append("oak_planks")
+            else:
+                rblocks.append("oak_slab[type=bottom]")
+                rublocks.append("oak_slab[type=top]")
+
+        return rblocks, rublocks, mods, umods
+
     def build(self):
+        if self.built: return
         wools = ["minecraft:red_wool","minecraft:white_wool"]
+        uf = {
+            "north": "east",
+            "south": "west",
+            "east": "north",
+            "west": "south"
+        }
+        other_utilities = ["minecraft:fletching_table", f"minecraft:water_cauldron[level={random.randint(1,3)}]", f"minecraft:loom[facing={uf[self.orientation]}]"]
+        random.shuffle(other_utilities)
         for x in range(self.width):
             for z in range(self.depth):
                 if self.is_floor(x, z):
@@ -179,7 +229,41 @@ class WorkshopBuilding(JobBuilding):
                     self.add_block_to_matrix(x, 4, z, wools[x % 2 if self.orientation in ["north", "south"] else z % 2])
                 elif self.is_counter(x, z):
                     self.add_block_to_matrix(x, 1, z, f"minecraft:oak_stairs[half=top,facing={self.orientation},shape=straight]")
+                    if self.orientation in ["north", "south"] and x == self.width // 2:
+                        self.add_block_to_matrix(x, 5, z, "minecraft:lantern[hanging=true]")
+                    elif self.orientation in ["east", "west"] and z == self.depth // 2:
+                        self.add_block_to_matrix(x, 5, z, "minecraft:lantern[hanging=true]")
+                elif self.is_stonecutter(x, z):
+                    scf = {
+                        "north": "south",
+                        "south": "north",
+                        "east": "west",
+                        "west": "east"
+                    }
+                    self.add_block_to_matrix(x, 1, z, f"minecraft:stonecutter[facing={scf[self.orientation]}]")
+                elif self.is_other_utility(x, z):
+                    self.add_block_to_matrix(x, 1, z, other_utilities.pop(0))
 
+        rblocks, rublocks, mods, umods = self.define_roof_outline()
+
+        for x in range(self.width):
+            for z in range(self.depth):
+                if self.orientation == "north" and 0 <= z < 6:
+                    self.add_block_to_matrix(x, 3 + mods[z], z, rblocks[z])
+                    if (x in [0, self.width - 1] or (x in [1, self.width-2] and rublocks[z - 1] == "oak_planks")) and 0 < z < 6:
+                        self.add_block_to_matrix(x, 3 + umods[z], z, rublocks[z - 1])
+                elif self.orientation == "south" and self.depth - 6 <= z < self.depth:
+                    self.add_block_to_matrix(x, 3 + mods[self.depth - z - 1], z, rblocks[self.depth - z - 1])
+                    if (x in [0, self.width - 1] or (x in [1, self.width-2] and rublocks[self.depth - z - 2] == "oak_planks")) and self.depth - 6 < z < self.depth:
+                        self.add_block_to_matrix(x, 3 + umods[self.depth - z - 1], z, rublocks[self.depth - z - 2])
+                elif self.orientation == "east" and 0 <= x < 6:
+                    self.add_block_to_matrix(x, 3 + mods[x], z, rblocks[x])
+                    if (z in [0, self.depth - 1] or (z in [1, self.depth-2] and rublocks[x - 1] == "oak_planks")) and 0 < x < 6:
+                        self.add_block_to_matrix(x, 3 + umods[x], z, rublocks[x - 1])
+                elif self.orientation == "west" and self.width - 6 <= x < self.width:
+                    self.add_block_to_matrix(x, 3 + mods[self.width - x - 1], z, rblocks[self.width - x - 1])
+                    if (z in [0, self.depth - 1] or (z in [1, self.depth-2] and rublocks[self.width - x - 2] == "oak_planks")) and self.width - 6 < x < self.width:
+                        self.add_block_to_matrix(x, 3 + umods[self.width - x - 1], z, rublocks[self.width - x - 2])
 
         self.built = True
         return
