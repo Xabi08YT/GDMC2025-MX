@@ -7,6 +7,7 @@ class Pathfinding:
     def __init__(self, simulation, x1, z1, x2, z2):
         # np.array of boolean values indicating walkable blocks
         self.grid = simulation.walkable
+        self.water = simulation.water
         # np.array of height values for the terrain xz
         self.heightmap = simulation.heightmap
         self.start = (x1, z1)
@@ -28,9 +29,10 @@ class Pathfinding:
         if not self.is_valid_position(pos):
             return False
         
-        return self.grid[pos[0], pos[1]] == 1
+        return self.grid[pos[0], pos[1]] == 1 or self.water[pos[0], pos[1]] == 1
     
     def identify_potential_bridge(self, current: Tuple[int, int], direction: Tuple[int, int]) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
+        return None
         x, z = current
         dx, dz = direction
 
@@ -57,14 +59,16 @@ class Pathfinding:
 
         return None
 
-    def get_movement_cost(self, current: Tuple[int, int], next_pos: Tuple[int, int]) -> float:
+    def get_movement_cost(self, current: Tuple[int, int], next_pos: Tuple[int, int], previous: Tuple[int,int] = None) -> float:
         if not self.is_walkable(next_pos):
             return float('inf')
 
         height_diff = abs(self.heightmap[next_pos[0], next_pos[1]].item() - self.heightmap[current[0], current[1]].item())
+
         if height_diff > 1:
             return float('inf')
-        return 1 + height_diff * 0.1
+
+        return 1 + height_diff * 0.1 + 100 * int(self.water[next_pos[0], next_pos[1]].item())
 
     def get_neighbors(self, pos: Tuple[int, int]) -> List[Tuple[int, int]]:
         neighbors = []
