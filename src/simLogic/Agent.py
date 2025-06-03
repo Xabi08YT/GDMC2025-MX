@@ -1,18 +1,23 @@
 import random
 import uuid
 import math
-from gdpc.vector_tools import ivec3
 from simLogic.Job import JobType, Job
-import os
 from buildings.Building import Building
 from buildings.House import House
 from utils.utils import evaluate_spot
 from utils.ANSIColors import ANSIColors
 
-
 class Agent:
     def __init__(self, sim, x, z, name):
         self.simulation = sim
+        self.id = str(uuid.uuid4())
+        self.name = name
+        self.x = x
+        self.z = z
+        self.velocity_x = 0
+        self.velocity_z = 0
+        self.max_speed = 1.0
+        self.max_force = 0.1
         self.dead = False
         self.base_attributes = {
             "hunger": 1,
@@ -34,7 +39,7 @@ class Agent:
             "hunger": random.uniform(0.1, 0.5),
             "energy": random.uniform(0.12, 0.5),
             "health": random.uniform(0.1, 0.3),
-            "social": random.uniform(-0.4, 0.5),
+            "social": random.uniform(0.4, 0.5),
             "strength": random.uniform(0.1, 0.3),
             "adventurous": random.uniform(0.1, 0.3),
         }
@@ -48,30 +53,16 @@ class Agent:
         }
         self.happiness = 0
         self.happiness_decay = random.uniform(0.005, 0.03)
-        self.id = str(uuid.uuid4())
-        self.name = name
-        self.x = x
-        self.z = z
-        self.velocity_x = 0
-        self.velocity_z = 0
-        self.max_speed = 1.0
-        self.max_force = 0.1
-        self.job = Job(JobType.UNEMPLOYED)
-        self.turn = 0
+        self.job = Job(self, JobType.UNEMPLOYED)
+        self.logfile = None
         self.action = None
-        self.home = Building(None, self, self.name + "'s Space")
+        self.home = None
+        self.turn = 0
         self.nb_turn_hungry = 0
         self.nb_turn_sleepy = 0
         self.nb_turn_fulfilled = 0
-        self.logfile = None
         self.scores = {}
         self.radius = self.simulation.config["observationRange"]
-
-    def get_position(self):
-        return self.x, self.z
-
-    def get_velocity(self):
-        return self.velocity_x, self.velocity_z
 
     def set_velocity(self, vx, vz):
         speed = math.sqrt(vx * vx + vz * vz)
@@ -100,6 +91,7 @@ class Agent:
         self.attributes["hunger"] = max(0, min(1, self.attributes["hunger"]))
         self.attributes["energy"] = max(0, min(1, self.attributes["energy"]))
         self.attributes["strength"] = max(0, min(1, self.attributes["strength"]))
+        self.happiness = max(-1, min(1, self.happiness))
 
     def apply_decay(self):
         if self.attributes["hunger"] + self.attributes_mod["hunger"] > 0:
@@ -133,8 +125,6 @@ class Agent:
 
         if self.attributes["hunger"] == 1 and self.attributes["energy"] == 1:
             self.nb_turn_fulfilled += 1
-
-        self.force_constraints_on_attributes()
 
         self.dead = (self.attributes["health"] + self.attributes_mod["health"] <= 0)
 
@@ -170,7 +160,7 @@ class Agent:
         score = self.simulation.wood[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
         score -= 5 * self.simulation.water[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
         score -= 5 * self.simulation.lava[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
-        score -= 10 * self.simulation.buildings[x - self.radius:x + self.radius,
+        score -= 100 * self.simulation.buildings[x - self.radius:x + self.radius,
                  z - self.radius:z + self.radius].sum().item()
 
         self.scores[str((x, z))] = score
@@ -201,20 +191,18 @@ class Agent:
         self.apply_decay()
         self.fulfill_needs()
         self.move()
+        self.observe_environment()
         priority = self.determine_priority()
-        self.logfile.addLine(self, priority)
 
         if self.job.job_type == JobType.UNEMPLOYED:
             self.job.get_new_job(self, priority)
-
-        self.observe_environment()
-
-        if not isinstance(self.home, House) and self.attributes["energy"] < 0.3 and (priority == "energy" or priority == "health"):
-            self.place_house()
-
-        elif isinstance(self.home, House) and self.home.built == False:
-            self.home.build()
-
-        #elif self.job.job_type != JobType.UNEMPLOYED and (self.job.job_building is None or self.job.job_building.built is False):
-        if self.job.job_type != JobType.UNEMPLOYED:
+        elif self.job.job_type != JobType.UNEMPLOYED and (self.job.job_building is None or self.job.job_building.built is False):
             self.job.job_building.build()
+        else:
+            self.job.work()
+
+        #if not isinstance(self.home, House) and self.attributes["energy"] < 0.3 and (priority == "energy" or priority == "health"):
+        self.place_house()
+
+        self.force_constraints_on_attributes()
+        self.logfile.addLine(self, priority)

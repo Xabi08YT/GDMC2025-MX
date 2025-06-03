@@ -183,14 +183,6 @@ class AbstractionLayer:
 
         gdpcblocks = []
 
-        for i in range(blocks.shape[0]):
-            for j in range(blocks.shape[1]):
-                for k in range(mcy,320):
-                    gdpcblocks.append(((mcx + i, k, mcz + j), Block("minecraft:air")))
-
-        interface.placeBlocks(gdpcblocks)
-        gdpcblocks.clear()
-
         """height_section = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]]
         if height_section.size > 0:
             mcy = height_section.min().item() - 1
@@ -206,14 +198,6 @@ class AbstractionLayer:
             mcy = int(np.average(args[2][x:x + blocks.shape[0],z:z + blocks.shape[1]]).item() - 1)
         if "bridge" in meta["name"].lower():
             mcy = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]].min().item() - 1
-        else:
-            for mx in range(-1, blocks.shape[0] + 1):
-                for mz in range(-1, blocks.shape[1] + 1):
-                    for my in range(blocks.shape[2] + 1):
-                        gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block("minecraft:air")))
-
-            interface.placeBlocks(gdpcblocks)
-        gdpcblocks.clear()
 
         if "bridge" not in meta["name"].lower():
             for fy in range(foundations):
@@ -239,6 +223,11 @@ class AbstractionLayer:
                     if "house" in meta["name"].lower() and meta["happiness"] < 0.3 and random.randint(0, 100) < 10:
                         gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block("minecraft:cobweb")))
                     else:
+                        """if "oak" in blocks[mx, mz, my]:
+                            wood = self.simParams["biomes"][meta["biome"]]
+                            block = blocks[mx, mz, my].replace("oak", wood)
+                            gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(block)))
+                        else:"""
                         gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(blocks[mx, mz, my])))
 
         print(

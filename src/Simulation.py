@@ -79,6 +79,10 @@ class Simulation:
             plt.matshow(self.heightmap)
             plt.show()
 
+        if np.count_nonzero(self.walkable) == 0:
+            self.show_message("Simulation stopped: No walkable blocks found in the map.")
+            sys.exit(1)
+
         self.buildings = np.zeros(self.heightmap.shape,dtype=bool)
         self.show_message("Done. Preparing simulation...")
 

@@ -16,7 +16,6 @@ class JobCategory(Enum):
     COMMUNITY = "CommunityCategory"
     WORKSHOP = "WorkshopCategory"
 
-
 class JobType(Enum):
     ARMORER = "Armorer"
     BUTCHER = "Butcher"
@@ -79,19 +78,40 @@ class Job:
             self.build_job_building()
             return
 
+        agent_pos = (self.agent.x, self.agent.z)
+        if self.job_building.center_point is not None:
+            building_pos = (self.job_building.center_point[0], self.job_building.center_point[1])
+            distance = ((agent_pos[0] - building_pos[0]) ** 2 + (agent_pos[1] - building_pos[1]) ** 2) ** 0.5
+
+            if distance > 5:
+                dx = building_pos[0] - agent_pos[0]
+                dz = building_pos[1] - agent_pos[1]
+                magnitude = (dx**2 + dz**2)**0.5
+                if magnitude > 0:
+                    dx /= magnitude
+                    dz /= magnitude
+                self.agent.apply_force(dx * 0.05, dz * 0.05)
+                return
+
         if self.job_category == JobCategory.WORKSHOP:
-            # if agent coords is not around the job building -> go to building
-            # decreasing energy attributes
-            pass
+            self.agent.attributes["energy"] -= 0.05
+            self.agent.attributes["strength"] += 0.01
+            self.agent.happiness += 0.02
+
         elif self.job_category == JobCategory.BLACKSMITH:
-            # if agent coords is not around the job building -> go to building
-            # decreasing energy attributes but increasing muscular attribute
-            pass
+            self.agent.attributes["energy"] -= 0.08
+            self.agent.attributes["strength"] += 0.03
+            self.agent.attributes["hunger"] -= 0.04
+            self.agent.happiness += 0.015
+
         elif self.job_category == JobCategory.COMMUNITY:
-            # if agent coords is not around the job building -> go to building
-            # decreasing energy attributes
-            pass
+            self.agent.attributes["energy"] -= 0.04
+            self.agent.attributes["social"] += 0.05
+            self.agent.happiness += 0.025
+
         elif self.job_category == JobCategory.FARM:
-            # if agent coords is not around the job building -> go to building
-            # decreasing energy attributes but increasing hunger attribute
-            pass
+            self.agent.attributes["energy"] -= 0.06
+            self.agent.attributes["hunger"] += 0.07
+            self.agent.attributes["strength"] += 0.01
+            self.agent.happiness += 0.02
+

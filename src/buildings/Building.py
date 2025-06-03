@@ -108,7 +108,7 @@ class Building:
             "z": self.center_point[1],
             "built": self.built,
             "bupdates": self.bupdates,
-            "corner": self.corner,
+            "biome": self.agent.simulation.biomes[self.center_point[0], self.center_point[1]] if hasattr(self, "agent")  else "minecraft:plains",
             "happiness": self.agent.happiness if hasattr(self, "agent") and self.agent is not None else 0,
         }
         folder_path = os.path.join(self.folder, self.name)

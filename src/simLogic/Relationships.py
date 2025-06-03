@@ -3,7 +3,6 @@ from utils.ANSIColors import ANSIColors
 
 class Relationships:
     RELATIONSHIPS = {}
-    SOCIAL_EVENTS = []
 
     def __str__(self):
         result = []
@@ -102,12 +101,12 @@ class Relationships:
     def generate_social_events(simulation):
 
         events = [
-            {"name": "helped_in_need", "effect": (0.05, 0.15), "probability": 0.05},
-            {"name": "shared_resources", "effect": (0.03, 0.08), "probability": 0.1},
-            {"name": "had_argument", "effect": (-0.1, -0.02), "probability": 0.07},
+            {"name": "helped_in_need", "effect": (0.05, 0.15), "probability": 0.15},
+            {"name": "shared_resources", "effect": (0.03, 0.08), "probability": 0.2},
+            {"name": "had_argument", "effect": (-0.1, -0.02), "probability": 0.2},
             {"name": "worked_together", "effect": (0.02, 0.07), "probability": 0.15},
-            {"name": "betrayed_trust", "effect": (-0.2, -0.1), "probability": 0.03},
-            {"name": "gave_gift", "effect": (0.1, 0.2), "probability": 0.04}
+            {"name": "betrayed_trust", "effect": (-0.5, -0.1), "probability": 0.10},
+            {"name": "gave_gift", "effect": (0.1, 0.2), "probability": 0.15}
         ]
 
         for i, agent1 in enumerate(simulation.agents):
@@ -122,23 +121,10 @@ class Relationships:
                     if random.random() < event["probability"]:
                         effect_range = event["effect"]
                         effect = random.uniform(effect_range[0], effect_range[1])
-
+                        value = Relationships.get_relationship(agent1, agent2)
                         new_value = Relationships.update_relationship(agent1, agent2, effect)
-
-                        if new_value is not None:
-                            event_data = {
-                                "turn": agent1.turn,
-                                "event": event["name"],
-                                "agent1": agent1.name,
-                                "agent2": agent2.name,
-                                "effect": effect,
-                                "new_value": new_value
-                            }
-                            Relationships.SOCIAL_EVENTS.append(event_data)
-
-                            if abs(effect) > 0.1:
-                                print(f"{ANSIColors.OKCYAN}[RELATIONSHIP] {agent1.name} and {agent2.name} {event['name']}: {effect:.2f} → {new_value:.2f}{ANSIColors.ENDC}")
-
+                        if abs(effect) > 0.1:
+                            print(f"{ANSIColors.OKCYAN}[RELATIONSHIP] {agent1.name} and {agent2.name} {event['name']}: {value:.2f} → {new_value:.2f} ({effect:.2f}){ANSIColors.ENDC}")
                         break
 
     @staticmethod

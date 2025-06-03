@@ -1,6 +1,5 @@
 from utils.math_methods import distance_xz
 
-
 class BoidsBehavior:
     def __init__(self, 
                  separation_weight: float = 1.5,
