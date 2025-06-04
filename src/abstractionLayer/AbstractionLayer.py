@@ -67,7 +67,7 @@ class AbstractionLayer:
             config["GDMC_HTTP_URL"] = "http://localhost:9000"
         url = f'{config["GDMC_HTTP_URL"]}/heightmap?blocks={blocks}'
         heightmap = requests.get(url).json()
-        return np.array(heightmap, dtype=np.uint)
+        return np.array(heightmap, dtype=int)
 
     def pull(self, forceReload: bool = False):
 

@@ -16,6 +16,7 @@ class Pathfinding:
         self.directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
         self.simulation = simulation
         self.potential_bridges = []
+        self.bridges = np.zeros(self.heightmap.shape,dtype=bool)
 
     @staticmethod
     def heuristic(a: Tuple[int, int], b: Tuple[int, int]) -> float:
@@ -182,16 +183,13 @@ class Pathfinding:
             prev = current
             current = came_from[current]
 
-            for start_point, end_point in self.potential_bridges:
-                if (current == start_point and prev == end_point) or (current == end_point and prev == start_point):
-                    bridges_in_path.append((start_point, end_point))
-                    break
+            if self.water[current[0], current[1]]:
+                self.bridges[current[0], current[1]] = True
 
             path.append(current)
             self.cost += self.get_movement_cost(current, prev)
         
         path.reverse()
-        self.bridges_to_build = bridges_in_path
 
         return path
     
