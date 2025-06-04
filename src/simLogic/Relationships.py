@@ -15,6 +15,9 @@ class Relationships:
 
     @staticmethod
     def add_relationship(agent1, agent2, initial_value: float = 0.0):
+        if agent1.dead or agent2.dead:
+            return
+
         initial_value = max(-1.0, min(1.0, initial_value))
         
         key = tuple(sorted([agent1.id, agent2.id]))
@@ -61,6 +64,9 @@ class Relationships:
 
     @staticmethod
     def update_relationship(agent1, agent2, increment: float):
+        if agent1.dead or agent2.dead:
+            return None
+
         key = tuple(sorted([agent1.id, agent2.id]))
         if key in Relationships.RELATIONSHIPS:
             current = Relationships.RELATIONSHIPS[key]['value']

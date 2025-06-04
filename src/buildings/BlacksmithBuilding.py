@@ -30,6 +30,7 @@ class BlacksmithBuilding(JobBuilding):
         ]
         self.corner_block = "minecraft:bricks"
         BlacksmithBuilding.INSTANCE = self
+        super().clear()
 
     def is_floor(self, x, z):
         if self.orientation == "north":

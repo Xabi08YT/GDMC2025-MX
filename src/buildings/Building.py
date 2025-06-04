@@ -29,6 +29,7 @@ class Building:
         self.BUILDINGS.append(self)
         self.bupdates = bupdates
         self.corner = "minecraft:oak_log"
+        self.agent = agent
 
     def built(self):
         self.built = True
@@ -73,13 +74,14 @@ class Building:
 
         return entrance_x, entrance_z
 
-    def place(self,center_point: tuple[int, int], sim = None):
+    def place(self, center_point: tuple[int, int], sim=None):
         center_point = (max(center_point[0], self.width), max(center_point[1], self.depth))
-        center_point = (min(center_point[0], sim.heightmap.shape[0]-self.width), min(center_point[1], sim.heightmap.shape[1]-self.depth))
+        center_point = (min(center_point[0], sim.heightmap.shape[0] - self.width),
+                        min(center_point[1], sim.heightmap.shape[1] - self.depth))
         self.center_point = center_point
         sim.buildings[
-            center_point[0] - self.width // 2 - 1:center_point[1] + self.width // 2 + 1,
-            center_point[0] - self.width // 2 - 1:center_point[1] + self.width // 2 + 1
+        center_point[0] - self.width // 2 - 1:center_point[0] + self.width // 2 + 1,
+        center_point[1] - self.depth // 2 - 1:center_point[1] + self.depth // 2 + 1
         ] = True
         return
 
@@ -108,8 +110,8 @@ class Building:
             "z": self.center_point[1],
             "built": self.built,
             "bupdates": self.bupdates,
-            "biome": self.agent.simulation.biomes[self.center_point[0], self.center_point[1]] if hasattr(self, "agent")  else "minecraft:plains",
-            "happiness": self.agent.happiness if hasattr(self, "agent") and self.agent is not None else 0,
+            "biome": self.agent.simulation.biomes[self.center_point[0], self.center_point[1]] if hasattr(self.agent, "simulation")  else "minecraft:plains",
+            "happiness": self.agent.happiness if hasattr(self, "agent") and self.agent is not None and not getattr(self.agent, "dead", False) else 0,
         }
         folder_path = os.path.join(self.folder, self.name)
         os.makedirs(folder_path, exist_ok=True)

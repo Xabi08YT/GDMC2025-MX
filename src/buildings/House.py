@@ -8,7 +8,7 @@ from utils.ANSIColors import ANSIColors
 class House(Building):
     def __init__(self, center_point: tuple[int,int] | None, agent, name: str, orientation: str = "south",
                  built: bool = False, folder="generated"):
-        super().__init__(center_point, agent, name, orientation, built, folder, height=random.randint(5, 7))
+        super().__init__(center_point, agent, name, orientation, built, folder, height=random.randint(5, 7), width=7, depth=7)
         self.construction_phase = 0
         self.construction_progress = 0
         self.construction_ticks = 0
@@ -20,7 +20,7 @@ class House(Building):
         self.furniture_counter = random.randint(1, 2)
         self.furnitures = ["minecraft:crafting_table", "minecraft:chest", "minecraft:barrel", "minecraft:smithing_table", "minecraft:grindstone"]
         self.corner_block = "minecraft:oak_log"
-        self.materials = self.choose_materials("plains")
+        self.materials = self.choose_materials()
 
         self.phase_times = {
             "foundation": 20,
@@ -35,32 +35,22 @@ class House(Building):
             [self.width - 1, self.depth - 1]
         ]
 
-    def choose_materials(self,biome: str = "plains"):
-        door_options = ["minecraft:oak_door", "minecraft:spruce_door", "minecraft:birch_door", "minecraft:dark_oak_door", "minecraft:acacia_door"]
+    def choose_materials(self):
         bed_options = ["minecraft:red_bed", "minecraft:blue_bed", "minecraft:green_bed", "minecraft:yellow_bed", "minecraft:black_bed"]
-
-        if biome in self.agent.simulation.params["biome"].keys():
-            floor_options = self.agent.simulation.params["biome"][biome]["floor_options"]
-            wall_options = self.agent.simulation.params["biome"][biome]["wall_options"]
-            log_options = self.agent.simulation.params["biome"][biome]["log_options"]
-        else:
-            floor_options = ["minecraft:oak_planks", "minecraft:spruce_planks", "minecraft:birch_planks", "minecraft:dark_oak_planks", "minecraft:acacia_planks"]
-            wall_options = {
-                "stone": ["minecraft:stone", "minecraft:stone_bricks", "minecraft:cracked_stone_bricks", "minecraft:mossy_stone_bricks"],
-                "cobblestone": ["minecraft:cobblestone", "minecraft:mossy_cobblestone"],
-                "bricks": ["minecraft:bricks", "minecraft:cracked_bricks"],
-                "wood": ["minecraft:oak_planks", "minecraft:spruce_planks", "minecraft:birch_planks", "minecraft:dark_oak_planks", "minecraft:acacia_planks"]
-            }
-            log_options = ["minecraft:oak_log", "minecraft:spruce_log", "minecraft:birch_log", "minecraft:dark_oak_log", "minecraft:acacia_log"]
-
+        wall_options = {
+            "stone": ["minecraft:stone", "minecraft:stone_bricks", "minecraft:cracked_stone_bricks", "minecraft:mossy_stone_bricks"],
+            "cobblestone": ["minecraft:cobblestone", "minecraft:mossy_cobblestone"],
+            "bricks": ["minecraft:bricks", "minecraft:cracked_bricks"],
+            "wood": ["minecraft:oak_planks"]
+        }
         wall_type = random.choice(list(wall_options.keys()))
         wall_variants = wall_options[wall_type]
 
         return {
-            "floor": random.choice(floor_options),
+            "floor": "minecraft:oak_planks",
             "wall": wall_variants,
-            "log": random.choice(log_options),
-            "door": random.choice(door_options),
+            "log": "minecraft:oak_log",
+            "door": "minecraft:oak_door",
             "bed": random.choice(bed_options)
         }
 
@@ -140,17 +130,15 @@ class House(Building):
         floor = self.materials["floor"]
         total_blocks = self.width * self.depth
         blocks_to_place = int(total_blocks * progress_ratio)
-        for i in range(blocks_to_place):
-            dx = i % self.width
-            dz = i // self.width
-            super().add_block_to_matrix(dx, y, dz, floor)
-
-            if progress_ratio > 0.8:
-                log = self.materials["log"]
-                for dy in range(self.height):
-                    for corner in self.corners:
-                        if dx == corner[0] and dz == corner[1]:
-                            super().add_block_to_matrix(dx, dy, dz, log)
+        for i in range(self.width-1):
+            for j in range(self.depth-1):
+                super().add_block_to_matrix(i, y, j, floor)
+                if progress_ratio > 0.8:
+                    log = self.materials["log"]
+                    for dy in range(self.height):
+                        for corner in self.corners:
+                            if i == corner[0] and j == corner[1]:
+                                super().add_block_to_matrix(i, dy, j, log)
 
     def build_walls_progressive(self, progress_ratio):
         y = 1
@@ -158,12 +146,9 @@ class House(Building):
         total_wall_blocks = (2 * (self.width + self.depth - 2)) * (self.height - 1)
         blocks_to_place = int(total_wall_blocks * progress_ratio)
 
-        blocks = 0
         for dy in range(1, self.height-1):
-            for dx in range(self.width):
-                for dz in range(self.depth):
-                    if blocks >= blocks_to_place:
-                        return
+            for dx in range(self.width-1):
+                for dz in range(self.depth-1):
 
                     is_corner = [dx, dz] in self.corners
                     is_wall = (dx == 0 or dx == self.width - 1 or dz == 0 or dz == self.depth - 1)
@@ -175,34 +160,34 @@ class House(Building):
                     if not is_corner and is_wall and not is_door:
                         wall_block = random.choice(self.materials["wall"])
                         super().add_block_to_matrix(dx, dy, dz, wall_block)
-                        blocks += 1
 
-        x, z = self.width // 2, self.depth // 2
-        if self.orientation == "north":
-            door_x, door_z = x + self.width // 2, z
-        elif self.orientation == "south":
-            door_x, door_z = x + self.width // 2, z + self.depth - 1
-        elif self.orientation == "east":
-            door_x, door_z = x + self.width - 1, z + self.depth // 2
-        elif self.orientation == "west":
-            door_x, door_z = x, z + self.depth // 2
-        else:
-            door_x, door_z = x + self.width // 2, z
+        x, z = (self.width - 1) // 2, (self.depth - 1) // 2
 
         if self.door is None:
-            super().add_block_to_matrix(door_x - x, 1, door_z - z, f'{self.materials["door"]}[half=lower]')
-            super().add_block_to_matrix(door_x - x, 2, door_z - z, f'{self.materials["door"]}[half=upper]')
-            self.door = (door_x - x, 1, door_z - z)
+            door_x, door_z = x, z
+
+            if self.orientation == "north":
+                door_z = 0
+            elif self.orientation == "south":
+                door_z = self.depth - 2
+            elif self.orientation == "east":
+                door_x = self.width - 2
+            elif self.orientation == "west":
+                door_x = 0
+
+            super().add_block_to_matrix(door_x, 1, door_z, f'{self.materials["door"]}[half=lower]')
+            super().add_block_to_matrix(door_x, 2, door_z, f'{self.materials["door"]}[half=upper]')
+            self.door = (door_x, 1, door_z)
 
     def build_roof_progressive(self, progress_ratio):
-        roof_material = random.choice(["oak_planks", "spruce_planks"])
+        roof_material = "oak_planks"
         stairs_material = roof_material.replace("planks", "stairs")
 
         if self.roof_style == "pyramid":
             for turn, dy in enumerate(range(self.height - 2, self.height)):
                 offset = turn
-                for dx in range(offset, self.width - offset):
-                    for dz in range(offset, self.depth - offset):
+                for dx in range(offset, self.width - offset - 1):
+                    for dz in range(offset, self.depth - offset - 1):
                         is_edge_x = dx == offset or dx == self.width - offset - 1
                         is_edge_z = dz == offset or dz == self.depth - offset - 1
                         if is_edge_x or is_edge_z:
@@ -223,44 +208,21 @@ class House(Building):
             super().add_block_to_matrix(2, self.height-1, 2, roof_material)
             super().add_block_to_matrix(2, self.height - 2, 2, "minecraft:lantern[hanging=true]")
         elif self.roof_style == "flat":
-            for dx in range(self.width):
-                for dz in range(self.depth):
+            for dx in range(self.width-1):
+                for dz in range(self.depth-1):
                         super().add_block_to_matrix(dx, self.height - 2, dz, roof_material)
                         super().add_block_to_matrix(dx, self.height - 1, dz, "minecraft:air")
-            super().add_block_to_matrix(2, self.height - 3, 2, "minecraft:lantern[hanging=true]")
+            super().add_block_to_matrix(3, self.height - 3, 3, "minecraft:lantern[hanging=true]")
 
     def build_furniture_progressive(self):
-        occupied = [[False for _ in range(self.depth)] for _ in range(self.width)]
-
-        if self.door is not None:
-            door_x, _, door_z = self.door
-            occupied[door_x][door_z] = True
-            if self.orientation == "north" and door_z + 1 < self.depth:
-                occupied[door_x][door_z + 1] = True
-            elif self.orientation == "south" and door_z - 1 >= 0:
-                occupied[door_x][door_z - 1] = True
-            elif self.orientation == "east" and door_x - 1 >= 0:
-                occupied[door_x - 1][door_z] = True
-            elif self.orientation == "west" and door_x + 1 < self.width:
-                occupied[door_x + 1][door_z] = True
-
-        if self.bed is None:
-            bed_x = random.randint(2, self.width - 3)
-            bed_z = random.randint(2, self.depth - 3)
-            super().add_block_to_matrix(bed_x, 1, bed_z, self.materials["bed"])
-            self.bed = (bed_x, 1, bed_z)
-            occupied[bed_x][bed_z] = True
-            if bed_x + 1 < self.width:
-                occupied[bed_x + 1][bed_z] = True
-
         furniture_placed = 0
         attempts = 0
         while furniture_placed < self.furniture_counter and attempts < 20:
-            x = random.randint(2, self.width - 2)
-            z = random.randint(2, self.depth - 2)
-            if not occupied[x][z]:
+            x = random.randint(3, self.width - 3)
+            z = random.randint(3, self.depth - 3)
+            if self.matrix[x][z][1] == "minecraft:air":
                 furniture = random.choice(self.furnitures)
                 super().add_block_to_matrix(x, 1, z, furniture)
-                occupied[x][z] = True
                 furniture_placed += 1
             attempts += 1
+        #super().add_block_to_matrix(3, 1, 3, 'minecraft:oak_sign')
