@@ -12,6 +12,7 @@ from abstractionLayer.AbstractionLayer import AbstractionLayer
 from random import randint
 from simLogic.Agent import Agent
 from simLogic.BoidsBehavior import BoidsBehavior
+from utils.BookGenerator import BookGenerator
 import numpy as np
 from matplotlib import pyplot as plt
 import buildings.Paths as Paths
@@ -139,6 +140,8 @@ class Simulation:
         logfile.close()
 
         self.clean()
+        self.heightmap = self.abl.get_height_map_excluding("air,%23leaves")
+        BookGenerator(self)
 
         if "--visualize" in sys.argv or "-vs" in sys.argv:
             self.show_message("Done. Visualization server is now running. Please check your browser.")
