@@ -19,6 +19,7 @@ class CommunityBuilding(JobBuilding):
             depth = 11
         super().__init__(center_point, agent, agent.name + "'s CommunityBuilding", orientation, width=width, height=7,
                          depth=depth)
+        super().clear()
 
         print(self.matrix.shape)
         if center_point is None:

@@ -102,10 +102,9 @@ class Simulation:
         for agent in agents:
             agent.logfile = LogFile(fpath="logs/ongoing", fname=f"{str(agent.id)}.csv")
         for i in range(self.config["nbTurns"]):
-            if i % 2 == 0:
+            if i % 2 == 0 and random.randint(0, 10) < 2:
                 Relationships.generate_social_events(self)
                 Relationships.update_social_attributes(self)
-
             for agent in agents:
                 agent.turn = i
                 agent.tick()
@@ -132,7 +131,7 @@ class Simulation:
 
     def end(self):
         self.show_message("Pushing changes to Minecraft... This may take several minutes.")
-        self.abl.push()
+        self.abl.push(self.agents)
         self.show_message("Changes pushed. Beginning cleanup...")
 
         logfile = LogFile(fname=f'{str(self.creation_time).split(".")[0]}.csv')

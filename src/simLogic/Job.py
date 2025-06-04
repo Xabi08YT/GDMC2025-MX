@@ -1,3 +1,4 @@
+import random
 from enum import Enum
 from random import choice
 import os
@@ -53,21 +54,75 @@ class Job:
             self.job_building = FarmBuilding.get_instance(None, agent)
             agent.simulation.hasfarmer = True
             return
-        if agent.attributes["strength"] > 0.4:
+
+        relationships = Relationships.get_all_relationships(agent)
+        positive_relations = sum(1 for _, data in relationships.items() if data["value"] > 0.3)
+        close_relations = sum(1 for _, data in relationships.items() if data["value"] > 0.7)
+        social_influence = 0.0
+
+        friend_job_influence = {}
+        for rel_id, rel_data in relationships.items():
+            if rel_data["value"] > 0.3:
+                for other_agent in agent.simulation.agents:
+                    if other_agent.id == rel_id and other_agent.job.job_type != JobType.UNEMPLOYED:
+                        if other_agent.job.job_category not in friend_job_influence:
+                            friend_job_influence[other_agent.job.job_category] = 0
+                        friend_job_influence[other_agent.job.job_category] += rel_data["value"]
+
+        if close_relations > 0:
+            social_influence = 0.15
+
+        if positive_relations > 2 or close_relations > 0:
+            if random.random() < 0.3 + social_influence:
+                self.job_type = choice([JobType.CARTOGRAPHER, JobType.CLERIC, JobType.LIBRARIAN])
+                self.job_category = JobCategory.COMMUNITY
+                self.job_building = CommunityBuilding.get_instance(None, agent)
+                return
+
+        if friend_job_influence:
+            most_influential_category = max(friend_job_influence.items(), key=lambda x: x[1])[0]
+            if random.random() < 0.4 + (friend_job_influence[most_influential_category] * 0.1):
+                if most_influential_category == JobCategory.FARM:
+                    self.job_type = choice([JobType.FARMER, JobType.FISHERMAN, JobType.BUTCHER])
+                    self.job_category = JobCategory.FARM
+                    self.job_building = FarmBuilding.get_instance(None, agent)
+                    return
+                elif most_influential_category == JobCategory.BLACKSMITH:
+                    self.job_type = choice([JobType.ARMORER, JobType.WEAPONSMITH, JobType.TOOLSMITH, JobType.LEATHERWORKER])
+                    self.job_category = JobCategory.BLACKSMITH
+                    self.job_building = BlacksmithBuilding.get_instance(None, agent)
+                    return
+                elif most_influential_category == JobCategory.COMMUNITY:
+                    self.job_type = choice([JobType.CARTOGRAPHER, JobType.CLERIC, JobType.LIBRARIAN])
+                    self.job_category = JobCategory.COMMUNITY
+                    self.job_building = CommunityBuilding.get_instance(None, agent)
+                    return
+                elif most_influential_category == JobCategory.WORKSHOP:
+                    self.job_type = choice([JobType.MASON, JobType.SHEPHERD, JobType.FLETCHER])
+                    self.job_category = JobCategory.WORKSHOP
+                    self.job_building = WorkshopBuilding.get_instance(None, agent)
+                    return
+
+        if agent.attributes["strength"] > (0.4 - social_influence):
             self.job_type = choice([JobType.ARMORER, JobType.WEAPONSMITH, JobType.TOOLSMITH, JobType.LEATHERWORKER])
             self.job_category = JobCategory.BLACKSMITH
             self.job_building = BlacksmithBuilding.get_instance(None, agent)
             return
-        if agent.decay_rates["social"] < 0.05:
+
+        social_threshold = 0.05 + (positive_relations * 0.01)
+        if agent.decay_rates["social"] < social_threshold:
             self.job_type = choice([JobType.CARTOGRAPHER, JobType.CLERIC, JobType.LIBRARIAN])
             self.job_category = JobCategory.COMMUNITY
             self.job_building = CommunityBuilding.get_instance(None, agent)
             return
-        if agent.decay_rates["energy"] < 0.3:
+
+        energy_threshold = 0.3 - (positive_relations * 0.02)
+        if agent.decay_rates["energy"] < energy_threshold:
             self.job_type = choice([JobType.MASON, JobType.SHEPHERD, JobType.FLETCHER])
             self.job_category = JobCategory.WORKSHOP
             self.job_building = WorkshopBuilding.get_instance(None, agent)
             return
+
         self.job_type = JobType.UNEMPLOYED
 
     def build_job_building(self):

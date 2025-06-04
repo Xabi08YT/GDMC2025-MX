@@ -21,9 +21,9 @@ class FarmBuilding(JobBuilding):
         if center_point is None:
             center_point = self.best_spot(agent.simulation.config["nbBuildingTries"], agent.simulation)
         self.place(center_point, agent.simulation)
-        self.crops = random.choice(["minecraft:wheat", "minecraft:carrots", "minecraft:potatoes", "minecraft:beetroots"])
         FarmBuilding.INSTANCE = self
         self.corner_block = "minecraft:oak_log"
+        super().clear()
 
     def is_field(self,x,z):
         if self.orientation == "north":
@@ -141,8 +141,8 @@ class FarmBuilding(JobBuilding):
             for z in range(self.depth):
                 # Ground layer
                 if self.is_field(x,z):
-                    self.add_block_to_matrix(x, 0, z, "minecraft:farmland[moisture=7]")
-                    self.add_block_to_matrix(x, 1, z, f"{choice}[age=0]")
+                    self.add_block_to_matrix(x, 0, z, f"minecraft:farmland[moisture={randint(1, 7)}]")
+                    self.add_block_to_matrix(x, 1, z, f"{choice}[age={randint(1, 7)}]")
                 elif self.is_log(x,z):
                     self.add_block_to_matrix(x, 0, z, "minecraft:oak_log")
                     self.add_block_to_matrix(x, 1, z, "minecraft:oak_fence")
@@ -178,8 +178,6 @@ class FarmBuilding(JobBuilding):
                     self.add_block_to_matrix(x, 2, z, f"minecraft:oak_door[facing={pf[self.orientation]},half=upper]")
 
                 # Storage area
-                tmp = randint(1,32768)//3%2
-                print(tmp)
                 if randint(1,32768)//3%2 == 0 and self.is_storage_area(x, z):
                     self.add_block_to_matrix(x, 1, z, 'barrel[facing=up]')
 

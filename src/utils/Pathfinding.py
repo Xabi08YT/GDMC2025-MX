@@ -79,7 +79,7 @@ class Pathfinding:
             if self.is_walkable(next_pos):
                 neighbors.append(next_pos)
             else:
-                bridge = self.identify_potential_bridge((x, z), (dx, dz))
+                bridge = None #self.identify_potential_bridge((x, z), (dx, dz))
                 if bridge is not None:
                     start_point, end_point = bridge
                     if end_point not in neighbors:

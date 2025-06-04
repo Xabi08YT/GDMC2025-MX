@@ -47,6 +47,7 @@ class Paths():
 
                     self.update_walkable_with_bridge(start_point, end_point)
 
+
             for x, z in path:
                 self.matrix[max(0,x-1):min(self.simulation.heightmap.shape[0],x+2),
                 max(0,z-1):min(self.simulation.heightmap.shape[1],z+2)] = i

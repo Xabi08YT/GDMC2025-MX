@@ -6,6 +6,7 @@ from multiprocessing import Pool, cpu_count
 import os, json
 import matplotlib.pyplot as plt
 from buildings.Building import Building
+from gdpc.minecraft_tools import signBlock
 from utils.math_methods import same_point
 from utils.ANSIColors import ANSIColors
 import numpy as np
@@ -179,7 +180,7 @@ class AbstractionLayer:
         mcy = args[2][max(x - 1, 0):min(args[2].shape[0], x + blocks.shape[0] + 1),
               max(z - 1, 0):min(args[2].shape[0], z + blocks.shape[1] + 1)].max().item() - 1
         mcminy = args[3][max(x - 1, 0):min(args[2].shape[0], x + blocks.shape[0] + 1),
-                 max(z - 1, 0):min(args[2].shape[0], z + blocks.shape[1] + 1)].min().item() - 1
+                 max(z - 1, 0):min(args[2].shape[0], z + blocks.shape[1] + 1)].min().item()
 
         gdpcblocks = []
 
@@ -216,19 +217,23 @@ class AbstractionLayer:
                         gdpcblocks.append(
                             ((mcx + fx, mcminy + foundations, mcz + fz),
                             Block("minecraft:polished_andesite")))
-
+        
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
                 for my in range(blocks.shape[2]):
-                    if "house" in meta["name"].lower() and meta["happiness"] < 0.3 and random.randint(0, 100) < 10:
+                    if "house" in meta["name"].lower() and meta["happiness"] < -0.5 and random.randint(0, 100) < 5:
                         gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block("minecraft:cobweb")))
                     else:
-                        """if "oak" in blocks[mx, mz, my]:
-                            wood = self.simParams["biomes"][meta["biome"]]
+                        if "oak" in str(blocks[mx, mz, my]):
+                            wood = self.simParams["biome"][meta["biome"].replace("minecraft:", "")]
                             block = blocks[mx, mz, my].replace("oak", wood)
-                            gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(block)))
-                        else:"""
-                        gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(blocks[mx, mz, my])))
+                            if "sign" in str(blocks[mx, mz, my]):
+                                block = signBlock(wood=wood, facing=meta["orientation"], wall=True, frontLine2=meta["name"].replace(" House", ""), frontLine3="Happiness: " + str(round(meta["happiness"], 2)))
+                                gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), block))
+                            else:
+                                gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(block)))
+                        else:
+                            gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(blocks[mx, mz, my])))
 
         print(
             f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
@@ -259,7 +264,8 @@ class AbstractionLayer:
 
         interface.placeBlocks(gdpcblocks, doBlockUpdates=False)
 
-    def push(self, folder="generated"):
+    def push(self, agents, folder="generated"):
+        global gdpcblocks
         for building in Building.BUILDINGS:
             building.matrix_to_files()
 
@@ -274,6 +280,15 @@ class AbstractionLayer:
                     [(folder, target, hmap, hmapsolid) for target in os.listdir(folder) if target != "path"]).get()
         p.close()
         p.join()
+
+        deadheads = []
+        heightmap = self.get_height_map_excluding("air")
+        for agent in agents:
+            if agent.dead is True:
+                y = heightmap[agent.x, agent.z].item()
+                print(f"{ANSIColors.WARNING}[WARN] Agent {agent.name} is dead, placing deadhead at {agent.x, y, agent.z}{ANSIColors.ENDC}")
+                deadheads.append(((agent.x, y, agent.z), Block(f"minecraft:skeleton_skull[rotation={random.randint(0, 15)}]")))
+        interface.placeBlocks(deadheads)
 
     def clear_trees_for_buildings(self, folder="generated"):
         print(f"{ANSIColors.OKCYAN}[INFO] Clearing trees for buildings...{ANSIColors.ENDC}")
@@ -375,7 +390,7 @@ class AbstractionLayer:
 
         url = f'{config["GDMC_HTTP_URL"]}/biomes?x={x}&z={z}&dx={dx}&dz={dz}&withinBuildArea=true'
         biome_data = requests.get(url).json()
-        biome_matrix = np.zeros((dx, dz), dtype=str)
+        biome_matrix = np.zeros((dx, dz), dtype=object)
         for entry in biome_data:
             rel_x = entry["x"] - x
             rel_z = entry["z"] - z

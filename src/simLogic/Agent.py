@@ -196,13 +196,14 @@ class Agent:
 
         if self.job.job_type == JobType.UNEMPLOYED:
             self.job.get_new_job(self, priority)
-        elif self.job.job_type != JobType.UNEMPLOYED and (self.job.job_building is None or self.job.job_building.built is False):
-            self.job.job_building.build()
-        else:
-            self.job.work()
 
-        #if not isinstance(self.home, House) and self.attributes["energy"] < 0.3 and (priority == "energy" or priority == "health"):
-        self.place_house()
+        if not isinstance(self.home, House): #and self.attributes["energy"] < 0.3 and (priority == "energy" or priority == "health"):
+            self.place_house()
+        elif isinstance(self.home, House) and self.home.built == False:
+            self.home.build()
+
+        if self.job.job_type != JobType.UNEMPLOYED:
+            self.job.job_building.build()
 
         self.force_constraints_on_attributes()
         self.logfile.addLine(self, priority)

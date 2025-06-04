@@ -16,19 +16,21 @@ class Building:
         self.height = height
         self.depth = depth
         self.radius = 10
+        self.center_point = None
         if agent is not None and center_point is not None:
-            self.place(center_point,agent.simulation)
-            self.lowest_y = agent.simulation.heightmap[self.center_point[0] - width:self.center_point[0] + width,
-                            self.center_point[1] - depth:self.center_point[1] + depth].min().item() - 1
-            self.highest_y = agent.simulation.heightmap[self.center_point[0] - width:self.center_point[0] + width,
-                             self.center_point[1] - depth:self.center_point[1] + depth].max().item() - 1
-            self.agent = agent
+            placement_success = self.place(center_point, agent.simulation)
+            if placement_success and hasattr(self, "center_point") and self.center_point is not None:
+                self.lowest_y = agent.simulation.heightmap[self.center_point[0] - width:self.center_point[0] + width,
+                                self.center_point[1] - depth:self.center_point[1] + depth].min().item() - 1
+                self.highest_y = agent.simulation.heightmap[self.center_point[0] - width:self.center_point[0] + width,
+                                self.center_point[1] - depth:self.center_point[1] + depth].max().item() - 1
         self.name = name
         self.folder = folder
         self.matrix = np.zeros((self.width, self.depth, self.height), dtype=object)
         self.BUILDINGS.append(self)
         self.bupdates = bupdates
         self.corner = "minecraft:oak_log"
+        self.agent = agent
 
     def built(self):
         self.built = True
@@ -68,20 +70,41 @@ class Building:
             self.orientation = "south"
 
         offset = entrance_offset[self.orientation]
-        entrance_x = x + offset[0]
-        entrance_z = z + offset[1]
+        lateral_offset = 0
+        if self.orientation in ["north", "south"]:
+            lateral_offset = (self.width // 4) - 1
+            if lateral_offset < 1:
+                lateral_offset = 1
+            entrance_x = x + offset[0] + lateral_offset
+        else:
+            lateral_offset = (self.depth // 4) - 1
+            if lateral_offset < 1:
+                lateral_offset = 1
+            entrance_z = z + offset[1] + lateral_offset
+
+        if self.orientation in ["north", "south"]:
+            entrance_z = z + offset[1]
+        else:
+            entrance_x = x + offset[0]
 
         return entrance_x, entrance_z
 
-    def place(self,center_point: tuple[int, int], sim = None):
+    def place(self, center_point: tuple[int, int], sim=None):
         center_point = (max(center_point[0], self.width), max(center_point[1], self.depth))
-        center_point = (min(center_point[0], sim.heightmap.shape[0]-self.width), min(center_point[1], sim.heightmap.shape[1]-self.depth))
+        center_point = (min(center_point[0], sim.heightmap.shape[0] - self.width),
+                        min(center_point[1], sim.heightmap.shape[1] - self.depth))
+
+        x_min = center_point[0] - self.width // 2 - 1
+        x_max = center_point[0] + self.width // 2 + 1
+        z_min = center_point[1] - self.depth // 2 - 1
+        z_max = center_point[1] + self.depth // 2 + 1
+
+        if np.any(sim.buildings[x_min:x_max, z_min:z_max]):
+            return False
+
         self.center_point = center_point
-        sim.buildings[
-            center_point[0] - self.width // 2 - 1:center_point[1] + self.width // 2 + 1,
-            center_point[0] - self.width // 2 - 1:center_point[1] + self.width // 2 + 1
-        ] = True
-        return
+        sim.buildings[x_min:x_max, z_min:z_max] = True
+        return True
 
     def clear(self):
         for x in range(self.width):
@@ -107,9 +130,10 @@ class Building:
             "x": self.center_point[0],
             "z": self.center_point[1],
             "built": self.built,
+            "orientation": self.orientation,
             "bupdates": self.bupdates,
-            "biome": self.agent.simulation.biomes[self.center_point[0], self.center_point[1]] if hasattr(self, "agent")  else "minecraft:plains",
-            "happiness": self.agent.happiness if hasattr(self, "agent") and self.agent is not None else 0,
+            "biome": self.agent.simulation.biomes[self.center_point[0], self.center_point[1]] if hasattr(self.agent, "simulation")  else "minecraft:plains",
+            "happiness": self.agent.happiness if hasattr(self, "agent") and self.agent is not None and not getattr(self.agent, "dead", False) else 0,
         }
         folder_path = os.path.join(self.folder, self.name)
         os.makedirs(folder_path, exist_ok=True)

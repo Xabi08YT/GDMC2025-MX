@@ -30,6 +30,7 @@ class WorkshopBuilding(JobBuilding):
         ]
         self.corner_block = "minecraft:bricks"
         WorkshopBuilding.INSTANCE = self
+        super().clear()
 
     def is_floor(self, x, z):
         if self.orientation == "north":

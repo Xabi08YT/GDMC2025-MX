@@ -58,178 +58,42 @@
   "villageCenterBlock": "minecraft:campfire",
   "centerPlazaFloor": "minecraft:dirt_path",
   "biome": {
-    "plains": {
-      "floor_options": [
-        "oak_planks",
-        "cobblestone",
-        "stone_bricks"
-      ],
-      "wall_options": {
-        "stone": [
-          "stone",
-          "stone_bricks",
-          "cracked_stone_bricks",
-          "mossy_stone_bricks"
-        ],
-        "cobblestone": [
-          "cobblestone",
-          "mossy_cobblestone"
-        ]
-      },
-      "log_options": [
-        "oak_log"
-      ]
-    },
-    "desert": {
-      "floor_options": [
-        "sandstone",
-        "cut_sandstone",
-        "smooth_sandstone"
-      ],
-      "wall_options": {
-        "sandstone": [
-          "sandstone",
-          "cut_sandstone",
-          "smooth_sandstone",
-          "chiseled_sandstone"
-        ],
-        "terracotta": [
-          "terracotta",
-          "white_terracotta",
-          "orange_terracotta"
-        ]
-      },
-      "log_options": [
-        "stripped_acacia_log",
-        "birch_log"
-      ]
-    },
-    "snowy_taiga": {
-      "floor_options": [
-        "spruce_planks",
-        "stone_bricks",
-        "cobblestone"
-      ],
-      "wall_options": {
-        "stone": [
-          "stone",
-          "stone_bricks",
-          "cracked_stone_bricks",
-          "mossy_stone_bricks"
-        ],
-        "cobblestone": [
-          "cobblestone",
-          "mossy_cobblestone"
-        ],
-        "wood": [
-          "spruce_planks"
-        ]
-      },
-      "log_options": [
-        "spruce_log"
-      ],
-      "door_options": [
-        "spruce_door"
-      ]
-    },
-    "taiga": {
-      "floor_options": [
-        "spruce_planks",
-        "stone_bricks",
-        "cobblestone"
-      ],
-      "wall_options": {
-        "stone": [
-          "stone",
-          "stone_bricks",
-          "cracked_stone_bricks",
-          "mossy_stone_bricks"
-        ],
-        "cobblestone": [
-          "cobblestone",
-          "mossy_cobblestone"
-        ],
-        "wood": [
-          "spruce_planks"
-        ]
-      },
-      "log_options": [
-        "spruce_log"
-      ],
-      "door_options": [
-        "spruce_door"
-      ]
-    },
-    "jungle": {
-      "floor_options": [
-        "jungle_planks",
-        "mossy_cobblestone",
-        "mossy_stone_bricks"
-      ],
-      "wall_options": {
-        "stone": [
-          "stone",
-          "mossy_cobblestone",
-          "mossy_stone_bricks"
-        ],
-        "wood": [
-          "jungle_planks"
-        ]
-      },
-      "log_options": [
-        "jungle_log"
-      ],
-      "door_options": [
-        "jungle_door"
-      ]
-    },
-    "savanna": {
-      "floor_options": [
-        "acacia_planks",
-        "terracotta",
-        "smooth_sandstone"
-      ],
-      "wall_options": {
-        "terracotta": [
-          "terracotta",
-          "white_terracotta",
-          "orange_terracotta"
-        ],
-        "wood": [
-          "acacia_planks"
-        ]
-      },
-      "log_options": [
-        "acacia_log"
-      ],
-      "door_options": [
-        "acacia_door"
-      ]
-    },
-    "swamp": {
-      "floor_options": [
-        "dark_oak_planks",
-        "mossy_cobblestone",
-        "mossy_stone_bricks"
-      ],
-      "wall_options": {
-        "stone": [
-          "stone",
-          "mossy_cobblestone",
-          "mossy_stone_bricks"
-        ],
-        "wood": [
-          "dark_oak_planks"
-        ]
-      },
-      "log_options": [
-        "dark_oak_log",
-        "oak_log"
-      ],
-      "door_options": [
-        "dark_oak_door"
-      ]
-    }
+    "plains": "oak",
+    "sunflower_plains": "oak",
+    "forest": "oak",
+    "flower_forest": "oak",
+    "birch_forest": "birch",
+    "old_growth_birch_forest": "birch",
+    "dark_forest": "dark_oak",
+    "taiga": "spruce",
+    "snowy_taiga": "spruce",
+    "old_growth_pine_taiga": "spruce",
+    "old_growth_spruce_taiga": "spruce",
+    "savanna": "acacia",
+    "savanna_plateau": "acacia",
+    "windswept_savanna": "acacia",
+    "jungle": "jungle",
+    "sparse_jungle": "jungle",
+    "bamboo_jungle": "bamboo",
+    "swamp": "oak",
+    "mangrove_swamp": "mangrove",
+    "meadow": "oak",
+    "grove": "spruce",
+    "cherry_grove": "cherry",
+    "lush_caves": "azalea",
+    "stony_shore": "oak",
+    "beach": "oak",
+    "snowy_plains": "oak",
+    "ice_spikes": "oak",
+    "snowy_beach": "oak",
+    "desert": "oak",
+    "badlands": "oak",
+    "eroded_badlands": "oak",
+    "wooded_badlands": "oak",
+    "windswept_hills": "oak",
+    "windswept_gravelly_hills": "oak",
+    "windswept_forest": "oak",
+    "dripstone_caves": "oak"
   },
   "path_blocks": [
     "minecraft:path",
