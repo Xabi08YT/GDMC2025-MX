@@ -221,15 +221,15 @@ class AbstractionLayer:
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
                 for my in range(blocks.shape[2]):
-                    if "house" in meta["name"].lower() and meta["happiness"] < 0.3 and random.randint(0, 100) < 10:
+                    if "house" in meta["name"].lower() and meta["happiness"] < -0.5 and random.randint(0, 100) < 5:
                         gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block("minecraft:cobweb")))
                     else:
                         if "oak" in str(blocks[mx, mz, my]):
                             wood = self.simParams["biome"][meta["biome"].replace("minecraft:", "")]
                             block = blocks[mx, mz, my].replace("oak", wood)
                             if "sign" in str(blocks[mx, mz, my]):
-                                block = signBlock(wood=wood, wall=True, frontLine2=meta["name"])
-                                gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(block)))
+                                block = signBlock(wood=wood, facing=meta["orientation"], wall=True, frontLine2=meta["name"].replace(" House", ""), frontLine3="Happiness: " + str(round(meta["happiness"], 2)))
+                                gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), block))
                             else:
                                 gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(block)))
                         else:

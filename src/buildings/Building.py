@@ -109,6 +109,7 @@ class Building:
             "x": self.center_point[0],
             "z": self.center_point[1],
             "built": self.built,
+            "orientation": self.orientation,
             "bupdates": self.bupdates,
             "biome": self.agent.simulation.biomes[self.center_point[0], self.center_point[1]] if hasattr(self.agent, "simulation")  else "minecraft:plains",
             "happiness": self.agent.happiness if hasattr(self, "agent") and self.agent is not None and not getattr(self.agent, "dead", False) else 0,
