@@ -244,15 +244,14 @@ class House(Building):
             attempts += 1
         if self.door is not None:
             door_x, _, door_z = self.door
-            leftorright = random.choice([-1, 1])
             if self.orientation == "north":
-                sign_x, sign_z = door_x - 1, door_z + leftorright
+                sign_x, sign_z = door_x - 1, door_z + 1
             elif self.orientation == "south":
-                sign_x, sign_z = door_x + 1, door_z + leftorright
+                sign_x, sign_z = door_x + 1, door_z + 1
             elif self.orientation == "east":
-                sign_x, sign_z = door_x + leftorright, door_z - 1
+                sign_x, sign_z = door_x + 1, door_z - 1
             elif self.orientation == "west":
-                sign_x, sign_z = door_x + leftorright, door_z + 1
+                sign_x, sign_z = door_x + 1, door_z + 1
             else:
                 sign_x, sign_z = door_x, door_z
             super().add_block_to_matrix(sign_x, 1, sign_z, f'minecraft:oak_sign')
