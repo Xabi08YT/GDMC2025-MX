@@ -5,12 +5,16 @@ from buildings.Bridge import Bridge
 import os
 import json
 
+from utils.ANSIColors import ANSIColors
+
+
 class Paths():
     def __init__(self, simulation, buildings):
         self.simulation = simulation
         self.buildings = buildings
         self.matrix = np.zeros((simulation.walkable.shape[0], simulation.walkable.shape[1]), dtype=object)
-        self.bridges = []
+        self.bridges = np.zeros((simulation.walkable.shape[0], simulation.walkable.shape[1]), dtype=bool)
+        self.paths = np.zeros((simulation.walkable.shape[0], simulation.walkable.shape[1]), dtype=bool)
 
     def build(self):
         i = 0
@@ -25,49 +29,18 @@ class Paths():
             if entrance is None:
                 continue
 
-            pclass = Pathfinding(self.simulation, entrance[0],entrance[1], self.simulation.firecamp_coords[0],self.simulation.firecamp_coords[1])
+            print(f"{ANSIColors.OKBLUE}[SIMULATION INFO] Building path between {ANSIColors.ENDC}{ANSIColors.OKGREEN}{building.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE} and firecamp{ANSIColors.ENDC}")
+
+            pclass = Pathfinding(self.simulation, entrance[0],entrance[1], self.simulation.firecamp_coords[0],self.simulation.firecamp_coords[1],self.bridges,self.paths)
             path = pclass.find_path()
+            self.bridges = pclass.bridges
             if path is None:
                 continue
-
-            if hasattr(pclass, "bridges_to_build") and pclass.bridges_to_build:
-                for start_point, end_point in pclass.bridges_to_build:
-                    dx = end_point[0] - start_point[0]
-                    dz = end_point[1] - start_point[1]
-
-                    if abs(dx) > abs(dz):
-                        orientation = "east" if dx > 0 else "west"
-                    else:
-                        orientation = "south" if dz > 0 else "north"
-
-                    bridge = Bridge(start_point, end_point, agent=self.simulation.agents[0], orientation=orientation)
-                    bridge.build()
-                    bridge.matrix_to_files()
-                    self.bridges.append(bridge)
-
-                    self.update_walkable_with_bridge(start_point, end_point)
-
 
             for x, z in path:
                 self.matrix[max(0,x-1):min(self.simulation.heightmap.shape[0],x+2),
                 max(0,z-1):min(self.simulation.heightmap.shape[1],z+2)] = i
-
-    def update_walkable_with_bridge(self, start_point, end_point):
-        x1, z1 = start_point
-        x2, z2 = end_point
-
-        steps = max(abs(x2 - x1), abs(z2 - z1))
-        if steps == 0:
-            return
-
-        dx = (x2 - x1) / steps
-        dz = (z2 - z1) / steps
-
-        for i in range(steps + 1):
-            x = int(round(x1 + dx * i))
-            z = int(round(z1 + dz * i))
-            if 0 <= x < self.simulation.walkable.shape[0] and 0 <= z < self.simulation.walkable.shape[1]:
-                self.simulation.walkable[x, z] = 1
+                self.paths[x, z] = True
 
     def export(self):
         folder_path = os.path.join("generated", "path")

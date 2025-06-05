@@ -224,7 +224,7 @@ class AbstractionLayer:
                     if "house" in meta["name"].lower() and meta["happiness"] < -0.5 and random.randint(0, 100) < 5:
                         gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block("minecraft:cobweb")))
                     else:
-                        if "oak" in str(blocks[mx, mz, my]):
+                        if "oak" in str(blocks[mx, mz, my]) and meta["biome"] in self.simParams["biome"].keys():
                             wood = self.simParams["biome"][meta["biome"].replace("minecraft:", "")]
                             block = blocks[mx, mz, my].replace("oak", wood)
                             if "sign" in str(blocks[mx, mz, my]):
