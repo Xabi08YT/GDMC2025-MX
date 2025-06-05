@@ -63,6 +63,7 @@ class Agent:
         self.nb_turn_fulfilled = 0
         self.scores = {}
         self.radius = self.simulation.config["observationRange"]
+        self.book = {"title": f"The life of {self.name}", "author": self.name, "pages": [] }
 
     def set_velocity(self, vx, vz):
         speed = math.sqrt(vx * vx + vz * vz)
@@ -82,8 +83,9 @@ class Agent:
         self.velocity_z += fz
 
     def update_position(self):
-        self.x += self.velocity_x
-        self.z += self.velocity_z
+        if 0 <= self.x + self.velocity_x < self.simulation.walkable.shape[0] and 0 <= self.z + self.velocity_z < self.simulation.walkable.shape[1]:
+            self.x += self.velocity_x
+            self.z += self.velocity_z
 
     def force_constraints_on_attributes(self):
         self.attributes["social"] = max(0, min(1, self.attributes["social"]))
@@ -184,6 +186,9 @@ class Agent:
         print(
             f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE} built a new house!{ANSIColors.ENDC}")
 
+    def update_book(self):
+        print("ah la la j'écris")
+
     def tick(self):
         if self.dead:
             self.logfile.addLine(self, "DEAD")
@@ -207,3 +212,5 @@ class Agent:
 
         self.force_constraints_on_attributes()
         self.logfile.addLine(self, priority)
+
+        self.update_book()

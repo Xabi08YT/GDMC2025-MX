@@ -1,7 +1,6 @@
 import random
 from enum import Enum
 from random import choice
-import os
 from buildings.JobBuilding import JobBuilding
 from buildings.WorkshopBuilding import WorkshopBuilding
 from buildings.FarmBuilding import FarmBuilding
@@ -32,7 +31,6 @@ class JobType(Enum):
     TOOLSMITH = "Toolsmith"
     WEAPONSMITH = "Weaponsmith"
     UNEMPLOYED = "Unemployed"
-
 
 class Job:
     def __init__(self, agent, job_type: JobType = JobType.UNEMPLOYED, job_building: JobBuilding = None):

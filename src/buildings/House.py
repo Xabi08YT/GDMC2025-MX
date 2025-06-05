@@ -16,6 +16,7 @@ class House(Building):
         self.built_phases = set()
         self.door = None
         self.bed = None
+        self.container = None
         self.roof_style = random.choice(["flat", "pyramid"])
         self.furniture_counter = random.randint(1, 2)
         self.furnitures = ["minecraft:crafting_table", "minecraft:chest", "minecraft:barrel", "minecraft:smithing_table", "minecraft:grindstone"]
@@ -127,14 +128,17 @@ class House(Building):
     def build_foundation_progressive(self):
         y = 0
         floor = self.materials["floor"]
-        for i in range(1, self.width-1):
-            for j in range(1, self.depth-1):
-                super().add_block_to_matrix(i, y, j, floor)
-                log = self.materials["log"]
-                for dy in range(self.height):
-                    for corner in self.corners:
-                        if i == corner[0] and j == corner[1]:
-                            super().add_block_to_matrix(i, dy, j, log)
+        for i in range(0, self.width):
+            for j in range(0, self.depth):
+                if i == 0 or i == self.width - 1 or j == 0 or j == self.depth - 1:
+                    super().add_block_to_matrix(i, y, j, "minecraft:grass_block")
+                else:
+                    super().add_block_to_matrix(i, y, j, floor)
+                    log = self.materials["log"]
+                    for dy in range(self.height):
+                        for corner in self.corners:
+                            if i == corner[0] and j == corner[1]:
+                                super().add_block_to_matrix(i, dy, j, log)
 
     def build_walls_progressive(self):
         for dy in range(1, self.height-1):
@@ -172,7 +176,6 @@ class House(Building):
 
     def build_roof_progressive(self):
         roof_material = "oak_planks"
-        stairs_material = roof_material.replace("planks", "stairs")
 
         if self.roof_style == "pyramid":
             center_x = (self.width - 1) // 2
@@ -218,30 +221,67 @@ class House(Building):
             super().add_block_to_matrix(3, self.height - 3, 3, "minecraft:lantern[hanging=true]")
 
     def build_furniture_progressive(self):
-        possible_bed_positions = []
-        for x in range(1, self.width - 1):
-            for z in range(1, self.depth - 1):
-                if ((x == 1 or x == self.width - 2) or (z == 1 or z == self.depth - 2)) and not (
-                        [x, z] in self.corners):
-                    if self.door is not None:
-                        door_x, _, door_z = self.door
-                        if abs(x - door_x) <= 1 and abs(z - door_z) <= 1:
-                            continue
-                    if self.matrix[x][z][1] == "minecraft:air":
-                        possible_bed_positions.append((x, z))
-        if possible_bed_positions:
-            bed_x, bed_z = random.choice(possible_bed_positions)
-            super().add_block_to_matrix(bed_x, 1, bed_z, self.materials["bed"])
-        furniture_placed = 0
-        attempts = 0
-        while furniture_placed < self.furniture_counter and attempts < 20:
-            x = random.randint(3, self.width - 3)
-            z = random.randint(3, self.depth - 3)
-            if self.matrix[x][z][1] == "minecraft:air":
-                furniture = random.choice(self.furnitures)
-                super().add_block_to_matrix(x, 1, z, furniture)
-                furniture_placed += 1
-            attempts += 1
+        patterns = [
+            {
+                (2, 2): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
+                (2, 3): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
+            },
+            {
+                (2, 3): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
+                (2, 2): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
+            },
+            {
+                (2, 3): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
+                (2, 4): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
+            },
+            {
+                (2, 4): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
+                (2, 3): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
+            },
+            {
+                (4, 2): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
+                (4, 3): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
+            },
+            {
+                (4, 3): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
+                (4, 2): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
+            },
+            {
+                (4, 3): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
+                (4, 4): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
+            },
+            {
+                (4, 4): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
+                (4, 3): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
+            },
+            {
+                (2, 2): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
+                (3, 2): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
+            },
+            {
+                (3, 2): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
+                (4, 2): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
+            },
+            {
+                (4, 2): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
+                (3, 2): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
+            },
+        ]
+        selected_pattern = random.choice(patterns)
+        for (x, z), block in selected_pattern.items():
+            super().add_block_to_matrix(x, 1, z, block)
+        bed_positions = list(selected_pattern.keys())
+        forbidden_positions = [(3, 3), (3, 4)] + bed_positions
+        possible_positions = [(x, z) for x in range(2, 5) for z in range(2, 5)
+                                  if (x, z) not in forbidden_positions]
+        if possible_positions:
+            pos = random.choice(possible_positions)
+            possible_positions.remove(pos)
+            self.container = (pos[0], 1, pos[1])
+        if possible_positions:
+            pos = random.choice(possible_positions)
+            furniture = "minecraft:crafting_table"
+            super().add_block_to_matrix(pos[0], 1, pos[1], furniture)
         if self.door is not None:
             door_x, _, door_z = self.door
             if self.orientation == "north":
@@ -254,6 +294,6 @@ class House(Building):
                 sign_x, sign_z = door_x + 1, door_z + 1
             else:
                 sign_x, sign_z = door_x, door_z
-            super().add_block_to_matrix(sign_x, 1, sign_z, f'minecraft:oak_sign')
+            super().add_block_to_matrix(sign_x, 2, sign_z, f'minecraft:oak_sign')
         else:
-            super().add_block_to_matrix(3, 1, 3, 'minecraft:oak_sign')
+            super().add_block_to_matrix(3, 2, 3, 'minecraft:oak_sign')

@@ -6,6 +6,7 @@ from multiprocessing import Pool, cpu_count
 import os, json
 import matplotlib.pyplot as plt
 from buildings.Building import Building
+from gdpc.editor_tools import placeContainerBlock
 from gdpc.minecraft_tools import signBlock
 from utils.math_methods import same_point
 from utils.ANSIColors import ANSIColors
@@ -217,15 +218,31 @@ class AbstractionLayer:
                         gdpcblocks.append(
                             ((mcx + fx, mcminy + foundations, mcz + fz),
                             Block("minecraft:polished_andesite")))
+
+        if "house" in meta["name"].lower() and meta["happiness"] >= 0.75:
+            flowers = ["minecraft:poppy", "minecraft:dandelion", "minecraft:blue_orchid", "minecraft:allium", "minecraft:azure_bluet", "minecraft:red_tulip", "minecraft:orange_tulip", "minecraft:white_tulip", "minecraft:pink_tulip", "minecraft:oxeye_daisy"]
+            for fx in range(blocks.shape[0]):
+                for fz in range(blocks.shape[1]):
+                    if fx == 0 or fx == blocks.shape[0] - 1 or fz == 0 or fz == blocks.shape[1] - 1:
+                        if random.randint(0, 10) <= 8:
+                            flower = random.choice(flowers)
+                            blocks[fx, fz, 1] = flower
         
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
                 for my in range(blocks.shape[2]):
-                    if "house" in meta["name"].lower() and meta["happiness"] < -0.5 and random.randint(0, 100) < 5:
-                        gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block("minecraft:cobweb")))
+                    if "house" in meta["name"].lower() and meta["happiness"] < -0.5 and "sign" not in blocks[mx, mz, my] and random.randint(0, 100) < 5:
+                        if "chest" not in blocks[mx, mz, my] and "barrel" not in blocks[mx, mz, my]:
+                            gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block("minecraft:cobweb")))
                     else:
                         if "oak" in str(blocks[mx, mz, my]):
-                            wood = self.simParams["biome"][meta["biome"].replace("minecraft:", "")]
+                            wood = None
+                            for key in self.simParams["biome"]:
+                                if key in meta["biome"]:
+                                    wood = self.simParams["biome"][key]
+                                    break
+                            if wood is None:
+                                wood = "oak"
                             block = blocks[mx, mz, my].replace("oak", wood)
                             if "sign" in str(blocks[mx, mz, my]):
                                 block = signBlock(wood=wood, facing=meta["orientation"], wall=True, frontLine2=meta["name"].replace(" House", ""), frontLine3="Happiness: " + str(round(meta["happiness"], 2)))
@@ -233,7 +250,24 @@ class AbstractionLayer:
                             else:
                                 gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(block)))
                         else:
-                            gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(blocks[mx, mz, my])))
+                            if "house" in meta["name"]:
+                                print(meta["container"])
+                                if mx == meta["container"][0] and my == meta["container"][1] and mz == meta["container"][2]:
+                                    print("bouquin écrit")
+                                    block = Block(random.choice(["minecraft:chest", "minecraft:barrel"]))
+                                    book = {
+                                        "Slot": 0,
+                                        "id": "minecraft:written_book",
+                                        "Count": 1,
+                                        "tag": {
+                                            "title": meta["book"]["title"],
+                                            "author": meta["book"]["author"],
+                                            "pages": meta["book"]["pages"]
+                                        }
+                                    }
+                                    placeContainerBlock(interface, (mcx + mx, mcy + my, mcz + mz), block, [book])
+                            else:
+                                gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(blocks[mx, mz, my])))
 
         print(
             f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
