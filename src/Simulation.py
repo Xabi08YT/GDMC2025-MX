@@ -103,6 +103,7 @@ class Simulation:
         for agent in agents:
             agent.logfile = LogFile(fpath="logs/ongoing", fname=f"{str(agent.id)}.csv")
         for i in range(self.config["nbTurns"]):
+            print(f"{ANSIColors.OKBLUE}[SIMULATION INFO] Turn {ANSIColors.ENDC}{ANSIColors.OKGREEN} {i + 1}/{self.config['nbTurns']}{ANSIColors.ENDC}")
             if i % 2 == 0 and random.randint(0, 10) < 2:
                 Relationships.generate_social_events(self)
                 Relationships.update_social_attributes(self)
@@ -111,6 +112,7 @@ class Simulation:
                 agent.tick()
         for agent in agents:
             agent.logfile.close()
+        print(f"{ANSIColors.OKBLUE}[SIMULATION INFO] Multi agent simulation complete. Creating paths...{ANSIColors.ENDC}")
 
     def launch(self):
         self.show_message("Simulation launched. This may take a while to complete.")
@@ -128,7 +130,7 @@ class Simulation:
         path.build()
         path.export()
 
-        self.show_message(f"Simulation ended with {Relationships.get_relationship_count()} relationships between {len(self.agents)} agents.")
+        self.show_message(f"Simulation process ended with {Relationships.get_relationship_count()} relationships between {len(self.agents)} agents.")
 
     def end(self):
         self.show_message("Pushing changes to Minecraft... This may take several minutes.")

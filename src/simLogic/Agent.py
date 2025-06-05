@@ -187,7 +187,7 @@ class Agent:
             f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE} built a new house!{ANSIColors.ENDC}")
 
     def update_book(self):
-        print("ah la la j'écris")
+        pass
 
     def tick(self):
         if self.dead:
