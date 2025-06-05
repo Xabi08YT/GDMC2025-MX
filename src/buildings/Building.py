@@ -4,6 +4,7 @@ import os
 from utils.math_methods import distance_xz
 import json
 
+
 class Building:
 
     BUILDINGS = []
@@ -89,19 +90,37 @@ class Building:
 
         return entrance_x, entrance_z
 
+    def check_collision(self, center_point: tuple[int, int]) -> bool:
+        # Calcule les bornes du bâtiment à placer
+        x_min = center_point[0] - self.width // 2
+        x_max = center_point[0] + self.width // 2
+        z_min = center_point[1] - self.depth // 2
+        z_max = center_point[1] + self.depth // 2
+        for b in Building.BUILDINGS:
+            if b.center_point is None or b is self:
+                continue
+            bx_min = b.center_point[0] - b.width // 2
+            bx_max = b.center_point[0] + b.width // 2
+            bz_min = b.center_point[1] - b.depth // 2
+            bz_max = b.center_point[1] + b.depth // 2
+            # Test de chevauchement
+            if not (x_max < bx_min or x_min > bx_max or z_max < bz_min or z_min > bz_max):
+                return True
+        return False
+
     def place(self, center_point: tuple[int, int], sim=None):
+        # Vérifie le chevauchement avec les autres bâtiments
+        if self.check_collision(center_point):
+            return False
         center_point = (max(center_point[0], self.width), max(center_point[1], self.depth))
         center_point = (min(center_point[0], sim.heightmap.shape[0] - self.width),
                         min(center_point[1], sim.heightmap.shape[1] - self.depth))
-
         x_min = center_point[0] - self.width // 2 - 1
         x_max = center_point[0] + self.width // 2 + 1
         z_min = center_point[1] - self.depth // 2 - 1
         z_max = center_point[1] + self.depth // 2 + 1
-
         if np.any(sim.buildings[x_min:x_max, z_min:z_max]):
             return False
-
         self.center_point = center_point
         sim.buildings[x_min:x_max, z_min:z_max] = True
         return True
@@ -134,6 +153,8 @@ class Building:
             "bupdates": self.bupdates,
             "biome": self.agent.simulation.biomes[self.center_point[0], self.center_point[1]] if hasattr(self.agent, "simulation")  else "minecraft:plains",
             "happiness": self.agent.happiness if hasattr(self, "agent") and self.agent is not None and not getattr(self.agent, "dead", False) else 0,
+            "container": self.container if hasattr(self, "container") else None,
+            "book": self.agent.book if hasattr(self.agent, "book") else None,
         }
         folder_path = os.path.join(self.folder, self.name)
         os.makedirs(folder_path, exist_ok=True)
