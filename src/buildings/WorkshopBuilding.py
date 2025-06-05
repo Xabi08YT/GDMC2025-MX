@@ -18,7 +18,7 @@ class WorkshopBuilding(JobBuilding):
         if orientation in ["east", "west"]:
             width, depth = depth, width
 
-        super().__init__(center_point, agent, agent.name + "'s WorkshopBuilding", orientation, width=width, height=7, depth=depth)
+        super().__init__(center_point, agent, "Workshop Building", orientation, width=width, height=7, depth=depth)
         if center_point is None:
             center_point = self.best_spot(agent.simulation.config["nbBuildingTries"],agent.simulation)
         self.place(center_point,agent.simulation)

@@ -16,7 +16,7 @@ class Building:
         self.height = height
         self.depth = depth
         self.radius = 10
-        self.center_point = None
+        self.center_point = center_point
         if agent is not None and center_point is not None:
             placement_success = self.place(center_point, agent.simulation)
             if placement_success and hasattr(self, "center_point") and self.center_point is not None:
@@ -108,7 +108,7 @@ class Building:
 
     def clear(self):
         for x in range(self.width):
-            for y in range(self.height):
+            for y in range(1, self.height):
                 for z in range(self.depth):
                     self.add_block_to_matrix(x, y, z, "minecraft:air")
 

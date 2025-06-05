@@ -17,7 +17,7 @@ class CommunityBuilding(JobBuilding):
         if orientation in ['east', 'west']:
             width = random.choice([13, 15, 17])
             depth = 11
-        super().__init__(center_point, agent, agent.name + "'s CommunityBuilding", orientation, width=width, height=7,
+        super().__init__(center_point, agent, "Community Building", orientation, width=width, height=7,
                          depth=depth)
         super().clear()
 
