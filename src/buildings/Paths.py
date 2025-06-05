@@ -51,5 +51,5 @@ class Paths():
         os.makedirs(folder_path, exist_ok=True)
         matrix_file = os.path.join(folder_path, "pathmap")
         self.matrix.dump(matrix_file)
-        bridges_file = os.path.join(folder_path, "bridgesmap")
+        bridges_file = os.path.join(folder_path, "bridgemap")
         self.bridgesMatrix.dump(bridges_file)

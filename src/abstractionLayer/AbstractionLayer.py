@@ -239,12 +239,13 @@ class AbstractionLayer:
             f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
         interface.placeBlocks(gdpcblocks, doBlockUpdates=meta["bupdates"])
 
-    def push_paths(self, folder, hmap):
+    def push_paths(self, folder, hmap, hmapwater):
         if not os.path.isdir(os.path.join(folder, 'path')):
             return
 
         blocks = self.simParams["path_blocks"]
         pathmap = np.load(os.path.join(folder, "path", 'pathmap'), allow_pickle=True)
+        bridgemap = np.load(os.path.join(folder, "path", 'bridgemap'), allow_pickle=True)
 
         mcx = self.buildArea.begin[0]
         mcz = self.buildArea.begin[2]
@@ -253,14 +254,20 @@ class AbstractionLayer:
 
         for x in range(pathmap.shape[0]):
             for z in range(pathmap.shape[1]):
-                if pathmap[x, z] == 0:
+                if pathmap[x, z] == 0 and bridgemap[x, z] == 0:
                     continue
-                if random.randint(0,101) < 11:
+                if random.randint(0,101) < 11 and not bridgemap[x][z]:
                     continue
-                b = random.choice(blocks)
-                mcy = hmap[x, z]
-                gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
-                gdpcblocks.append(((mcx + x, 200, mcz + z), Block(AbstractionLayer.wools[pathmap[x, z] % len(AbstractionLayer.wools)])))
+                if not bridgemap[x][z]:
+                    b = random.choice(blocks)
+                    mcy = hmap[x, z]
+                    gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
+                    gdpcblocks.append(((mcx + x, 200, mcz + z), Block(AbstractionLayer.wools[pathmap[x, z] % len(AbstractionLayer.wools)])))
+                else:
+                    b = "oak_planks"
+                    mcy = hmapwater[x, z]
+                    gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
+                    gdpcblocks.append(((mcx + x, 200, mcz + z), Block("minecraft:oak_planks")))
 
         interface.placeBlocks(gdpcblocks, doBlockUpdates=False)
 
@@ -274,7 +281,7 @@ class AbstractionLayer:
 
         self.clear_trees_for_buildings(folder)
 
-        self.push_paths(folder, hmap)
+        self.push_paths(folder, hmap,self.get_height_map_excluding("air,%23leaves,%23logs,%23flowers,sugar_cane"))
         p = Pool(cpu_count())
         p.map_async(self.push_building,
                     [(folder, target, hmap, hmapsolid) for target in os.listdir(folder) if target != "path"]).get()
