@@ -15,6 +15,7 @@ class Paths():
         self.matrix = np.zeros((simulation.walkable.shape[0], simulation.walkable.shape[1]), dtype=object)
         self.bridges = np.zeros((simulation.walkable.shape[0], simulation.walkable.shape[1]), dtype=bool)
         self.paths = np.zeros((simulation.walkable.shape[0], simulation.walkable.shape[1]), dtype=bool)
+        self.bridgesMatrix = np.zeros((simulation.walkable.shape[0], simulation.walkable.shape[1]), dtype=int)
 
     def build(self):
         i = 0
@@ -41,9 +42,14 @@ class Paths():
                 self.matrix[max(0,x-1):min(self.simulation.heightmap.shape[0],x+2),
                 max(0,z-1):min(self.simulation.heightmap.shape[1],z+2)] = i
                 self.paths[x, z] = True
+                if self.bridges[x, z]:
+                    self.bridgesMatrix[max(0, x - 1):min(self.simulation.heightmap.shape[0], x + 2),
+                    max(0, z - 1):min(self.simulation.heightmap.shape[1], z + 2)] = i
 
     def export(self):
         folder_path = os.path.join("generated", "path")
         os.makedirs(folder_path, exist_ok=True)
         matrix_file = os.path.join(folder_path, "pathmap")
         self.matrix.dump(matrix_file)
+        bridges_file = os.path.join(folder_path, "bridgesmap")
+        self.bridgesMatrix.dump(bridges_file)
