@@ -273,13 +273,14 @@ class AbstractionLayer:
             f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
         interface.placeBlocks(gdpcblocks, doBlockUpdates=meta["bupdates"])
 
-    def push_paths(self, folder, hmap, hmapwater):
+    def push_paths(self, folder, hmap, hmapwater,biomemap):
         if not os.path.isdir(os.path.join(folder, 'path')):
             return
 
-        blocks = self.simParams["path_blocks"]
         pathmap = np.load(os.path.join(folder, "path", 'pathmap'), allow_pickle=True)
         bridgemap = np.load(os.path.join(folder, "path", 'bridgemap'), allow_pickle=True)
+
+        blocks = self.simParams["path_blocks"]
 
         mcx = self.buildArea.begin[0]
         mcz = self.buildArea.begin[2]
@@ -290,13 +291,19 @@ class AbstractionLayer:
             for z in range(pathmap.shape[1]):
                 if pathmap[x, z] == 0 and bridgemap[x, z] == 0:
                     continue
-                if random.randint(0,101) < 11 and not bridgemap[x][z]:
-                    continue
                 if not bridgemap[x][z]:
-                    b = random.choice(blocks)
+                    b = random.choice(blocks["default"])
+                    if "beach" in biomemap[x,z] or "desert" in biomemap[x,z]:
+                        b = random.choice(blocks["desert"])
                     mcy = hmap[x, z]
-                    gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
+                    if random.randint(0, 100) < 25 and b != "dirt_path": gdpcblocks.append(((mcx + x, mcy, mcz + z),
+                                                                                            Block(
+                                                                                                f"stone_button[face=floor,facing={random.choice(['north', 'south', 'west', 'east'])}]")))
                     gdpcblocks.append(((mcx + x, 200, mcz + z), Block(AbstractionLayer.wools[pathmap[x, z] % len(AbstractionLayer.wools)])))
+                    if random.randint(0, 101) < 11:
+                        continue
+                    gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
+                    gdpcblocks.append(((mcx + x, mcy, mcz), Block("air")))
                 else:
                     b = "oak_planks"
                     mcy = hmapwater[x, z]
