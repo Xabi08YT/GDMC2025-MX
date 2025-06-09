@@ -5,6 +5,9 @@ from simLogic.Job import JobType
 from utils.math_methods import distance_xz
 from utils.ANSIColors import ANSIColors
 
+from src.simLogic.Job import JobBlock
+
+
 class House(Building):
     def __init__(self, center_point: tuple[int,int] | None, agent, name: str, orientation: str = "south",
                  built: bool = False, folder="generated"):
@@ -280,7 +283,7 @@ class House(Building):
             self.container = (pos[0], 1, pos[1])
         if possible_positions:
             pos = random.choice(possible_positions)
-            furniture = "minecraft:crafting_table"
+            furniture = JobBlock[self.agent.job.job_type.name] if hasattr(self.agent, "job") and hasattr(self.agent.job, "job_type") else "minecraft:crafting_table"
             super().add_block_to_matrix(pos[0], 1, pos[1], furniture)
         if self.door is not None:
             door_x, _, door_z = self.door
