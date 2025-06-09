@@ -29,6 +29,9 @@ class BookGenerator:
         current_page_content.append('{"text":"Buildings (1/' + str(number_building_pages) + ')"}')
         current_page_content.append('{"text":"\\n\\n"}')
 
+        mcx = self.simulation.abl.buildArea.begin[0]
+        mcz = self.simulation.abl.buildArea.begin[2]
+
         for building in sorted_buildings:
             if building is not None and building.center_point is not None:
                 if building_count >= buildings_per_page:
@@ -43,7 +46,7 @@ class BookGenerator:
                     "color": "dark_purple" if isinstance(building, House) else "gold" if isinstance(building, Firecamp) else "blue" if isinstance(building, JobBuilding) else "dark_gray",
                     "clickEvent": {
                         "action": "run_command",
-                        "value": f"/tp @s {building.center_point[0]} {self.simulation.heightmap[building.center_point[0], building.center_point[1]]} {building.center_point[1]}"
+                        "value": f"/tp @s {mcx + building.center_point[0]} ~ {mcz + building.center_point[1]}"
                     },
                     "hoverEvent": {
                         "action": "show_text",
@@ -78,11 +81,11 @@ class BookGenerator:
             current_page_content.append('{"text":"\\n"}')
 
             position_action = {
-                "text": "Position: (" + str(int(agent.x)) + ", " + str(int(agent.z)) + ")",
+                "text": "Position: (" + str(mcx + int(agent.x)) + ", " + str(mcz + int(agent.z)) + ")",
                 "italic": True,
                 "clickEvent": {
                     "action": "run_command",
-                    "value": f"/tp @s {int(agent.x)} {self.simulation.heightmap[int(agent.x), int(agent.z)]} {int(agent.z)}"
+                    "value": f"/tp @s {mcx + int(agent.x)} ~ {mcz +int(agent.z)}"
                 },
                 "hoverEvent": {
                     "action": "show_text",
