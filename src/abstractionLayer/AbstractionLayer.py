@@ -4,7 +4,6 @@ from time import time
 from gdpc import interface, Editor, Block
 from multiprocessing import Pool, cpu_count
 import os, json
-import matplotlib.pyplot as plt
 from buildings.Building import Building
 from gdpc.editor_tools import placeContainerBlock
 from gdpc.minecraft_tools import signBlock
@@ -302,24 +301,30 @@ class AbstractionLayer:
             for z in range(pathmap.shape[1]):
                 if pathmap[x, z] == 0 and bridgemap[x, z] == 0:
                     continue
-                if bridgemap[x, z] == 1:
-                    b = "oak_planks"
-                    mcy = hmapwater[x, z]
-                    gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
-                    gdpcblocks.append(((mcx + x, 200, mcz + z), Block("minecraft:oak_planks")))
-                if bridgemap[x, z] == -1:
-                    b = Block("minecraft:oak_fence")
+                if pathmap[x, z] == -1 and random.randint(0, 100) < 5:
+                    lb = self.simParams["lightposts"][biomemap[x, z].split(":")[1]] if biomemap[x, z].split(":")[1] in self.simParams["lightposts"].keys() else self.simParams["lightposts"]["default"]
+                    if "minecraft:beach" in biomemap[x, z].lower():
+                        lb = self.simParams["lightposts"]["desert"]
+                    gdpcblocks.append(((mcx + x, hmap[x, z], mcz + z), Block(lb[0])))
+                    gdpcblocks.append(((mcx + x, hmap[x, z] + 1, mcz + z), Block(lb[1])))
+                if bridgemap[x, z] == -1 and pathmap[x, z] <= 0 :
+                    b = Block("minecraft:cobblestone_wall")
                     bu = Block("minecraft:stone_bricks")
                     gdpcblocks.append(((mcx + x, hmapwater[x, z] - 1, mcz + z), bu))
                     gdpcblocks.append(((mcx + x, hmapwater[x, z], mcz + z), b))
-                if pathmap[x, z] == -1 and random.randint(0, 100) < 10 and biomemap[x, z] in self.simParams[
-                    "lightposts"].keys():
-                    lb = self.simParams["lightposts"][biomemap[x, z]]
-                    gdpcblocks.append(((mcx + x, hmap[x, z], mcz + z), Block(lb[0])))
-                    gdpcblocks.append(((mcx + x, hmap[x, z] + 1, mcz + z), Block(lb[1])))
-                if not bridgemap[x][z] and pathmap != -1:
+                    if random.randint(0, 100) < 5:
+                        gdpcblocks.append(((mcx + x, hmapwater[x, z] + 1, mcz + z),
+                                           Block("lantern")))
+                if bridgemap[x, z] == 1:
+                    b = "stone_bricks"
+                    mcy = hmapwater[x, z]
+                    gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
+                    gdpcblocks.append(((mcx + x, mcy, mcz + z), Block("air")))
+                    gdpcblocks.append(((mcx + x, 200, mcz + z), Block("minecraft:oak_planks")))
+                if bridgemap[x,z] != 1 and pathmap[x,z] != -1:
                     b = random.choice(blocks["default"])
-                    if "beach" in biomemap[x, z] or "desert" in biomemap[x, z]:
+                    print(biomemap[x, z])
+                    if "minecraft:beach" in biomemap[x, z].lower() or "desert" in biomemap[x, z].lower():
                         b = random.choice(blocks["desert"])
                     mcy = hmap[x, z]
                     if random.randint(0, 100) < 5 and b != "dirt_path":
@@ -463,7 +468,7 @@ class AbstractionLayer:
         dx = self.buildArea.end.x - x
         dz = self.buildArea.end.z - z
 
-        url = f'{config["GDMC_HTTP_URL"]}/biomes?x={x}&z={z}&dx={dx}&dz={dz}&withinBuildArea=true'
+        url = f'{config["GDMC_HTTP_URL"]}/biomes?x={x}&z={z}&y=200&dx={dx}&dz={dz}&withinBuildArea=true'
         biome_data = requests.get(url).json()
         biome_matrix = np.zeros((dx, dz), dtype=object)
         for entry in biome_data:

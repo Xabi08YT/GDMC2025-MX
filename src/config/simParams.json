@@ -77,7 +77,7 @@
     ],
     "desert": [
       "minecraft:sandstone",
-      "minecraft:dirt_path",
+      "minecraft:pale_moss_block",
       "minecraft:terracotta",
       "minecraft:cobblestone"
     ]

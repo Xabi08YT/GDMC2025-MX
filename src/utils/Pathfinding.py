@@ -41,7 +41,7 @@ class Pathfinding:
         if height_diff > 1:
             return float('inf')
 
-        return (1 + height_diff * 0.1 + 100000 * int(self.water[next_pos[0], next_pos[1]].item() and not self.bridges[next_pos[0], next_pos[1]].item())) * (1.1 - int(self.paths[next_pos[0], next_pos[1]]))
+        return (1 + height_diff * 0.1 + 100000 * int(self.water[next_pos[0], next_pos[1]].item() and not self.bridges[next_pos[0], next_pos[1]].item())) * (1.1 - int(self.paths[next_pos[0], next_pos[1]] != 0))
 
     def get_neighbors(self, pos: Tuple[int, int]) -> List[Tuple[int, int]]:
         neighbors = []
