@@ -32,6 +32,22 @@ class JobType(Enum):
     WEAPONSMITH = "Weaponsmith"
     UNEMPLOYED = "Unemployed"
 
+class JobBlock(Enum):
+    ARMORER = "minecraft:blast_furnace"
+    BUTCHER = "minecraft:smoker"
+    CARTOGRAPHER = "minecraft:cartography_table"
+    CLERIC = "minecraft:brewing_stand"
+    FARMER = "minecraft:composter"
+    FISHERMAN = "minecraft:barrel"
+    FLETCHER = "minecraft:fletching_table"
+    LEATHERWORKER = "minecraft:cauldron"
+    LIBRARIAN = "minecraft:bookshelf"
+    MASON = "minecraft:stonecutter"
+    SHEPHERD = "minecraft:loom"
+    TOOLSMITH = "minecraft:anvil"
+    WEAPONSMITH = "minecraft:smithing_table"
+    UNEMPLOYED = "minecraft:jukebox"
+
 class Job:
     def __init__(self, agent, job_type: JobType = JobType.UNEMPLOYED, job_building: JobBuilding = None):
         self.agent = agent
