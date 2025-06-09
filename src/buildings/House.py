@@ -223,52 +223,45 @@ class House(Building):
             super().add_block_to_matrix(3, self.height - 3, 3, "minecraft:lantern[hanging=true]")
 
     def build_furniture_progressive(self):
-        patterns = [
-            {
-                (2, 2): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
-                (2, 3): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
-            },
-            {
-                (2, 3): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
-                (2, 2): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
-            },
-            {
-                (2, 3): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
-                (2, 4): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
-            },
-            {
-                (2, 4): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
-                (2, 3): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
-            },
-            {
-                (4, 2): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
-                (4, 3): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
-            },
-            {
-                (4, 3): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
-                (4, 2): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
-            },
-            {
-                (4, 3): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
-                (4, 4): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
-            },
-            {
-                (4, 4): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
-                (4, 3): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
-            },
-            {
-                (2, 2): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
-                (3, 2): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
-            },
-            {
-                (3, 2): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
-                (4, 2): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
-            },
-            {
-                (4, 2): self.materials["bed"] + "[part=foot,facing=" + self.orientation + "]",
-                (3, 2): self.materials["bed"] + "[part=head,facing=" + self.orientation + "]",
-            },
-        ]
+        patterns = []
+        if self.orientation in ["east", "west"]:
+            patterns = [
+                {
+                    (2, 2): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
+                    (3, 2): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
+                },
+                {
+                    (2, 4): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
+                    (3, 4): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
+                },
+                {
+                    (4, 2): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
+                    (3, 2): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
+                },
+                {
+                    (4, 4): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
+                    (3, 4): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
+                },
+            ]
+        else:
+            patterns = [
+                {
+                    (2, 2): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
+                    (2, 3): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
+                },
+                {
+                    (2, 4): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
+                    (2, 3): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
+                },
+                {
+                    (4, 2): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
+                    (4, 3): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
+                },
+                {
+                    (4, 4): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
+                    (4, 3): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
+                },
+            ]
         selected_pattern = random.choice(patterns)
         for (x, z), block in selected_pattern.items():
             super().add_block_to_matrix(x, 1, z, block)

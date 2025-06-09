@@ -154,6 +154,7 @@ class Building:
             "biome": self.agent.simulation.biomes[self.center_point[0], self.center_point[1]] if hasattr(self.agent, "simulation")  else "minecraft:plains",
             "happiness": self.agent.happiness if hasattr(self, "agent") and self.agent is not None and not getattr(self.agent, "dead", False) else 0,
             "container": self.container if hasattr(self, "container") else None,
+            "job_type": self.agent.job.job_type.name if hasattr(self.agent, "job") else None,
             "book": self.agent.book if hasattr(self.agent, "book") else None,
         }
         folder_path = os.path.join(self.folder, self.name)

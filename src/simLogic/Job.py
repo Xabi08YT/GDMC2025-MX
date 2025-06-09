@@ -48,6 +48,22 @@ class JobBlock(Enum):
     WEAPONSMITH = "minecraft:smithing_table"
     UNEMPLOYED = "minecraft:jukebox"
 
+class JobItems(Enum):
+    ARMORER = ["minecraft:iron_chestplate", "minecraft:iron_leggings", "minecraft:iron_boots", "minecraft:iron_helmet", "minecraft:gold_chestplate", "minecraft:gold_leggings", "minecraft:gold_boots", "minecraft:gold_helmet", "minecraft:iron_ingot", "minecraft:gold_ingot"]
+    BUTCHER = ["minecraft:raw_beef", "minecraft:raw_chicken", "minecraft:raw_porkchop", "minecraft:raw_mutton", "minecraft:raw_rabbit", "minecraft:cooked_beef", "minecraft:cooked_chicken", "minecraft:cooked_porkchop", "minecraft:cooked_mutton", "minecraft:cooked_rabbit"]
+    CARTOGRAPHER = ["minecraft:paper", "minecraft:map", "minecraft:compass", "minecraft:empty_map", "minecraft:filled_map", "minecraft:banner_pattern"]
+    CLERIC = ["minecraft:glowstone_dust", "minecraft:blaze_powder", "minecraft:ghast_tear", "minecraft:ender_pearl", "minecraft:rotten_flesh", "minecraft:spider_eye", "minecraft:fermented_spider_eye"]
+    FARMER = ["minecraft:wheat", "minecraft:carrot", "minecraft:potato", "minecraft:beetroot", "minecraft:bread", "minecraft:pumpkin_pie", "minecraft:melon_slice", "minecraft:sweet_berries"]
+    FISHERMAN = ["minecraft:raw_cod", "minecraft:cooked_cod", "minecraft:cod_bucket", "minecraft:salmon_bucket", "minecraft:salmon", "minecraft:cooked_salmon", "minecraft:tropical_fish", "minecraft:pufferfish"]
+    FLETCHER = ["minecraft:arrow", "minecraft:bow", "minecraft:crossbow", "minecraft:flint", "minecraft:feather", "minecraft:string", "minecraft:tripwire_hook"]
+    LEATHERWORKER = ["minecraft:leather", "minecraft:leather_helmet", "minecraft:leather_chestplate", "minecraft:leather_leggings", "minecraft:leather_boots", "minecraft:item_frame", "minecraft:painting", "minecraft:book_and_quill"]
+    LIBRARIAN = ["minecraft:book", "minecraft:enchanted_book", "minecraft:written_book", "minecraft:knowledge_book", "minecraft:bookshelf", "minecraft:lectern"]
+    MASON = ["minecraft:stone", "minecraft:stone_bricks", "minecraft:brick", "minecraft:clay_ball", "minecraft:terracotta", "minecraft:glazed_terracotta", "minecraft:concrete_powder", "minecraft:concrete"]
+    SHEPHERD = ["minecraft:white_wool", "minecraft:gray_wool", "minecraft:light_gray_wool", "minecraft:black_wool", "minecraft:brown_wool", "minecraft:orange_wool", "minecraft:yellow_wool", "minecraft:lime_wool", "minecraft:pink_wool", "minecraft:blue_dye", "minecraft:green_dye", "minecraft:cyan_dye", "minecraft:light_blue_dye", "minecraft:purple_dye", "minecraft:magenta_dye"]
+    TOOLSMITH = ["minecraft:iron_pickaxe", "minecraft:iron_axe", "minecraft:iron_shovel", "minecraft:iron_hoe", "minecraft:golden_pickaxe", "minecraft:golden_axe", "minecraft:golden_shovel", "minecraft:golden_hoe"]
+    WEAPONSMITH = ["minecraft:iron_sword", "minecraft:iron_axe", "minecraft:golden_sword", "minecraft:golden_axe", "minecraft:diamond_sword", "minecraft:diamond_axe"]
+    UNEMPLOYED = ["minecraft:music_disk_13", "minecraft:music_disk_cat", "minecraft:music_disk_blocks", "minecraft:music_disk_chirp", "minecraft:music_disk_far", "minecraft:music_disk_mall", "minecraft:music_disk_mellohi", "minecraft:music_disk_stal", "minecraft:music_disk_strad", "minecraft:music_disk_wait", "minecraft:music_disk_ward"]
+
 class Job:
     def __init__(self, agent, job_type: JobType = JobType.UNEMPLOYED, job_building: JobBuilding = None):
         self.agent = agent
@@ -144,6 +160,9 @@ class Job:
 
     def get_block_from_job(self, job: JobType) -> str:
         return JobBlock[job.name].value
+
+    def get_items_from_job(self, job: str) -> list:
+        return JobItems[job].value
 
     def work(self):
         if self.job_building.built is not True:

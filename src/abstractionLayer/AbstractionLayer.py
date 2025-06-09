@@ -4,7 +4,6 @@ from time import time
 from gdpc import interface, Editor, Block
 from multiprocessing import Pool, cpu_count
 import os, json
-import matplotlib.pyplot as plt
 from buildings.Building import Building
 from gdpc.editor_tools import placeContainerBlock
 from gdpc.minecraft_tools import signBlock
@@ -12,6 +11,8 @@ from utils.math_methods import same_point
 from utils.ANSIColors import ANSIColors
 import numpy as np
 import requests
+from buildings.House import House
+from simLogic.Job import Job
 
 
 class AbstractionLayer:
@@ -227,7 +228,7 @@ class AbstractionLayer:
                         if random.randint(0, 10) <= 8:
                             flower = random.choice(flowers)
                             blocks[fx, fz, 1] = flower
-
+        editor = Editor(buffering=True)
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
                 for my in range(blocks.shape[2]):
@@ -249,10 +250,19 @@ class AbstractionLayer:
                             else:
                                 gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(block)))
                         elif "house" in meta["name"].lower() and mx == meta["container"][0] and my == meta["container"][1] and mz == meta["container"][2]:
-                            editor = Editor(buffering=True)
+
                             pos = (mcx + mx, mcy + my, mcz + mz)
                             block = Block(random.choice(["minecraft:chest", "minecraft:barrel"]))
                             placeContainerBlock(editor, pos, block)
+                            items = Job(None).get_items_from_job(meta["job_type"])
+                            for i in range(random.randint(3, 7)):
+                                item = random.choice(items)
+                                slot = random.randint(0, 26)
+                                editor.runCommand(
+                                    f"item replace block ~ ~ ~ container.{slot} with {item}",
+                                    position=pos,
+                                    syncWithBuffer=True
+                                )
                             nbt = {
                                 "title": meta["book"]["title"],
                                 "author": meta["book"]["author"],
@@ -266,6 +276,16 @@ class AbstractionLayer:
                             )
                         else:
                             gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(blocks[mx, mz, my])))
+                            if "building" in meta["name"].lower() and "barrel" in str(blocks[mx, mz, my]):
+                                items = Job(None).get_items_from_job(meta["job_type"])
+                                for i in range(random.randint(10, 23)):
+                                    item = random.choice(items)
+                                    slot = random.randint(0, 26)
+                                    editor.runCommand(
+                                        f"item replace block ~ ~ ~ container.{slot} with {item}",
+                                        position=(mcx + mx, mcy + my, mcz + mz),
+                                        syncWithBuffer=True
+                                    )
 
         print(
             f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
@@ -320,14 +340,24 @@ class AbstractionLayer:
         p.close()
         p.join()
 
-        deadheads = []
+        """extrablocks = []
         heightmap = self.get_height_map_excluding("air")
         for agent in agents:
             if agent.dead is True:
-                y = heightmap[agent.x, agent.z].item()
+                y = heightmap[int(agent.x), int(agent.z)].item()
                 print(f"{ANSIColors.WARNING}[WARN] Agent {agent.name} is dead, placing deadhead at {agent.x, y, agent.z}{ANSIColors.ENDC}")
-                deadheads.append(((agent.x, y, agent.z), Block(f"minecraft:skeleton_skull[rotation={random.randint(0, 15)}]")))
-        interface.placeBlocks(deadheads)
+                extrablocks.append(((agent.x, y, agent.z), Block(f"minecraft:skeleton_skull[rotation={random.randint(0, 15)}]")))
+            if not isinstance(agent.home, House):
+                y = heightmap[int(agent.x), int(agent.z)].item()
+                print("bed: ", agent.x, y, agent.z)
+                extrablocks.append(((agent.x, y, agent.z), Block(f"minecraft:red_carpet")))
+                if random.randint(0, 1) == 0:
+                    extrablocks.append(((agent.x + random.choice([-1, 1]), y, agent.z), Block(f"minecraft:white_carpet")))
+                else:
+                    extrablocks.append(((agent.x, y, agent.z + random.choice([-1, 1])), Block(f"minecraft:white_carpet")))
+
+        interface.placeBlocks(extrablocks)"""
+        # interface won't work :(
 
     def clear_trees_for_buildings(self, folder="generated"):
         print(f"{ANSIColors.OKCYAN}[INFO] Clearing trees for buildings...{ANSIColors.ENDC}")
