@@ -16,7 +16,10 @@ import requests
 
 class AbstractionLayer:
     _AbstractionLayerInstance = None
-    wools = ["minecraft:red_wool", "minecraft:blue_wool", "minecraft:green_wool", "minecraft:yellow_wool", "minecraft:orange_wool", "minecraft:purple_wool", "minecraft:light_blue_wool", "minecraft:black_wool", "minecraft:white_wool", "minecraft:lime_wool", "minecraft:gray_wool", "minecraft:light_gray_wool", "minecraft:pink_wool"]
+    wools = ["minecraft:red_wool", "minecraft:blue_wool", "minecraft:green_wool", "minecraft:yellow_wool",
+             "minecraft:orange_wool", "minecraft:purple_wool", "minecraft:light_blue_wool", "minecraft:black_wool",
+             "minecraft:white_wool", "minecraft:lime_wool", "minecraft:gray_wool", "minecraft:light_gray_wool",
+             "minecraft:pink_wool"]
 
     def __init__(self, buildArea: interface.Box):
         if (AbstractionLayer._AbstractionLayerInstance is not None):
@@ -158,7 +161,7 @@ class AbstractionLayer:
         print("[INFO] Minecraft world pulled in {:.2f} seconds.".format(end - start))
         return walkable, wood, water, lava, heightmap, biomes
 
-    def add_foundation_pillar_to_layer(self,mcx,mcz,mcy,gdpcblocks):
+    def add_foundation_pillar_to_layer(self, mcx, mcz, mcy, gdpcblocks):
         for fx in range(-1, 1):
             for fz in range(-1, 1):
                 gdpcblocks.append(((mcx + fx, mcy, mcz + fz), Block(self.simParams["foundations"]["accent_block"])))
@@ -197,7 +200,7 @@ class AbstractionLayer:
 
         if "firecamp" in meta["name"].lower():
             foundations = -1
-            mcy = int(np.average(args[2][x:x + blocks.shape[0],z:z + blocks.shape[1]]).item() - 1)
+            mcy = int(np.average(args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]]).item() - 1)
         if "bridge" in meta["name"].lower():
             mcy = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]].min().item() - 1
 
@@ -205,22 +208,26 @@ class AbstractionLayer:
             for fy in range(foundations):
                 for fx in range(blocks.shape[0]):
                     for fz in range(blocks.shape[1]):
-                        gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz), Block(random.choice(self.simParams["foundations"]["main_blocks"]))))
+                        gdpcblocks.append(((mcx + fx, mcminy + fy, mcz + fz),
+                                           Block(random.choice(self.simParams["foundations"]["main_blocks"]))))
 
-                self.add_foundation_pillar_to_layer(mcx,mcz,mcminy + fy, gdpcblocks)
-                self.add_foundation_pillar_to_layer(mcx,mcz + blocks.shape[1],mcminy + fy, gdpcblocks)
-                self.add_foundation_pillar_to_layer(mcx + blocks.shape[0],mcz,mcminy + fy, gdpcblocks)
-                self.add_foundation_pillar_to_layer(mcx + blocks.shape[0],mcz + blocks.shape[1],mcminy + fy, gdpcblocks)
+                self.add_foundation_pillar_to_layer(mcx, mcz, mcminy + fy, gdpcblocks)
+                self.add_foundation_pillar_to_layer(mcx, mcz + blocks.shape[1], mcminy + fy, gdpcblocks)
+                self.add_foundation_pillar_to_layer(mcx + blocks.shape[0], mcz, mcminy + fy, gdpcblocks)
+                self.add_foundation_pillar_to_layer(mcx + blocks.shape[0], mcz + blocks.shape[1], mcminy + fy,
+                                                    gdpcblocks)
 
             if foundations > 0:
                 for fx in range(-1, blocks.shape[0] + 1):
                     for fz in range(-1, blocks.shape[1] + 1):
                         gdpcblocks.append(
                             ((mcx + fx, mcminy + foundations, mcz + fz),
-                            Block("minecraft:polished_andesite")))
+                             Block("minecraft:polished_andesite")))
 
         if "house" in meta["name"].lower() and meta["happiness"] >= 0.75:
-            flowers = ["minecraft:poppy", "minecraft:dandelion", "minecraft:blue_orchid", "minecraft:allium", "minecraft:azure_bluet", "minecraft:red_tulip", "minecraft:orange_tulip", "minecraft:white_tulip", "minecraft:pink_tulip", "minecraft:oxeye_daisy"]
+            flowers = ["minecraft:poppy", "minecraft:dandelion", "minecraft:blue_orchid", "minecraft:allium",
+                       "minecraft:azure_bluet", "minecraft:red_tulip", "minecraft:orange_tulip",
+                       "minecraft:white_tulip", "minecraft:pink_tulip", "minecraft:oxeye_daisy"]
             for fx in range(blocks.shape[0]):
                 for fz in range(blocks.shape[1]):
                     if fx == 0 or fx == blocks.shape[0] - 1 or fz == 0 or fz == blocks.shape[1] - 1:
@@ -231,7 +238,8 @@ class AbstractionLayer:
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
                 for my in range(blocks.shape[2]):
-                    if "house" in meta["name"].lower() and meta["happiness"] < -0.5 and "sign" not in blocks[mx, mz, my] and random.randint(0, 100) < 5:
+                    if "house" in meta["name"].lower() and meta["happiness"] < -0.5 and "sign" not in blocks[
+                        mx, mz, my] and random.randint(0, 100) < 5:
                         if "chest" not in blocks[mx, mz, my] and "barrel" not in blocks[mx, mz, my]:
                             gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block("minecraft:cobweb")))
                     else:
@@ -245,14 +253,17 @@ class AbstractionLayer:
                                 wood = "oak"
                             block = blocks[mx, mz, my].replace("oak", wood)
                             if "sign" in str(blocks[mx, mz, my]):
-                                block = signBlock(wood=wood, facing=meta["orientation"], wall=True, frontLine2=meta["name"].replace(" House", ""), frontLine3="Happiness: " + str(round(meta["happiness"], 2)))
+                                block = signBlock(wood=wood, facing=meta["orientation"], wall=True,
+                                                  frontLine2=meta["name"].replace(" House", ""),
+                                                  frontLine3="Happiness: " + str(round(meta["happiness"], 2)))
                                 gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), block))
                             else:
                                 gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(block)))
                         else:
                             if "house" in meta["name"]:
                                 print(meta["container"])
-                                if mx == meta["container"][0] and my == meta["container"][1] and mz == meta["container"][2]:
+                                if mx == meta["container"][0] and my == meta["container"][1] and mz == \
+                                        meta["container"][2]:
                                     print("bouquin écrit")
                                     block = Block(random.choice(["minecraft:chest", "minecraft:barrel"]))
                                     book = {
@@ -273,7 +284,7 @@ class AbstractionLayer:
             f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
         interface.placeBlocks(gdpcblocks, doBlockUpdates=meta["bupdates"])
 
-    def push_paths(self, folder, hmap, hmapwater,biomemap):
+    def push_paths(self, folder, hmap, hmapwater, biomemap):
         if not os.path.isdir(os.path.join(folder, 'path')):
             return
 
@@ -291,26 +302,38 @@ class AbstractionLayer:
             for z in range(pathmap.shape[1]):
                 if pathmap[x, z] == 0 and bridgemap[x, z] == 0:
                     continue
-                if not bridgemap[x][z]:
-                    b = random.choice(blocks["default"])
-                    if "beach" in biomemap[x,z] or "desert" in biomemap[x,z]:
-                        b = random.choice(blocks["desert"])
-                    mcy = hmap[x, z]
-                    if random.randint(0, 100) < 25 and b != "dirt_path": gdpcblocks.append(((mcx + x, mcy, mcz + z),
-                                                                                            Block(
-                                                                                                f"stone_button[face=floor,facing={random.choice(['north', 'south', 'west', 'east'])}]")))
-                    gdpcblocks.append(((mcx + x, 200, mcz + z), Block(AbstractionLayer.wools[pathmap[x, z] % len(AbstractionLayer.wools)])))
-                    if random.randint(0, 101) < 11:
-                        continue
-                    gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
-                    gdpcblocks.append(((mcx + x, mcy, mcz), Block("air")))
-                else:
+                if bridgemap[x, z] == 1:
                     b = "oak_planks"
                     mcy = hmapwater[x, z]
                     gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
                     gdpcblocks.append(((mcx + x, 200, mcz + z), Block("minecraft:oak_planks")))
+                if bridgemap[x, z] == -1:
+                    b = Block("minecraft:oak_fence")
+                    bu = Block("minecraft:stone_bricks")
+                    gdpcblocks.append(((mcx + x, hmapwater[x, z] - 1, mcz + z), bu))
+                    gdpcblocks.append(((mcx + x, hmapwater[x, z], mcz + z), b))
+                if pathmap[x, z] == -1 and random.randint(0, 100) < 10 and biomemap[x, z] in self.simParams[
+                    "lightposts"].keys():
+                    lb = self.simParams["lightposts"][biomemap[x, z]]
+                    gdpcblocks.append(((mcx + x, hmap[x, z], mcz + z), Block(lb[0])))
+                    gdpcblocks.append(((mcx + x, hmap[x, z] + 1, mcz + z), Block(lb[1])))
+                if not bridgemap[x][z] and pathmap != -1:
+                    b = random.choice(blocks["default"])
+                    if "beach" in biomemap[x, z] or "desert" in biomemap[x, z]:
+                        b = random.choice(blocks["desert"])
+                    mcy = hmap[x, z]
+                    if random.randint(0, 100) < 5 and b != "dirt_path":
+                        gdpcblocks.append(((mcx + x, mcy, mcz + z),
+                                           Block(
+                                               f"stone_button[face=floor,facing={random.choice(['north', 'south', 'west', 'east'])}]")))
+                    gdpcblocks.append(((mcx + x, 200, mcz + z),
+                                       Block(AbstractionLayer.wools[pathmap[x, z] % len(AbstractionLayer.wools)])))
+                    if random.randint(0, 101) < 11:
+                        continue
+                    gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
+                    gdpcblocks.append(((mcx + x, mcy, mcz), Block("air")))
 
-        interface.placeBlocks(gdpcblocks, doBlockUpdates=False)
+        interface.placeBlocks(gdpcblocks)
 
     def push(self, agents, folder="generated"):
         global gdpcblocks
@@ -319,10 +342,12 @@ class AbstractionLayer:
 
         hmap = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,sugar_cane")
         hmapsolid = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,%23dirt,sugar_cane")
+        biomemap = self.get_biome_map()
 
         self.clear_trees_for_buildings(folder)
 
-        self.push_paths(folder, hmap,self.get_height_map_excluding("air,%23leaves,%23logs,%23flowers,sugar_cane"))
+        self.push_paths(folder, hmap, self.get_height_map_excluding("air,%23leaves,%23logs,%23flowers,sugar_cane"),
+                        biomemap)
         p = Pool(cpu_count())
         p.map_async(self.push_building,
                     [(folder, target, hmap, hmapsolid) for target in os.listdir(folder) if target != "path"]).get()
@@ -334,8 +359,10 @@ class AbstractionLayer:
         for agent in agents:
             if agent.dead is True:
                 y = heightmap[agent.x, agent.z].item()
-                print(f"{ANSIColors.WARNING}[WARN] Agent {agent.name} is dead, placing deadhead at {agent.x, y, agent.z}{ANSIColors.ENDC}")
-                deadheads.append(((agent.x, y, agent.z), Block(f"minecraft:skeleton_skull[rotation={random.randint(0, 15)}]")))
+                print(
+                    f"{ANSIColors.WARNING}[WARN] Agent {agent.name} is dead, placing deadhead at {agent.x, y, agent.z}{ANSIColors.ENDC}")
+                deadheads.append(
+                    ((agent.x, y, agent.z), Block(f"minecraft:skeleton_skull[rotation={random.randint(0, 15)}]")))
         interface.placeBlocks(deadheads)
 
     def clear_trees_for_buildings(self, folder="generated"):
@@ -450,4 +477,3 @@ class AbstractionLayer:
 if __name__ == "__main__":
     editor = Editor(buffering=True)
     abl = AbstractionLayer(editor.getBuildArea())
-    abl.get_height_map_excluding("air")

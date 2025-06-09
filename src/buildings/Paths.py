@@ -39,6 +39,13 @@ class Paths():
                 continue
 
             for x, z in path:
+                self.matrix[max(0,x-2):min(self.simulation.heightmap.shape[0],x+3),
+                max(0,z-2):min(self.simulation.heightmap.shape[1],z+3)] = -1
+                if self.bridges[x, z]:
+                    self.bridgesMatrix[max(0, x - 2):min(self.simulation.heightmap.shape[0], x + 3),
+                    max(0, z - 2):min(self.simulation.heightmap.shape[1], z + 3)] = -1
+
+            for x, z in path:
                 self.matrix[max(0,x-1):min(self.simulation.heightmap.shape[0],x+2),
                 max(0,z-1):min(self.simulation.heightmap.shape[1],z+2)] = i
                 self.paths[x, z] = True
