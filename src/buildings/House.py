@@ -1,11 +1,10 @@
 from buildings.Building import Building
-from gdpc.minecraft_tools import signBlock
 import random
 from simLogic.Job import JobType
 from utils.math_methods import distance_xz
 from utils.ANSIColors import ANSIColors
 
-from src.simLogic.Job import JobBlock
+from simLogic.Job import JobBlock
 
 
 class House(Building):
@@ -283,7 +282,7 @@ class House(Building):
             self.container = (pos[0], 1, pos[1])
         if possible_positions:
             pos = random.choice(possible_positions)
-            furniture = JobBlock[self.agent.job.job_type.name] if hasattr(self.agent, "job") and hasattr(self.agent.job, "job_type") else "minecraft:crafting_table"
+            furniture = self.agent.job.get_block_from_job(self.agent.job.job_type)
             super().add_block_to_matrix(pos[0], 1, pos[1], furniture)
         if self.door is not None:
             door_x, _, door_z = self.door

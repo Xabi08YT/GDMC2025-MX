@@ -6,6 +6,8 @@ from buildings.Building import Building
 from buildings.House import House
 from utils.utils import evaluate_spot
 from utils.ANSIColors import ANSIColors
+from simLogic.Relationships import Relationships
+import json
 
 class Agent:
     def __init__(self, sim, x, z, name):
@@ -63,7 +65,8 @@ class Agent:
         self.nb_turn_fulfilled = 0
         self.scores = {}
         self.radius = self.simulation.config["observationRange"]
-        self.book = {"title": f"The life of {self.name}", "author": self.name, "pages": [] }
+        self.last_page_book = ""
+        self.book = {"title": f"The life of {self.name}", "author": self.name, "pages": [json.dumps([{"text": f"My life - {self.name}\n{__import__('datetime').datetime.now().strftime('%Y/%m/%d %H:%M')}"}])]}
 
     def set_velocity(self, vx, vz):
         speed = math.sqrt(vx * vx + vz * vz)
@@ -187,7 +190,77 @@ class Agent:
             f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE} built a new house!{ANSIColors.ENDC}")
 
     def update_book(self):
-        pass
+        attributes = self.attributes
+        job = self.job
+        home = self.home if isinstance(self.home, House) else None
+        relations = []
+        for key, data in Relationships.get_all_relationships(self).items():
+            relations.append({
+                "name": data["agent"],
+                "status": data['status'],
+                "value": data['value']
+            })
+        hunger = (
+            "My stomach is growling with hunger." if attributes['hunger'] < 0.3 else
+            "I feel perfectly satisfied." if attributes['hunger'] > 0.7 else
+            "I could use a snack soon."
+        )
+        energy = (
+            "I am bursting with energy!" if attributes['energy'] > 0.7 else
+            "I feel a bit tired today." if attributes['energy'] < 0.3 else
+            "My energy is average."
+        )
+        health = (
+            "My health is excellent." if attributes['health'] > 0.8 else
+            "I'm feeling a bit under the weather." if attributes['health'] < 0.4 else
+            "My health is alright."
+        )
+        social = (
+            "I feel surrounded by friends." if attributes['social'] > 0.7 else
+            "I feel a bit lonely." if attributes['social'] < 0.3 else
+            "My social life is balanced."
+        )
+        strength = (
+            "I feel incredibly strong today!" if attributes['strength'] > 0.7 else
+            "I feel weak and frail." if attributes['strength'] < 0.3 else
+            "My strength is average."
+        )
+        adventurous = (
+            "I'm ready for any adventure!" if attributes['adventurous'] > 0.7 else
+            "I prefer to stay safe at home." if attributes['adventurous'] < 0.3 else
+            "I'm open to some new experiences."
+        )
+        job_str = f"I work as a {job.job_type.value.lower()}" if job and hasattr(job, 'job_type') else "I haven't found my calling yet."
+        house_str = f"I live in a house at {home.center_point}" if home and hasattr(home, 'center_point') and home.center_point else "I don't have a house yet."
+        if relations:
+            rels = ", ".join([f"{r['name']} ({r['status']})" for r in relations])
+            relations_str = f"I know: {rels}."
+        else:
+            relations_str = "I haven't made any close friends yet."
+        mood = (
+            "Today, I feel truly happy." if self.happiness > 0.5 else
+            "Today, I feel neutral." if self.happiness > 0 else
+            "Today, I feel a bit sad."
+        )
+        page_lines = [
+            {"text": f"Day {self.turn}\n"},
+            {"text": mood},
+            {"text": f"{job_str}. {house_str}"},
+            {"text": hunger},
+            {"text": energy},
+            {"text": health},
+            {"text": social},
+            {"text": strength},
+            {"text": adventurous},
+            {"text": relations_str},
+            {"text": "Looking forward to tomorrow!"}
+        ]
+        if self.last_page_book == "":
+            self.last_page_book = json.dumps(page_lines)
+        else:
+            page_lines = [line for line in page_lines if line not in self.last_page_book]
+            self.last_page_book = json.dumps(page_lines)
+        self.book["pages"].append(json.dumps(page_lines))
 
     def tick(self):
         if self.dead:
@@ -202,7 +275,7 @@ class Agent:
         if self.job.job_type == JobType.UNEMPLOYED:
             self.job.get_new_job(self, priority)
 
-        if not isinstance(self.home, House): #and self.attributes["energy"] < 0.3 and (priority == "energy" or priority == "health"):
+        if not isinstance(self.home, House): # and self.attributes["energy"] < 0.3 and (priority == "energy" or priority == "health"):
             self.place_house()
         elif isinstance(self.home, House) and self.home.built == False:
             self.home.build()
@@ -214,3 +287,4 @@ class Agent:
         self.logfile.addLine(self, priority)
 
         self.update_book()
+
