@@ -142,6 +142,9 @@ class Job:
     def build_job_building(self):
         self.job_building.build()
 
+    def get_block_from_job(self, job: JobType) -> str:
+        return JobBlock[job.name].value
+
     def work(self):
         if self.job_building.built is not True:
             self.build_job_building()

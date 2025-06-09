@@ -1,8 +1,6 @@
 from buildings.Building import Building
 from gdpc import Editor
 import json
-import random  # Ajout de l'import pour les choix aléatoires de couleurs
-
 from buildings.House import House
 from buildings.Firecamp import Firecamp
 from buildings.JobBuilding import JobBuilding
@@ -79,7 +77,6 @@ class BookGenerator:
             current_page_content.append('{"text":"' + str(happiness_value) + '", "color":"' + happiness_color + '"}')
             current_page_content.append('{"text":"\\n"}')
 
-            # Position
             position_action = {
                 "text": "Position: (" + str(int(agent.x)) + ", " + str(int(agent.z)) + ")",
                 "italic": True,
@@ -95,21 +92,18 @@ class BookGenerator:
             current_page_content.append(json.dumps(position_action))
             current_page_content.append('{"text":"\\n"}')
 
-            # Maison
             current_page_content.append('{"text":"House: "}')
             home_status = "Got one" if agent.home else "None"
             home_color = "green" if agent.home else "red"
             current_page_content.append('{"text":"' + home_status + '", "color":"' + home_color + '"}')
             current_page_content.append('{"text":"\\n"}')
 
-            # Travail
             current_page_content.append('{"text":"Job: "}')
             job_status = str(agent.job.job_type.value) if agent.job else "None"
             job_color = "blue" if agent.job else "red"
             current_page_content.append('{"text":"' + job_status + '", "color":"' + job_color + '"}')
             current_page_content.append('{"text":"\\n"}')
 
-            # Attributs
             current_page_content.append('{"text":"Attributes:", "underlined":true}')
             current_page_content.append('{"text":"\\n"}')
             for attr, value in agent.attributes.items():

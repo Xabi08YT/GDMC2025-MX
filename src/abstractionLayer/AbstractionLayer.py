@@ -232,7 +232,6 @@ class AbstractionLayer:
             for mz in range(blocks.shape[1]):
                 for my in range(blocks.shape[2]):
                     if "house" in meta["name"].lower() and meta["happiness"] < -0.5 and "sign" not in blocks[mx, mz, my] and random.randint(0, 100) < 5:
-                        if "chest" not in blocks[mx, mz, my] and "barrel" not in blocks[mx, mz, my]:
                             gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block("minecraft:cobweb")))
                     else:
                         if "oak" in str(blocks[mx, mz, my]):
@@ -249,25 +248,24 @@ class AbstractionLayer:
                                 gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), block))
                             else:
                                 gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(block)))
+                        elif "house" in meta["name"].lower() and mx == meta["container"][0] and my == meta["container"][1] and mz == meta["container"][2]:
+                            editor = Editor(buffering=True)
+                            pos = (mcx + mx, mcy + my, mcz + mz)
+                            block = Block(random.choice(["minecraft:chest", "minecraft:barrel"]))
+                            placeContainerBlock(editor, pos, block)
+                            nbt = {
+                                "title": meta["book"]["title"],
+                                "author": meta["book"]["author"],
+                                "pages": meta["book"]["pages"]
+                            }
+                            nbt_str = json.dumps(nbt)
+                            editor.runCommand(
+                                f"item replace block ~ ~ ~ container.{random.randint(0, 26)} with minecraft:written_book[written_book_content={nbt_str}]",
+                                position=pos,
+                                syncWithBuffer=True
+                            )
                         else:
-                            if "house" in meta["name"]:
-                                print(meta["container"])
-                                if mx == meta["container"][0] and my == meta["container"][1] and mz == meta["container"][2]:
-                                    print("bouquin écrit")
-                                    block = Block(random.choice(["minecraft:chest", "minecraft:barrel"]))
-                                    book = {
-                                        "Slot": 0,
-                                        "id": "minecraft:written_book",
-                                        "Count": 1,
-                                        "tag": {
-                                            "title": meta["book"]["title"],
-                                            "author": meta["book"]["author"],
-                                            "pages": meta["book"]["pages"]
-                                        }
-                                    }
-                                    placeContainerBlock(interface, (mcx + mx, mcy + my, mcz + mz), block, [book])
-                            else:
-                                gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(blocks[mx, mz, my])))
+                            gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(blocks[mx, mz, my])))
 
         print(
             f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
