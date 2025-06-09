@@ -1,6 +1,7 @@
 import random
 import uuid
 import math
+
 from simLogic.Job import JobType, Job
 from buildings.Building import Building
 from buildings.House import House
@@ -59,7 +60,7 @@ class Agent:
         self.logfile = None
         self.action = None
         self.home = None
-        self.turn = 0
+        self.turn = 1
         self.nb_turn_hungry = 0
         self.nb_turn_sleepy = 0
         self.nb_turn_fulfilled = 0
@@ -131,7 +132,8 @@ class Agent:
         if self.attributes["hunger"] == 1 and self.attributes["energy"] == 1:
             self.nb_turn_fulfilled += 1
 
-        self.dead = (self.attributes["health"] + self.attributes_mod["health"] <= 0)
+        if self.attributes["health"] + self.attributes_mod["health"] <= 0:
+            self.die()
 
     def determine_priority(self):
         tmp = {
@@ -173,23 +175,40 @@ class Agent:
         return
 
     def place_house(self):
-        if hasattr(self, 'home') and hasattr(self.home, 'center_point') and self.home.center_point is not None and self.home.built:
+        if isinstance(self.home, House):
             print(f"{self.name} already has a home")
             return
 
         best_spot = max(self.scores, key=self.scores.get)
-
-        if hasattr(self, 'home') and self.home in Building.BUILDINGS:
-            Building.BUILDINGS.remove(self.home)
-
         spot_tuple = eval(best_spot)
-        self.home = House(spot_tuple, self, self.name + " House")
-        self.home.clear()
+        temp_house = House(spot_tuple, self, self.name + " House")
+        temp_house.clear()
+        x0, z0 = temp_house.center_point
+        width, depth = temp_house.width, temp_house.depth
+        building_matrix = self.simulation.buildings
+        trespass = False
+        for dx in range(width):
+            for dz in range(depth):
+                x = x0 + dx
+                z = z0 + dz
+                if 0 <= x < building_matrix.shape[0] and 0 <= z < building_matrix.shape[1]:
+                    if building_matrix[x, z] != 0:
+                        trespass = True
+                        break
+            if trespass:
+                break
+        if trespass:
+            print(f"{self.name} did not build a house because it would trespass.")
+            Building.BUILDINGS.remove(temp_house)
+            return
+        self.home = temp_house
         self.home.build()
         print(
             f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE} built a new house!{ANSIColors.ENDC}")
 
     def update_book(self):
+        if self.dead:
+            return
         attributes = self.attributes
         job = self.job
         home = self.home if isinstance(self.home, House) else None
@@ -200,6 +219,12 @@ class Agent:
                 "status": data['status'],
                 "value": data['value']
             })
+        if not hasattr(self, '_house_mentioned'):
+            self._house_mentioned = False
+        if not hasattr(self, '_job_mentioned'):
+            self._job_mentioned = False
+        if not hasattr(self, '_relations_memory'):
+            self._relations_memory = {}
         hunger = (
             "My stomach is growling with hunger." if attributes['hunger'] < 0.3 else
             "I feel perfectly satisfied." if attributes['hunger'] > 0.7 else
@@ -230,13 +255,35 @@ class Agent:
             "I prefer to stay safe at home." if attributes['adventurous'] < 0.3 else
             "I'm open to some new experiences."
         )
-        job_str = f"I work as a {job.job_type.value.lower()}" if job and hasattr(job, 'job_type') else "I haven't found my calling yet."
-        house_str = f"I live in a house at {home.center_point}" if home and hasattr(home, 'center_point') and home.center_point else "I don't have a house yet."
-        if relations:
-            rels = ", ".join([f"{r['name']} ({r['status']})" for r in relations])
-            relations_str = f"I know: {rels}."
+        if home and hasattr(home, 'center_point') and home.center_point and not self._house_mentioned:
+            house_str = f"I built my house at {home.center_point}."
+            self._house_mentioned = True
+        elif self._house_mentioned:
+            house_str = ""
         else:
-            relations_str = "I haven't made any close friends yet."
+            house_str = "I don't have a house yet."
+        if job and hasattr(job, 'job_type') and job.job_type != JobType.UNEMPLOYED and not self._job_mentioned:
+            job_str = f"I started working as a {job.job_type.value.lower()}."
+            self._job_mentioned = True
+        elif self._job_mentioned:
+            job_str = ""
+        else:
+            job_str = "I haven't found my calling yet."
+        relations_evolution = []
+        for rel in relations:
+            name = rel["name"]
+            value = rel["value"]
+            prev = self._relations_memory.get(name)
+            if prev is not None and prev != value:
+                if value > prev:
+                    relations_evolution.append(f"My relationship with {name} improved.")
+                elif value < prev:
+                    relations_evolution.append(f"My relationship with {name} worsened.")
+            self._relations_memory[name] = value
+        if relations_evolution:
+            relations_str = " ".join(relations_evolution)
+        else:
+            relations_str = "No significant change in my relationships."
         mood = (
             "Today, I feel truly happy." if self.happiness > 0.5 else
             "Today, I feel neutral." if self.happiness > 0 else
@@ -245,7 +292,12 @@ class Agent:
         page_lines = [
             {"text": f"Day {self.turn}\n"},
             {"text": mood},
-            {"text": f"{job_str}. {house_str}"},
+        ]
+        if job_str:
+            page_lines.append({"text": job_str})
+        if house_str:
+            page_lines.append({"text": house_str})
+        page_lines += [
             {"text": hunger},
             {"text": energy},
             {"text": health},
@@ -255,12 +307,29 @@ class Agent:
             {"text": relations_str},
             {"text": "Looking forward to tomorrow!"}
         ]
-        if self.last_page_book == "":
-            self.last_page_book = json.dumps(page_lines)
-        else:
-            page_lines = [line for line in page_lines if line not in self.last_page_book]
-            self.last_page_book = json.dumps(page_lines)
+        if not hasattr(self, '_book_memory'):
+            self._book_memory = []
+            self._book_memory_size = 15
+        for line in page_lines:
+            if line["text"] not in self._book_memory:
+                self._book_memory.append(line["text"])
+                if len(self._book_memory) > self._book_memory_size:
+                    self._book_memory.pop(0)
+            else:
+                page_lines[page_lines.index(line)] = ""
         self.book["pages"].append(json.dumps(page_lines))
+
+    def die(self):
+        self.dead = True
+        for agent in self.simulation.agents:
+            if agent != self:
+                rel_data = Relationships.get_relationship_data(self, agent)
+                if rel_data and "value" in rel_data and rel_data["value"] > 0.2:
+                    multiply = 1 + abs(rel_data["value"])
+                    agent.happiness -= 0.1 * multiply
+
+    def has_valid_home(self):
+        return isinstance(self.home, House) and self.home is not None and not getattr(self.home, 'destroyed', False)
 
     def tick(self):
         if self.dead:
@@ -275,9 +344,9 @@ class Agent:
         if self.job.job_type == JobType.UNEMPLOYED:
             self.job.get_new_job(self, priority)
 
-        if not isinstance(self.home, House): # and self.attributes["energy"] < 0.3 and (priority == "energy" or priority == "health"):
+        if not self.has_valid_home(): # and self.attributes["energy"] < 0.5 and (priority == "energy" or priority == "health"):
             self.place_house()
-        elif isinstance(self.home, House) and self.home.built == False:
+        elif self.has_valid_home() and self.home.built == False:
             self.home.build()
 
         if self.job.job_type != JobType.UNEMPLOYED:
@@ -286,5 +355,7 @@ class Agent:
         self.force_constraints_on_attributes()
         self.logfile.addLine(self, priority)
 
-        self.update_book()
+        if self.turn == 30:
+            self.die()
 
+        self.update_book()
