@@ -3,9 +3,7 @@ import random
 from simLogic.Job import JobType
 from utils.math_methods import distance_xz
 from utils.ANSIColors import ANSIColors
-
 from simLogic.Job import JobBlock
-
 
 class House(Building):
     def __init__(self, center_point: tuple[int,int] | None, agent, name: str, orientation: str = "south",
@@ -15,20 +13,16 @@ class House(Building):
         self.construction_progress = 0
         self.construction_ticks = 0
         self.helping_agents = {}
-        self.built_phases = set()
         self.door = None
         self.bed = None
         self.container = None
         self.roof_style = random.choice(["flat", "pyramid"])
-        self.furniture_counter = random.randint(1, 2)
-        self.furnitures = ["minecraft:crafting_table", "minecraft:chest", "minecraft:barrel", "minecraft:smithing_table", "minecraft:grindstone"]
-        self.corner_block = "minecraft:oak_log"
         self.materials = self.choose_materials()
 
         self.phase_times = {
             "foundation": 20,
             "walls": 10,
-            "roof": 5
+            "roof": 3
         }
 
         self.corners = [
@@ -99,39 +93,42 @@ class House(Building):
         current_phase = ["foundation", "walls", "roof"][self.construction_phase]
         phase_time = self.phase_times[current_phase]
         construction_speed = self.calculate_construction_speed()
-
         self.construction_progress += (100 / phase_time) * construction_speed
-
         phase_progress = min(100, self.construction_progress)
         phase_ratio = phase_progress / 100.0
 
         if current_phase == "foundation":
-            self.build_foundation_progressive()
+            self.build_foundation(phase_ratio)
         elif current_phase == "walls":
-            self.build_walls_progressive()
+            self.build_walls(phase_ratio)
         elif current_phase == "roof":
-            self.build_roof_progressive()
+            self.build_roof(phase_ratio)
 
         if self.construction_progress >= 100:
             self.construction_progress = 0
             self.construction_phase += 1
 
             if self.construction_phase >= 3:
-                self.build_furniture_progressive()
+                self.build_furniture()
                 super().built()
                 self.helping_agents.clear()
                 print(f"{ANSIColors.OKBLUE}[SIMULATION INFO]{ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.agent.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE}'s house is complete!{ANSIColors.ENDC}")
+                return
 
-        if self.construction_phase < 3:
-            status = self.get_construction_status()
-            helpers = f" with {len(self.helping_agents)} helpers" if self.helping_agents else ""
-            print(f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.agent.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE}'s house: {ANSIColors.ENDC}{ANSIColors.OKCYAN}{status}{helpers}{ANSIColors.ENDC}")
+        status = self.get_construction_status()
+        helpers = f" with {len(self.helping_agents)} helpers" if self.helping_agents else ""
+        print(f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.agent.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE}'s house: {ANSIColors.ENDC}{ANSIColors.OKCYAN}{status}{helpers}{ANSIColors.ENDC}")
 
-    def build_foundation_progressive(self):
+    def build_foundation(self, progress):
         y = 0
         floor = self.materials["floor"]
+        total_blocks = (self.width) * (self.depth)
+        blocks_to_place = int(total_blocks * progress)
+        placed = 0
         for i in range(0, self.width):
             for j in range(0, self.depth):
+                if placed >= blocks_to_place:
+                    return
                 if i == 0 or i == self.width - 1 or j == 0 or j == self.depth - 1:
                     super().add_block_to_matrix(i, y, j, "minecraft:grass_block")
                 else:
@@ -141,28 +138,31 @@ class House(Building):
                         for corner in self.corners:
                             if i == corner[0] and j == corner[1]:
                                 super().add_block_to_matrix(i, dy, j, log)
+                placed += 1
 
-    def build_walls_progressive(self):
+    def build_walls(self, progress):
+        wall_blocks = []
         for dy in range(1, self.height-1):
             for dx in range(1, self.width-1):
                 for dz in range(1, self.depth-1):
-
                     is_corner = [dx, dz] in self.corners
                     is_wall = (dx == 1 or dx == self.width - 2 or dz == 1 or dz == self.depth - 2)
                     is_door = False
                     if self.door is not None:
                         door_x, door_y, door_z = self.door
                         is_door = (dx == door_x and dz == door_z and dy in [1, 2])
-
                     if not is_corner and is_wall and not is_door:
-                        wall_block = random.choice(self.materials["wall"])
-                        super().add_block_to_matrix(dx, dy, dz, wall_block)
-
+                        wall_blocks.append((dx, dy, dz))
+        total_blocks = len(wall_blocks)
+        blocks_to_place = int(total_blocks * progress)
+        for idx, (dx, dy, dz) in enumerate(wall_blocks):
+            if idx >= blocks_to_place:
+                break
+            wall_block = random.choice(self.materials["wall"])
+            super().add_block_to_matrix(dx, dy, dz, wall_block)
         x, z = (self.width - 1) // 2, (self.depth - 1) // 2
-
         if self.door is None:
             door_x, door_z = x, z
-
             if self.orientation == "north":
                 door_z = 0
             elif self.orientation == "south":
@@ -171,14 +171,13 @@ class House(Building):
                 door_x = self.width - 2
             elif self.orientation == "west":
                 door_x = 0
-
             super().add_block_to_matrix(door_x, 1, door_z, f'{self.materials["door"]}[half=lower]')
             super().add_block_to_matrix(door_x, 2, door_z, f'{self.materials["door"]}[half=upper]')
             self.door = (door_x, 1, door_z)
 
-    def build_roof_progressive(self):
+    def build_roof(self, progress):
         roof_material = "oak_planks"
-
+        roof_blocks = []
         if self.roof_style == "pyramid":
             center_x = (self.width - 1) // 2
             center_z = (self.depth - 1) // 2
@@ -192,37 +191,35 @@ class House(Building):
                     height_offset = max_distance - max_dist - 1
                     y = roof_base_y + height_offset
                     for fill_y in range(roof_base_y, y):
-                        super().add_block_to_matrix(x, fill_y, z, roof_material)
+                        roof_blocks.append((x, fill_y, z, roof_material))
                     if max_dist > 0:
                         if dist_x > dist_z:
-                            if x < center_x:
-                                facing = "east"
-                            else:
-                                facing = "west"
+                            facing = "east" if x < center_x else "west"
                         else:
-                            if z < center_z:
-                                facing = "south"
-                            else:
-                                facing = "north"
-
+                            facing = "south" if z < center_z else "north"
                         stair_block = f"minecraft:oak_stairs[facing={facing},half=bottom,shape=straight]"
-                        super().add_block_to_matrix(x, y, z, stair_block)
+                        roof_blocks.append((x, y, z, stair_block))
                         if y < self.height - 1:
-                            super().add_block_to_matrix(x, y + 1, z, "minecraft:air")
+                            roof_blocks.append((x, y + 1, z, "minecraft:air"))
                     else:
-                        super().add_block_to_matrix(center_x, y-3, center_z,"minecraft:lantern[hanging=true]")
-
+                        roof_blocks.append((center_x, y-3, center_z, "minecraft:lantern[hanging=true]"))
         elif self.roof_style == "flat":
             for dx in range(self.width):
                 for dz in range(self.depth):
                     if 1 <= dx < self.width - 1 and 1 <= dz < self.depth - 1:
-                        super().add_block_to_matrix(dx, self.height - 2, dz, roof_material)
-                        super().add_block_to_matrix(dx, self.height - 1, dz, "minecraft:air")
+                        roof_blocks.append((dx, self.height - 2, dz, roof_material))
+                        roof_blocks.append((dx, self.height - 1, dz, "minecraft:air"))
                     elif (dx == 0 or dx == self.width - 1) or (dz == 0 or dz == self.depth - 1):
-                        super().add_block_to_matrix(dx, self.height - 2, dz, "minecraft:oak_slab[type=bottom]")
-            super().add_block_to_matrix(3, self.height - 3, 3, "minecraft:lantern[hanging=true]")
+                        roof_blocks.append((dx, self.height - 2, dz, "minecraft:oak_slab[type=bottom]"))
+            roof_blocks.append((3, self.height - 3, 3, "minecraft:lantern[hanging=true]"))
+        total_blocks = len(roof_blocks)
+        blocks_to_place = int(total_blocks * progress)
+        for idx, (x, y, z, block) in enumerate(roof_blocks):
+            if idx >= blocks_to_place:
+                break
+            super().add_block_to_matrix(x, y, z, block)
 
-    def build_furniture_progressive(self):
+    def build_furniture(self):
         patterns = []
         if self.orientation in ["east", "west"]:
             patterns = [

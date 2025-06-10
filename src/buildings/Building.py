@@ -30,7 +30,6 @@ class Building:
         self.matrix = np.zeros((self.width, self.depth, self.height), dtype=object)
         self.BUILDINGS.append(self)
         self.bupdates = bupdates
-        self.corner = "minecraft:oak_log"
         self.agent = agent
 
     def built(self):
@@ -90,35 +89,32 @@ class Building:
 
         return entrance_x, entrance_z
 
-    def check_collision(self, center_point: tuple[int, int]) -> bool:
-        # Calcule les bornes du bâtiment à placer
-        x_min = center_point[0] - self.width // 2
-        x_max = center_point[0] + self.width // 2
-        z_min = center_point[1] - self.depth // 2
-        z_max = center_point[1] + self.depth // 2
-        for b in Building.BUILDINGS:
+    def check_collision(self, center_point, min_distance=2):
+        x_min = center_point[0] - self.width // 2 - min_distance
+        x_max = center_point[0] + self.width // 2 + min_distance
+        z_min = center_point[1] - self.depth // 2 - min_distance
+        z_max = center_point[1] + self.depth // 2 + min_distance
+        for b in self.BUILDINGS:
             if b.center_point is None or b is self:
                 continue
-            bx_min = b.center_point[0] - b.width // 2
-            bx_max = b.center_point[0] + b.width // 2
-            bz_min = b.center_point[1] - b.depth // 2
-            bz_max = b.center_point[1] + b.depth // 2
-            # Test de chevauchement
+            bx_min = b.center_point[0] - b.width // 2 - min_distance
+            bx_max = b.center_point[0] + b.width // 2 + min_distance
+            bz_min = b.center_point[1] - b.depth // 2 - min_distance
+            bz_max = b.center_point[1] + b.depth // 2 + min_distance
             if not (x_max < bx_min or x_min > bx_max or z_max < bz_min or z_min > bz_max):
                 return True
         return False
 
     def place(self, center_point: tuple[int, int], sim=None):
-        # Vérifie le chevauchement avec les autres bâtiments
-        if self.check_collision(center_point):
+        if self.check_collision(center_point, min_distance=2):
             return False
         center_point = (max(center_point[0], self.width), max(center_point[1], self.depth))
         center_point = (min(center_point[0], sim.heightmap.shape[0] - self.width),
                         min(center_point[1], sim.heightmap.shape[1] - self.depth))
-        x_min = center_point[0] - self.width // 2 - 1
-        x_max = center_point[0] + self.width // 2 + 1
-        z_min = center_point[1] - self.depth // 2 - 1
-        z_max = center_point[1] + self.depth // 2 + 1
+        x_min = center_point[0] - self.width // 2 - 2
+        x_max = center_point[0] + self.width // 2 + 2
+        z_min = center_point[1] - self.depth // 2 - 2
+        z_max = center_point[1] + self.depth // 2 + 2
         if np.any(sim.buildings[x_min:x_max, z_min:z_max]):
             return False
         self.center_point = center_point

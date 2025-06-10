@@ -20,8 +20,6 @@ class CommunityBuilding(JobBuilding):
         super().__init__(center_point, agent, "Community Building", orientation, width=width, height=7,
                          depth=depth)
         super().clear()
-
-        print(self.matrix.shape)
         if center_point is None:
             center_point = self.best_spot(agent.simulation.config["nbBuildingTries"], agent.simulation)
         self.place(center_point, agent.simulation)
