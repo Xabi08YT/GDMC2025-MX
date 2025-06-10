@@ -22,6 +22,10 @@ class AbstractionLayer:
              "minecraft:pink_wool"]
 
     def __init__(self, buildArea: interface.Box):
+        """
+        Initialize the AbstractionLayer with a build area.
+        :param buildArea: The area in which the abstraction layer will operate.
+        """
         if (AbstractionLayer._AbstractionLayerInstance is not None):
             raise RuntimeError("AbstractionLayer._AbstractionLayerInstance already initialized")
         AbstractionLayer._AbstractionLayerInstance = self
@@ -33,6 +37,11 @@ class AbstractionLayer:
     @staticmethod
     def pull_chunk(args: tuple[interface.Box, int, int, int, int, np.array, dict]) -> tuple[
         int, int, np.array, np.array, np.array, np.array]:
+        """
+        Pulls a chunk of blocks from the Minecraft world and processes them.
+        :param args: A tuple containing the build area, chunk coordinates, height range, heightmap, and simulation parameters.
+        :return: A tuple containing the chunk coordinates and processed matrices for wood, water, lava, and walkable blocks.
+        """
         tmp = interface.getBlocks(
             (args[0].begin[0] + args[1] * 16, args[3] - 1, args[0].begin[2] + args[2] * 16),
             (16, args[4] - args[3], 16)
@@ -62,7 +71,11 @@ class AbstractionLayer:
         return args[1], args[2], wood, water, lava, walkable
 
     def get_height_map_excluding(self, blocks):
-
+        """
+        Retrieves the height map of the build area, excluding specified blocks.
+        :param blocks: A comma-separated string of block IDs to exclude from the height map.
+        :return: A numpy array representing the height map, with excluded blocks set to 0.
+        """
         with open("config/config.json") as f:
             config = json.load(f)
             f.close()
@@ -74,7 +87,11 @@ class AbstractionLayer:
         return np.array(heightmap, dtype=int)
 
     def pull(self, forceReload: bool = False):
-
+        """
+        Pulls the Minecraft world data for the specified build area and return it as numpy arrays.
+        :param forceReload: If True, forces a reload of the world data even if cached data exists.
+        :return: A list of numpy arrays containing the walkable, wood, water, lava matrices, height map, and biome map.
+        """
         # General setup
         start = time()
         size = (self.buildArea.end[0] - self.buildArea.begin[0], self.buildArea.end[1] - self.buildArea.begin[1],
@@ -162,11 +179,24 @@ class AbstractionLayer:
         return walkable, wood, water, lava, heightmap, biomes
 
     def add_foundation_pillar_to_layer(self, mcx, mcz, mcy, gdpcblocks):
+        """
+        Adds foundation pillars to the layer of blocks at the specified coordinates.
+        :param mcx: Minecraft x-coordinate of the foundation.
+        :param mcz: Minecraft z-coordinate of the foundation.
+        :param mcy: Minecraft y-coordinate of the foundation.
+        :param gdpcblocks: The list of blocks to which the foundation pillars will be added.
+        :return: None
+        """
         for fx in range(-1, 1):
             for fz in range(-1, 1):
                 gdpcblocks.append(((mcx + fx, mcy, mcz + fz), Block(self.simParams["foundations"]["accent_block"])))
 
     def push_building(self, args):
+        """
+        Pushes a building to the Minecraft world based on the provided arguments.
+        :param args: A tuple containing the folder path, building name, height map, and solid height map (excluding dirt, grass, water...).
+        :return: None
+        """
         if not os.path.isdir(os.path.join(args[0], args[1])):
             return
 
@@ -284,7 +314,16 @@ class AbstractionLayer:
             f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
         interface.placeBlocks(gdpcblocks, doBlockUpdates=meta["bupdates"])
 
-    def push_paths(self, folder, hmap, hmapwater, biomemap, debug):
+    def push_paths(self, folder, hmap, hmapwater, biomemap, debug =False):
+        """
+        Pushes paths to the Minecraft world based on the path map and bridge map stored in the specified folder.
+        :param folder: The folder containing the path and bridge maps.
+        :param hmap: height map of the terrain.
+        :param hmapwater: height map of the terrain stopping at water level.
+        :param biomemap: A 2D array representing the biome at each coordinate.
+        :param debug: True if we need to place the blocks useful to debug
+        :return: None
+        """
         if not os.path.isdir(os.path.join(folder, 'path')):
             return
 
@@ -340,8 +379,14 @@ class AbstractionLayer:
 
         interface.placeBlocks(gdpcblocks)
 
-    def push(self, agents, debug:bool, folder="generated", ):
-        global gdpcblocks
+    def push(self, agents, debug:bool, folder="generated"):
+        """
+        Pushes buildings and paths to the Minecraft world, clearing trees for buildings and placing deadheads for dead agents.
+        :param debug: True to run the funtion in debug mode
+        :param agents: A list of agents in the simulation, used to place deadheads for dead agents.
+        :param folder: The folder containing the generated buildings and paths.
+        :return: None
+        """
         for building in Building.BUILDINGS:
             building.matrix_to_files()
 
@@ -381,6 +426,11 @@ class AbstractionLayer:
         interface.placeBlocks(gdpcblocks, doBlockUpdates=False)
 
     def clear_trees_for_buildings(self, folder="generated"):
+        """
+        Clears trees for buildings in the specified folder by removing blocks above the buildings' foundations.
+        :param folder: The folder containing the generated buildings.
+        :return: None
+        """
         print(f"{ANSIColors.OKCYAN}[INFO] Clearing trees for buildings...{ANSIColors.ENDC}")
         buildings_data = []
 
@@ -460,12 +510,24 @@ class AbstractionLayer:
 
     @staticmethod
     def get_abstraction_layer_instance():
+        """
+        Returns the singleton instance of the AbstractionLayer.
+        :return: AbstractionLayer: The singleton instance of the AbstractionLayer.
+        """
         return AbstractionLayer._AbstractionLayerInstance
 
     def getBuildArea(self) -> interface.Box:
+        """
+        Returns the build area of the AbstractionLayer.
+        :return: interface.Box: The build area of the AbstractionLayer.
+        """
         return self.buildArea
 
     def get_biome_map(self):
+        """
+        Retrieves the biome map for the build area from the GDMC HTTP server.
+        :return: np.array: A 2D numpy array representing the biomes in the build area.
+        """
         with open("config/config.json") as f:
             config = json.load(f)
             f.close()
