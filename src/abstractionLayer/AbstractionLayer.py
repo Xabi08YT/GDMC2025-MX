@@ -323,7 +323,6 @@ class AbstractionLayer:
                     gdpcblocks.append(((mcx + x, 200, mcz + z), Block("minecraft:oak_planks")))
                 if bridgemap[x,z] != 1 and pathmap[x,z] != -1:
                     b = random.choice(blocks["default"])
-                    print(biomemap[x, z])
                     if "minecraft:beach" in biomemap[x, z].lower() or "desert" in biomemap[x, z].lower():
                         b = random.choice(blocks["desert"])
                     mcy = hmap[x, z]
