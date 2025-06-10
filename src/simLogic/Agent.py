@@ -329,7 +329,7 @@ class Agent:
                     agent.happiness -= 0.1 * multiply
 
     def has_valid_home(self):
-        return isinstance(self.home, House) and self.home is not None and not getattr(self.home, 'destroyed', False)
+        return isinstance(self.home, House)
 
     def tick(self):
         if self.dead:
@@ -354,8 +354,5 @@ class Agent:
 
         self.force_constraints_on_attributes()
         self.logfile.addLine(self, priority)
-
-        if self.turn == 30:
-            self.die()
 
         self.update_book()

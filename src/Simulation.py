@@ -134,7 +134,7 @@ class Simulation:
 
     def end(self):
         self.show_message("Pushing changes to Minecraft... This may take several minutes.")
-        self.abl.push(self.agents)
+        self.abl.push(self.agents, "--debug" in sys.argv or "-db" in sys.argv)
         self.show_message("Changes pushed. Beginning cleanup...")
 
         logfile = LogFile(fname=f'{str(self.creation_time).split(".")[0]}.csv')
