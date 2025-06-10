@@ -13,6 +13,12 @@ class BlacksmithBuilding(JobBuilding):
     INSTANCE = None
 
     def __init__(self, center_point: tuple[int,int,int] | None, agent, orientation: str = "north"):
+        """
+        Initializes a BlacksmithBuilding instance.
+        :param center_point: Center point of the building in the simulation grid.
+        :param agent: The agent that owns this building.
+        :param orientation: Orientation of the building, can be "north", "south", "east", or "west".
+        """
         width = random.choice([9,11,13,15])
         depth = 9
         if orientation in ["east", "west"]:
@@ -33,6 +39,12 @@ class BlacksmithBuilding(JobBuilding):
         super().clear()
 
     def is_floor(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of the floor of the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of the floor, False otherwise.
+        """
         if self.orientation == "north":
             return 0 < z < 5 and 0 < x < self.width - 1
         elif self.orientation == "south":
@@ -44,6 +56,12 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def is_pillar(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a pillar in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a pillar, False otherwise.
+        """
         if self.orientation == "north":
             return x in [1, self.width - 2] and z in [1, 5]
         elif self.orientation == "south":
@@ -55,6 +73,12 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def is_high_pillar(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a high pillar in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a high pillar, False otherwise.
+        """
         if self.orientation == "north":
             return x in [1, self.width - 2] and z == 5
         elif self.orientation == "south":
@@ -66,6 +90,12 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def is_entrance(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of the entrance of the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of the entrance, False otherwise.
+        """
         if self.orientation == "north":
             return x == self.width // 2 and z == 1
         elif self.orientation == "south":
@@ -77,6 +107,12 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def is_wall(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a wall in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a wall, False otherwise.
+        """
         if self.orientation == "north":
             return 0 < z < 6 and x == 1 or (z == 1 and x not in [0, self.width - 1])
         elif self.orientation == "south":
@@ -88,6 +124,12 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def is_window(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a window in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a window, False otherwise.
+        """
         if self.orientation == "north":
             return z == 3 and x == 1
         elif self.orientation == "south":
@@ -99,6 +141,12 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def is_store_support(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a store support in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a store support, False otherwise.
+        """
         if self.orientation == "north":
             return z == self.depth - 1 and x in [1, self.width - 2]
         elif self.orientation == "south":
@@ -110,6 +158,12 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def is_edge_store_support(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of an edge store support in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of an edge store support, False otherwise.
+        """
         if self.orientation == "north":
             return z == 8 and 0 < x < self.width - 1
         elif self.orientation == "south":
@@ -121,6 +175,12 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def is_store_front_color(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a store front color in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a store front color, False otherwise.
+        """
         if self.orientation == "north":
             return z in [6, 7] and 0 < x < self.width - 1
         elif self.orientation == "south":
@@ -132,6 +192,12 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def is_counter(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a counter in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a counter, False otherwise.
+        """
         if self.orientation == "north":
             return z == 5 and 1 < x < self.width - 2
         elif self.orientation == "south":
@@ -143,6 +209,12 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def is_anvil(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of an anvil in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of an anvil, False otherwise.
+        """
         if self.orientation == "north":
             return z == 3 and x == self.width - 4
         elif self.orientation == "south":
@@ -154,6 +226,12 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def is_other_utility(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of another utility in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of another utility, False otherwise.
+        """
         if self.orientation == "north":
             return x == 2 and 1 < z < 5
         elif self.orientation == "south":
@@ -165,6 +243,12 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def is_water_cauldron(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a water cauldron in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a water cauldron, False otherwise.
+        """
         if self.orientation == "north":
             return x == self.width-2 and z == 4
         elif self.orientation == "south":
@@ -176,6 +260,10 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def define_roof_outline(self):
+        """
+        Defines the roof outline for the blacksmith building based on its orientation.
+        :return: A tuple containing the roof blocks, roof upper blocks, mods, and upper mods.
+        """
         rwidth = self.width // 2 + 2 if self.orientation in ["north", "south"] else self.depth // 2 + 2
         rblocks = []
         rublocks = []
@@ -195,6 +283,12 @@ class BlacksmithBuilding(JobBuilding):
         return rblocks, rublocks, mods, umods
 
     def is_furnace_front(self,x,z):
+        """
+        Determines if the given coordinates (x, z) are part of the furnace front in the blacksmith building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of the furnace front, False otherwise.
+        """
         if self.orientation == "north":
             return x == self.width - 1 and 1 < z < 5
         elif self.orientation == "south":
@@ -206,6 +300,10 @@ class BlacksmithBuilding(JobBuilding):
         return None
 
     def generate_furnace(self):
+        """
+        Generates the furnace structure based on the orientation of the blacksmith building.
+        :return: A numpy array representing the furnace structure.
+        """
         sf = {
             "north":"west",
             "south":"east",
@@ -227,6 +325,10 @@ class BlacksmithBuilding(JobBuilding):
         return matrix
 
     def build(self):
+        """
+        Builds the blacksmith building by placing blocks in the matrix based on the defined structure.
+        :return: None
+        """
         if self.built: return
         wools = ["minecraft:light_blue_wool", "minecraft:white_wool"]
         sff = ["north","south"]
@@ -331,6 +433,12 @@ class BlacksmithBuilding(JobBuilding):
         return
 
     def best_spot(self, nbtry, simulation):
+        """
+        Finds the best spot for placing the blacksmith building in the simulation.
+        :param nbtry: Number of attempts to find a suitable spot.
+        :param simulation: The simulation environment where the building will be placed.
+        :return: A tuple representing the best coordinates (x, z) for the building.
+        """
         best_spot = None
         best_score = - inf
         t = 0
@@ -360,6 +468,13 @@ class BlacksmithBuilding(JobBuilding):
 
     @staticmethod
     def get_instance(center_point: tuple[int,int,int] | None, agent, orientation: str = "north"):
+        """
+        Static method to get an instance of BlacksmithBuilding.
+        :param center_point: Center point of the building in the simulation grid.
+        :param agent: The agent that owns this building.
+        :param orientation: Orientation of the building, can be "north", "south", "east", or "west".
+        :return: The instance of BlacksmithBuilding singleton.
+        """
         if BlacksmithBuilding.INSTANCE is None:
             return BlacksmithBuilding(center_point, agent, orientation)
         return BlacksmithBuilding.INSTANCE
