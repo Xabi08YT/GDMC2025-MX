@@ -87,9 +87,17 @@ class Agent:
         self.velocity_z += fz
 
     def update_position(self):
-        if 0 <= self.x + self.velocity_x < self.simulation.walkable.shape[0] and 0 <= self.z + self.velocity_z < self.simulation.walkable.shape[1]:
-            self.x += self.velocity_x
-            self.z += self.velocity_z
+        min_x, min_z = 0, 0
+        max_x = self.simulation.walkable.shape[0] - 1
+        max_z = self.simulation.walkable.shape[1] - 1
+        new_x = self.x + self.velocity_x
+        new_z = self.z + self.velocity_z
+        if min_x <= new_x <= max_x and min_z <= new_z <= max_z:
+            self.x = new_x
+            self.z = new_z
+        else:
+            self.x = max(min_x, min(new_x, max_x))
+            self.z = max(min_z, min(new_z, max_z))
 
     def force_constraints_on_attributes(self):
         self.attributes["social"] = max(0, min(1, self.attributes["social"]))
@@ -179,6 +187,11 @@ class Agent:
             print(f"{self.name} already has a home")
             return
 
+        threshold = int(10 + 30 * self.attributes["adventurous"])
+        if len(self.scores) < threshold:
+            print(f"{self.name} has not enough scores to build a house ({len(self.scores)}/{threshold})")
+            return
+
         best_spot = max(self.scores, key=self.scores.get)
         spot_tuple = eval(best_spot)
         temp_house = House(spot_tuple, self, self.name + " House")
@@ -198,8 +211,8 @@ class Agent:
             if trespass:
                 break
         if trespass:
-            print(f"{self.name} did not build a house because it would trespass.")
             Building.BUILDINGS.remove(temp_house)
+            self.scores.pop(best_spot)
             return
         self.home = temp_house
         self.home.build()
@@ -328,9 +341,6 @@ class Agent:
                     multiply = 1 + abs(rel_data["value"])
                     agent.happiness -= 0.1 * multiply
 
-    def has_valid_home(self):
-        return isinstance(self.home, House)
-
     def tick(self):
         if self.dead:
             self.logfile.addLine(self, "DEAD")
@@ -339,14 +349,15 @@ class Agent:
         self.fulfill_needs()
         self.move()
         self.observe_environment()
+        self.job.work()
         priority = self.determine_priority()
 
         if self.job.job_type == JobType.UNEMPLOYED:
             self.job.get_new_job(self, priority)
 
-        if not self.has_valid_home(): # and self.attributes["energy"] < 0.5 and (priority == "energy" or priority == "health"):
+        if self.home is None and self.attributes["energy"] < 0.5:
             self.place_house()
-        elif self.has_valid_home() and self.home.built == False:
+        elif isinstance(self.home, House) and self.home.built == False:
             self.home.build()
 
         if self.job.job_type != JobType.UNEMPLOYED:

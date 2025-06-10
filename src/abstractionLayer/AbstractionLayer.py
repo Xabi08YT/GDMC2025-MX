@@ -169,10 +169,6 @@ class AbstractionLayer:
             return
 
         meta = json.load(open(os.path.join(args[0], args[1], "metadata.json")))
-
-        if not meta["built"]:
-            return
-
         blocks = np.load(os.path.join(args[0], args[1], "matrix"), allow_pickle=True)
 
         x = meta["x"] - blocks.shape[0] // 2
@@ -185,15 +181,6 @@ class AbstractionLayer:
                  max(z - 1, 0):min(args[2].shape[0], z + blocks.shape[1] + 1)].min().item()
 
         gdpcblocks = []
-
-        """height_section = args[2][x:x + blocks.shape[0], z:z + blocks.shape[1]]
-        if height_section.size > 0:
-            mcy = height_section.min().item() - 1
-        else:
-            print(
-                f"{ANSIColors.WARNING}[WARN] Section vide pour le bâtiment {meta['name']} à ({x},{z}), utilisation de la hauteur par défaut{ANSIColors.ENDC}")
-            mcy = args[2].min().item() if args[2].size > 0 else 0"""
-
         foundations = mcy - mcminy
 
         if "firecamp" in meta["name"].lower():
@@ -232,7 +219,7 @@ class AbstractionLayer:
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
                 for my in range(blocks.shape[2]):
-                    if "house" in meta["name"].lower() and meta["happiness"] < -0.5 and "sign" not in blocks[mx, mz, my] and random.randint(0, 100) < 5:
+                    if "house" in meta["name"].lower() and meta["happiness"] < -0.5 and "sign" not in str(blocks[mx, mz, my]) and random.randint(0, 100) < 5:
                             gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block("minecraft:cobweb")))
                     else:
                         if "oak" in str(blocks[mx, mz, my]):
@@ -249,31 +236,31 @@ class AbstractionLayer:
                                 gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), block))
                             else:
                                 gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(block)))
-                        elif "house" in meta["name"].lower() and mx == meta["container"][0] and my == meta["container"][1] and mz == meta["container"][2]:
-
-                            pos = (mcx + mx, mcy + my, mcz + mz)
-                            block = Block(random.choice(["minecraft:chest", "minecraft:barrel"]))
-                            placeContainerBlock(editor, pos, block)
-                            items = Job(None).get_items_from_job(meta["job_type"])
-                            for i in range(random.randint(3, 7)):
-                                item = random.choice(items)
-                                slot = random.randint(0, 26)
+                        elif "house" in meta["name"].lower() and "container" in meta and meta["container"]:
+                            if mx == meta["container"][0] and my == meta["container"][1] and mz == meta["container"][2]:
+                                pos = (mcx + mx, mcy + my, mcz + mz)
+                                block = Block(random.choice(["minecraft:chest", "minecraft:barrel"]))
+                                placeContainerBlock(editor, pos, block)
+                                items = Job(None).get_items_from_job(meta["job_type"])
+                                for i in range(random.randint(3, 7)):
+                                    item = random.choice(items)
+                                    slot = random.randint(0, 26)
+                                    editor.runCommand(
+                                        f"item replace block ~ ~ ~ container.{slot} with {item}",
+                                        position=pos,
+                                        syncWithBuffer=True
+                                    )
+                                nbt = {
+                                    "title": meta["book"]["title"],
+                                    "author": meta["book"]["author"],
+                                    "pages": meta["book"]["pages"]
+                                }
+                                nbt_str = json.dumps(nbt)
                                 editor.runCommand(
-                                    f"item replace block ~ ~ ~ container.{slot} with {item}",
+                                    f"item replace block ~ ~ ~ container.{random.randint(0, 26)} with minecraft:written_book[written_book_content={nbt_str}]",
                                     position=pos,
                                     syncWithBuffer=True
                                 )
-                            nbt = {
-                                "title": meta["book"]["title"],
-                                "author": meta["book"]["author"],
-                                "pages": meta["book"]["pages"]
-                            }
-                            nbt_str = json.dumps(nbt)
-                            editor.runCommand(
-                                f"item replace block ~ ~ ~ container.{random.randint(0, 26)} with minecraft:written_book[written_book_content={nbt_str}]",
-                                position=pos,
-                                syncWithBuffer=True
-                            )
                         else:
                             gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(blocks[mx, mz, my])))
                             if "building" in meta["name"].lower() and "barrel" in str(blocks[mx, mz, my]):
@@ -342,24 +329,26 @@ class AbstractionLayer:
         p.close()
         p.join()
 
-        """extrablocks = []
-        heightmap = self.get_height_map_excluding("air")
+        gdpcblocks = []
+        heightmap = self.get_height_map_excluding("air,%23leaves")
+        mcx = self.buildArea.begin[0]
+        mcz = self.buildArea.begin[2]
         for agent in agents:
+            x = int(agent.x)
+            z = int(agent.z)
             if agent.dead is True:
-                y = heightmap[int(agent.x), int(agent.z)].item()
+                y = heightmap[x, z].item()
                 print(f"{ANSIColors.WARNING}[WARN] Agent {agent.name} is dead, placing deadhead at {agent.x, y, agent.z}{ANSIColors.ENDC}")
-                extrablocks.append(((agent.x, y, agent.z), Block(f"minecraft:skeleton_skull[rotation={random.randint(0, 15)}]")))
-            if not isinstance(agent.home, House):
-                y = heightmap[int(agent.x), int(agent.z)].item()
-                print("bed: ", agent.x, y, agent.z)
-                extrablocks.append(((agent.x, y, agent.z), Block(f"minecraft:red_carpet")))
+                gdpcblocks.append(((mcx + x, y, mcz + z), Block(f"minecraft:skeleton_skull[rotation={random.randint(0, 15)}]")))
+            elif not isinstance(agent.home, House):
+                y = heightmap[x, z].item()
+                gdpcblocks.append(((mcx + x, y, mcz + z), Block(f"minecraft:red_carpet")))
                 if random.randint(0, 1) == 0:
-                    extrablocks.append(((agent.x + random.choice([-1, 1]), y, agent.z), Block(f"minecraft:white_carpet")))
+                    gdpcblocks.append(((mcx + x + random.choice([-1, 1]), y, mcz + z), Block(f"minecraft:white_carpet")))
                 else:
-                    extrablocks.append(((agent.x, y, agent.z + random.choice([-1, 1])), Block(f"minecraft:white_carpet")))
+                    gdpcblocks.append(((mcx + x, y, mcz + z + random.choice([-1, 1])), Block(f"minecraft:white_carpet")))
 
-        interface.placeBlocks(extrablocks)"""
-        # interface won't work :(
+        interface.placeBlocks(gdpcblocks, doBlockUpdates=False)
 
     def clear_trees_for_buildings(self, folder="generated"):
         print(f"{ANSIColors.OKCYAN}[INFO] Clearing trees for buildings...{ANSIColors.ENDC}")
