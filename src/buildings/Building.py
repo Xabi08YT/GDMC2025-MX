@@ -64,8 +64,8 @@ class Building:
 
         x, z = self.center_point[0], self.center_point[1]
 
-        entrance_offset = {"north": (0, -self.radius), "south": (0, self.radius),
-                           "east": (self.radius, 0), "west": (-self.radius, 0)}
+        entrance_offset = {"north": (0, -self.width//2), "south": (0, self.width//2),
+                           "east": (self.depth//2, 0), "west": (-self.depth//2, 0)}
 
         if self.orientation not in entrance_offset:
             self.orientation = "south"

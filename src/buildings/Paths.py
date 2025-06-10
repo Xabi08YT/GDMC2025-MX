@@ -1,7 +1,6 @@
 import numpy as np
 from utils.Pathfinding import Pathfinding
 from buildings.Building import Building
-from buildings.Bridge import Bridge
 import os
 import json
 
