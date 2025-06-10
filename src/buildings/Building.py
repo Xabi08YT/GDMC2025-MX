@@ -145,6 +145,11 @@ class Building:
         return False
 
     def place(self, center_point: tuple[int, int], sim=None):
+        """
+        Attempts to place the building at the specified center_point in the simulation.
+        :param center_point: The (x, z) coordinates for the building's center.
+        :param sim: The current simulation instance, used to check for collisions and update the heightmap.
+        """
         if self.check_collision(center_point, min_distance=2):
             return False
         center_point = (max(center_point[0], self.width), max(center_point[1], self.depth))
@@ -161,6 +166,9 @@ class Building:
         return True
 
     def clear(self):
+        """
+        Clears the building's matrix by setting all blocks above the ground level to air.
+        """
         for x in range(self.width):
             for y in range(1, self.height):
                 for z in range(self.depth):
@@ -170,9 +178,19 @@ class Building:
         return f"{self.name}"
 
     def add_block_to_matrix(self, x: int, y: int, z: int, block: str):
+        """
+        Adds a block to the building's matrix at the specified coordinates.
+        :param x: The x-coordinate in the matrix.
+        :param y: The y-coordinate in the matrix.
+        :param z: The z-coordinate in the matrix.
+        :param block: The block type to add (as a string).
+        """
         self.matrix[x][z][y] = block
 
     def matrix_to_files(self):
+        """
+        Exports the building's metadata and matrix to files in the specified folder.
+        """
         if not hasattr(self, "center_point") or self.center_point is None:
             return
         if type(self.center_point[0]) is not int:

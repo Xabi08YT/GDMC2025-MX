@@ -13,6 +13,12 @@ class WorkshopBuilding(JobBuilding):
     INSTANCE = None
 
     def __init__(self, center_point: tuple[int,int,int] | None, agent, orientation: str = "north"):
+        """
+        Initializes a WorkshopBuilding instance.
+        :param center_point: The center point of the building in the format (x, y, z).
+        :param agent: The agent responsible for placing the building.
+        :param orientation: The orientation of the building, can be "north", "south", "east", or "west".
+        """
         width = random.choice([9,11,13,15])
         depth = 9
         if orientation in ["east", "west"]:
@@ -33,6 +39,12 @@ class WorkshopBuilding(JobBuilding):
         super().clear()
 
     def is_floor(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of the floor of the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the given coordinates (x, z) is part of the floor of the building.
+        """
         if self.orientation == "north":
             return  0 < z < 5 and 0 < x < self.width - 1
         elif self.orientation == "south":
@@ -44,6 +56,12 @@ class WorkshopBuilding(JobBuilding):
         return None
 
     def is_pillar(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a pillar in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the given coordinates (x, z) is part of a pillar in the building.
+        """
         if self.orientation == "north":
             return x in [1,self.width-2] and z in [1,5]
         elif self.orientation == "south":
@@ -55,6 +73,12 @@ class WorkshopBuilding(JobBuilding):
         return None
 
     def is_high_pillar(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a high pillar in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the given coordinates (x, z) is part of a high pillar in the building.
+        """
         if self.orientation == "north":
             return x in [1,self.width-2] and z == 5
         elif self.orientation == "south":
@@ -66,6 +90,12 @@ class WorkshopBuilding(JobBuilding):
         return None
 
     def is_entrance(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of the entrance of the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the given coordinates (x, z) is part of the entrance of the building.
+        """
         if self.orientation == "north":
             return x == self.width//2 and z == 1
         elif self.orientation == "south":
@@ -77,6 +107,12 @@ class WorkshopBuilding(JobBuilding):
         return None
 
     def is_wall(self,x,z):
+        """
+        Determines if the given coordinates (x, z) are part of a wall in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the given coordinates (x, z) is part of a wall in the building.
+        """
         if self.orientation == "north":
             return 0 < z < 6 and x in [1,self.width-2] or (z == 1 and x not in [0,self.width-1])
         elif self.orientation == "south":
@@ -88,6 +124,12 @@ class WorkshopBuilding(JobBuilding):
         return None
 
     def is_window(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a window in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the given coordinates (x, z) is part of a window in the building.
+        """
         if self.orientation == "north":
             return z == 3 and x in [1,self.width-2]
         elif self.orientation == "south":
@@ -99,6 +141,12 @@ class WorkshopBuilding(JobBuilding):
         return None
 
     def is_store_support(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a store support in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the given coordinates (x, z) is part of a store support in the building.
+        """
         if self.orientation == "north":
             return z == self.depth-1 and x in [1,self.width-2]
         elif self.orientation == "south":
@@ -110,6 +158,12 @@ class WorkshopBuilding(JobBuilding):
         return None
 
     def is_edge_store_support(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of an edge store support in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the given coordinates (x, z) is part of an edge store support in the building.
+        """
         if self.orientation == "north":
             return z == 8 and 0 < x < self.width - 1
         elif self.orientation == "south":
@@ -121,6 +175,12 @@ class WorkshopBuilding(JobBuilding):
         return None
 
     def is_store_front_color(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a store front color in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the given coordinates (x, z) is part of a store front color in the building.
+        """
         if self.orientation == "north":
             return z in [6,7] and 0 < x < self.width-1
         elif self.orientation == "south":
@@ -132,6 +192,12 @@ class WorkshopBuilding(JobBuilding):
         return None
 
     def is_counter(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a counter in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the given coordinates (x, z) is part of a counter in the building.
+        """
         if self.orientation == "north":
             return z == 5 and 1 < x < self.width - 2
         elif self.orientation == "south":
@@ -143,6 +209,12 @@ class WorkshopBuilding(JobBuilding):
         return None
 
     def is_stonecutter(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a stonecutter in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the given coordinates (x, z) is part of a stonecutter in the building.
+        """
         if self.orientation == "north":
             return z == 3 and x == self.width -4
         elif self.orientation == "south":
@@ -154,6 +226,12 @@ class WorkshopBuilding(JobBuilding):
         return None
 
     def is_other_utility(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of another utility in the building.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the given coordinates (x, z) is part of another utility in the building.
+        """
         if self.orientation == "north":
             return x == 2 and  1 < z < 5
         elif self.orientation == "south":
@@ -165,6 +243,10 @@ class WorkshopBuilding(JobBuilding):
         return None
 
     def define_roof_outline(self):
+        """
+        Defines the roof outline for the workshop building based on its orientation.
+        :return: Blocks for the roof, blocks for the upper roof, mods for the roof, and upper mods for the roof.
+        """
         rwidth = self.width // 2 + 2 if self.orientation in ["north", "south"] else self.depth // 2 + 2
         rblocks = []
         rublocks = []
@@ -184,6 +266,9 @@ class WorkshopBuilding(JobBuilding):
         return rblocks, rublocks, mods, umods
 
     def build(self):
+        """
+        Builds the workshop building by placing blocks in the matrix according to the defined structure.
+        """
         if self.built: return
         wools = ["minecraft:red_wool","minecraft:white_wool"]
         uf = {
@@ -270,6 +355,12 @@ class WorkshopBuilding(JobBuilding):
         return
 
     def best_spot(self, nbtry, simulation):
+        """
+        Finds the best spot to place the workshop building based on various criteria.
+        :param nbtry: Number of attempts to find a suitable spot.
+        :param simulation: The current simulation instance.
+        :return: The best spot coordinates (x, z) for placing the building.
+        """
         best_spot = None
         best_score = - inf
         t = 0
@@ -298,6 +389,13 @@ class WorkshopBuilding(JobBuilding):
 
     @staticmethod
     def get_instance(center_point: tuple[int, int, int] | None, agent, orientation: str = "north"):
+        """
+        Returns an instance of WorkshopBuilding, creating it if it does not already exist.
+        :param center_point: The center point of the building in the format (x, y, z).
+        :param agent: The agent responsible for placing the building.
+        :param orientation: The orientation of the building, can be "north", "south", "east", or "west".
+        :return: The instance of WorkshopBuilding.
+        """
         if WorkshopBuilding.INSTANCE is None:
             return WorkshopBuilding(center_point, agent, orientation)
         return WorkshopBuilding.INSTANCE

@@ -10,6 +10,12 @@ class FarmBuilding(JobBuilding):
     INSTANCE = None
 
     def __init__(self, center_point: tuple[int, int, int] | None, agent, orientation: str = "north"):
+        """
+        Initializes a FarmBuilding instance.
+        :param center_point: The center point of the building, or None to find the best spot.
+        :param agent: The agent responsible for the building.
+        :param orientation: The orientation of the building, default is "north".
+        """
         width = random.randint(13, 22)
         depth = 11
         if orientation == "north" or orientation == "south":
@@ -26,6 +32,12 @@ class FarmBuilding(JobBuilding):
         super().clear()
 
     def is_field(self,x,z):
+        """
+        Determines if the given coordinates (x, z) are part of the field area.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of the field area, False otherwise.
+        """
         if self.orientation == "north":
             return 0 < x < 5 and 1 < z < self.depth - 2
         elif self.orientation == "south":
@@ -37,6 +49,12 @@ class FarmBuilding(JobBuilding):
         return None
 
     def is_log(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of the log area.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of the log area, False otherwise.
+        """
         if self.orientation == "north":
             return x in [0,5,self.width - 2] and 0 < z < self.depth-1  or (z in [1,self.depth - 2] and 0 <= x < self.width-1)
         elif self.orientation == "south":
@@ -48,16 +66,34 @@ class FarmBuilding(JobBuilding):
         return None
 
     def is_watterlogged_slab(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a waterlogged slab area.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a waterlogged slab area, False otherwise.
+        """
         if self.orientation in ["north", "south"]:
             return x == 5 and z in [6, self.depth - 7]
         return z == 5 and x in [6, self.depth - 7]
 
     def is_fence_gate(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a fence gate area.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a fence gate area, False otherwise.
+        """
         if self.orientation in ["north", "south"]:
             return x == 5 and z == self.depth // 2
         return z == 5 and x == self.width // 2
 
     def is_pillar(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a pillar area.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a pillar area, False otherwise.
+        """
         if self.orientation == "north":
             return x in [5, self.width - 2] and z in [1, self.depth - 2]
         elif self.orientation == "south":
@@ -69,6 +105,12 @@ class FarmBuilding(JobBuilding):
         return None
 
     def is_wall(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a wall area.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a wall area, False otherwise.
+        """
         if self.orientation == "north":
             return x == self.width - 2 and 1 < z < self.depth - 2 or (z in [1, self.depth - 2] and 5 < x < self.width - 2)
         elif self.orientation == "south":
@@ -80,6 +122,12 @@ class FarmBuilding(JobBuilding):
         return None
 
     def is_window(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a window area.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a window area, False otherwise.
+        """
         if self.orientation == "north":
             return x == self.width - 4 and z == self.depth - 2
         elif self.orientation == "south":
@@ -91,6 +139,12 @@ class FarmBuilding(JobBuilding):
         return None
 
     def is_door(self, x, z):
+        """
+        Determines if the given coordinates (x, z) are part of a door area.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of a door area, False otherwise.
+        """
         if self.orientation == "north":
             return x == self.width - 4 and z == 1
         elif self.orientation == "south":
@@ -102,6 +156,10 @@ class FarmBuilding(JobBuilding):
         return None
 
     def define_roof_outline(self):
+        """
+        Defines the roof outline based on the building's orientation and dimensions.
+        :return: Blocks for the roof, upper roof blocks, mods, and upper mods.
+        """
         rwidth = self.width // 2 + 1 if self.orientation in ["north", "south"] else self.depth // 2 + 1
         rblocks = []
         rublocks = []
@@ -121,6 +179,12 @@ class FarmBuilding(JobBuilding):
         return rblocks, rublocks, mods, umods
 
     def is_storage_area(self,x,z):
+        """
+        Determines if the given coordinates (x, z) are part of the storage area.
+        :param x: The x-coordinate.
+        :param z: The z-coordinate.
+        :return: True if the coordinates are part of the storage area, False otherwise.
+        """
         if self.orientation == "south":
             return 2 <= x <= 3 and 2 <= z <= self.depth - 4
         elif self.orientation == "north":
@@ -131,8 +195,10 @@ class FarmBuilding(JobBuilding):
             return self.depth - 4 <= z <= self.depth - 3 and 2 <= x <= self.width - 4
         return None
 
-
     def build(self):
+        """
+        Builds the farm building by placing blocks in the matrix according to the defined structure.
+        """
         if self.built:
             return
         crops = ["minecraft:wheat", "minecraft:carrots", "minecraft:potatoes", "minecraft:beetroots"]
@@ -230,6 +296,12 @@ class FarmBuilding(JobBuilding):
         return
 
     def best_spot(self, nbtry, simulation):
+        """
+        Finds the best spot for the farm building based on various criteria.
+        :param nbtry: Number of attempts to find a suitable spot.
+        :param simulation: The current simulation context.
+        :return: The best spot as a tuple (x, z).
+        """
         best_spot = None
         best_score = - inf
         t = 0
@@ -260,6 +332,13 @@ class FarmBuilding(JobBuilding):
 
     @staticmethod
     def get_instance(center_point: tuple[int, int, int] | None, agent, orientation: str = "north"):
+        """
+        Returns an instance of FarmBuilding, creating it if it does not already exist.
+        :param center_point: The center point of the building, or None to find the best spot.
+        :param agent: The agent responsible for the building.
+        :param orientation: The orientation of the building, default is "north".
+        :return: The instance of FarmBuilding.
+        """
         if FarmBuilding.INSTANCE is None:
             return FarmBuilding(center_point, agent, orientation)
         return FarmBuilding.INSTANCE

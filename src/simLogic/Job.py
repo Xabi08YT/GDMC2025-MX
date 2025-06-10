@@ -11,12 +11,18 @@ from simLogic.Relationships import Relationships
 
 
 class JobCategory(Enum):
+    """
+    Enum representing different job categories in the simulation.
+    """
     FARM = "FarmCategory"
     BLACKSMITH = "BlacksmithCategory"
     COMMUNITY = "CommunityCategory"
     WORKSHOP = "WorkshopCategory"
 
 class JobType(Enum):
+    """
+    Enum representing different job types available to agents in the simulation.
+    """
     ARMORER = "Armorer"
     BUTCHER = "Butcher"
     CARTOGRAPHER = "Cartographer"
@@ -33,6 +39,9 @@ class JobType(Enum):
     UNEMPLOYED = "Unemployed"
 
 class JobBlock(Enum):
+    """
+    Enum representing the building blocks associated with each job type.
+    """
     ARMORER = "minecraft:blast_furnace"
     BUTCHER = "minecraft:smoker"
     CARTOGRAPHER = "minecraft:cartography_table"
@@ -49,6 +58,9 @@ class JobBlock(Enum):
     UNEMPLOYED = "minecraft:jukebox"
 
 class JobItems(Enum):
+    """
+    Enum representing the items associated with each job type.
+    """
     ARMORER = ["minecraft:iron_chestplate", "minecraft:iron_leggings", "minecraft:iron_boots", "minecraft:iron_helmet", "minecraft:golden_chestplate", "minecraft:golden_leggings", "minecraft:golden_boots", "minecraft:golden_helmet", "minecraft:iron_ingot", "minecraft:gold_ingot"]
     BUTCHER = ["minecraft:beef", "minecraft:chicken", "minecraft:porkchop", "minecraft:mutton", "minecraft:rabbit", "minecraft:cooked_beef", "minecraft:cooked_chicken", "minecraft:cooked_porkchop", "minecraft:cooked_mutton", "minecraft:cooked_rabbit"]
     CARTOGRAPHER = ["minecraft:paper", "minecraft:map", "minecraft:compass", "minecraft:filled_map"]
@@ -66,6 +78,12 @@ class JobItems(Enum):
 
 class Job:
     def __init__(self, agent, job_type: JobType = JobType.UNEMPLOYED, job_building: JobBuilding = None):
+        """
+        Initializes a Job instance for an agent.
+        :param agent: Agent instance that this job belongs to.
+        :param job_type: The type of job assigned to the agent, default is UNEMPLOYED.
+        :param job_building: The building associated with the job, default is None.
+        """
         self.agent = agent
         self.job_type: JobType = job_type
         self.job_building: JobBuilding = job_building
@@ -78,6 +96,11 @@ class Job:
         return f"Job: {self.job_type.value}"
 
     def get_new_job(self, agent, priority):
+        """
+        Determines a new job for the agent based on various conditions and relationships.
+        :param agent: Agent instance for which the job is being determined.
+        :param priority: A string indicating the priority for job assignment, e.g., "hunger".
+        """
         if priority == "hunger" and not agent.simulation.hasfarmer or agent.decay_rates["hunger"] > 0.45:
             self.job_type = choice([JobType.FARMER, JobType.FISHERMAN, JobType.BUTCHER])
             self.job_category = JobCategory.FARM
@@ -156,15 +179,31 @@ class Job:
         self.job_type = JobType.UNEMPLOYED
 
     def build_job_building(self):
+        """
+        Builds the job building associated with the agent's job.
+        """
         self.job_building.build()
 
     def get_block_from_job(self, job: JobType) -> str:
+        """
+        Returns the block type associated with the given job.
+        :param job: JobType for which the block type is requested.
+        :return: The block type as a string.
+        """
         return JobBlock[job.name].value
 
     def get_items_from_job(self, job: str) -> list:
+        """
+        Returns the items associated with the given job.
+        :param job: JobType for which the items are requested.
+        :return: The items as a list.
+        """
         return JobItems[job].value
 
     def work(self):
+        """
+        Executes the work function for the agent's job.
+        """
         if self.job_building.built is not True:
             self.build_job_building()
             return

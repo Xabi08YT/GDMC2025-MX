@@ -15,6 +15,12 @@ class Relationships:
 
     @staticmethod
     def add_relationship(agent1, agent2, initial_value: float = 0.0):
+        """
+        Adds a relationship between two agents with an initial value.
+        :param agent1: Agent object representing the first agent.
+        :param agent2: Agent object representing the second agent.
+        :param initial_value: Initial value of the relationship, should be between -1.0 and 1.0.
+        """
         if agent1.dead or agent2.dead:
             return
 
@@ -30,17 +36,35 @@ class Relationships:
 
     @staticmethod
     def get_relationship(agent1, agent2) -> float:
+        """
+        Get the relationship value between two agents.
+        :param agent1: Agent object representing the first agent.
+        :param agent2: Agent object representing the second agent.
+        :return: Relationship value between -1.0 and 1.0, or 0.0 if no relationship exists.
+        """
         key = tuple(sorted([agent1.id, agent2.id]))
         rel = Relationships.RELATIONSHIPS.get(key, None)
         return rel['value'] if rel else 0.0
 
     @staticmethod
     def get_relationship_data(agent1, agent2) -> dict:
+        """
+        Get the relationship data between two agents.
+        :param agent1: Agent object representing the first agent.
+        :param agent2: Agent object representing the second agent.
+        :return: Dictionary containing relationship data or None if no relationship exists.
+        """
         key = tuple(sorted([agent1.id, agent2.id]))
         return Relationships.RELATIONSHIPS.get(key, None)
 
     @staticmethod
     def get_status_relationship(agent1, agent2) -> str:
+        """
+        Get the status of the relationship between two agents.
+        :param agent1: Agent object representing the first agent.
+        :param agent2: Agent object representing the second agent.
+        :return: String representing the status of the relationship.
+        """
         key = tuple(sorted([agent1.id, agent2.id]))
         rel = Relationships.RELATIONSHIPS.get(key, None)
         if rel is None:
@@ -64,6 +88,12 @@ class Relationships:
 
     @staticmethod
     def update_relationship(agent1, agent2, increment: float):
+        """
+        Update the relationship value between two agents by a given increment.
+        :param agent1: Agent object representing the first agent.
+        :param agent2: Agent object representing the second agent.
+        :param increment: Increment value to adjust the relationship, should be between -1.0 and 1.0.
+        """
         if agent1.dead or agent2.dead:
             return None
 
@@ -77,6 +107,11 @@ class Relationships:
 
     @staticmethod
     def get_all_relationships(agent) -> dict:
+        """
+        Get all relationships for a given agent.
+        :param agent: Agent object for which to retrieve relationships.
+        :return: Dictionary containing relationships with other agents.
+        """
         agent_relationships = {}
         for key, data in Relationships.RELATIONSHIPS.items():
             if agent.id in key:
@@ -90,10 +125,18 @@ class Relationships:
 
     @staticmethod
     def get_relationship_count() -> int:
+        """
+        Get the total number of relationships.
+        :return: The total number of relationships.
+        """
         return len(Relationships.RELATIONSHIPS)
 
     @staticmethod
     def initialize_relationships(simulation):
+        """
+        Initialize relationships between agents in the simulation.
+        :param simulation: The current simulation object containing agents.
+        """
         print(f"[INFO] Initializing relationships between {len(simulation.agents)} agents...")
 
         for i, agent1 in enumerate(simulation.agents):
@@ -105,7 +148,10 @@ class Relationships:
 
     @staticmethod
     def generate_social_events(simulation):
-
+        """
+        Generate social events between agents in the simulation.
+        :param simulation: The current simulation object containing agents.
+        """
         events = [
             {"name": "helped_in_need", "effect": (0.05, 0.15), "probability": 0.15},
             {"name": "shared_resources", "effect": (0.03, 0.08), "probability": 0.2},
@@ -135,6 +181,10 @@ class Relationships:
 
     @staticmethod
     def update_social_attributes(simulation):
+        """
+        Update social attributes of agents based on their relationships.
+        :param simulation: The current simulation object containing agents.
+        """
         for agent in simulation.agents:
             if agent.dead:
                 continue

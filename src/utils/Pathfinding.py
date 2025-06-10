@@ -5,6 +5,16 @@ from utils.math_methods import distance_xz
 
 class Pathfinding:
     def __init__(self, simulation, x1, z1, x2, z2,bridges, paths):
+        """
+        Initializes the Pathfinding instance with the simulation data and start/end coordinates.
+        :param simulation: The current simulation object containing the grid, water, buildings, and heightmap.
+        :param x1: The x-coordinate of the start position.
+        :param z1: The z-coordinate of the start position.
+        :param x2: The x-coordinate of the end position.
+        :param z2: The z-coordinate of the end position.
+        :param bridges: A boolean array indicating where bridges are located.
+        :param paths: A boolean array indicating where paths are located.
+        """
         # np.array of boolean values indicating walkable blocks
         self.grid = simulation.walkable
         self.water = simulation.water
@@ -21,19 +31,41 @@ class Pathfinding:
 
     @staticmethod
     def heuristic(a: Tuple[int, int], b: Tuple[int, int]) -> float:
+        """
+        Computes the Manhattan distance heuristic between two points.
+        :param a: Tuple representing the first point (x, z).
+        :param b: Tuple representing the second point (x, z).
+        :return: The Manhattan distance between points a and b.
+        """
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
     
     def is_valid_position(self, pos: Tuple[int, int]) -> bool:
+        """
+        Checks if the given position is within the bounds of the grid.
+        :param pos: Tuple representing the position (x, z).
+        :return: True if the position is valid, False otherwise.
+        """
         x, z = pos
         return 0 <= x < self.grid.shape[0] and 0 <= z < self.grid.shape[1]
     
     def is_walkable(self, pos: Tuple[int, int]) -> bool:
+        """
+        Checks if the given position is walkable.
+        :param pos: Tuple representing the position (x, z).
+        :return: True if the position is walkable, False otherwise.
+        """
         if not self.is_valid_position(pos):
             return False
         
         return self.grid[pos[0], pos[1]] == 1 or self.water[pos[0], pos[1]] == 1
 
     def get_movement_cost(self, current: Tuple[int, int], next_pos: Tuple[int, int]) -> float:
+        """
+        Calculates the movement cost from the current position to the next position.
+        :param current: Tuple representing the current position (x, z).
+        :param next_pos: Tuple representing the next position (x, z).
+        :return: The cost of moving to the next position.
+        """
         if not self.is_walkable(next_pos):
             return float('inf')
 
@@ -49,6 +81,11 @@ class Pathfinding:
                 + 32768 * int(self.buildings[next_pos[0], next_pos[1]] != 0))
 
     def get_neighbors(self, pos: Tuple[int, int]) -> List[Tuple[int, int]]:
+        """
+        Gets the walkable neighbors of the given position.
+        :param pos: Tuple representing the position (x, z).
+        :return: A list of tuples representing the walkable neighbors.
+        """
         neighbors = []
         x, z = pos
 
@@ -61,6 +98,11 @@ class Pathfinding:
 
     @staticmethod
     def compute_mst_heuristic(landmarks: List[Tuple[int, int]]) -> float:
+        """
+        Computes the Minimum Spanning Tree (MST) heuristic based on the given landmarks.
+        :param landmarks: List of tuples representing the landmarks (x, z).
+        :return: The cost of the MST heuristic.
+        """
         if len(landmarks) <= 1:
             return 0
         
@@ -95,6 +137,10 @@ class Pathfinding:
         return mst_cost
     
     def find_path(self) -> List[Tuple[int, int]]:
+        """
+        Finds the shortest path from start to end using A* algorithm with MST heuristic.
+        :return: A list of tuples representing the path from start to end, or an empty list if no path is found.
+        """
         start = (self.start[0], self.start[1])
         end = (self.end[0], self.end[1])
 
@@ -140,6 +186,12 @@ class Pathfinding:
         return []
     
     def reconstruct_path(self, came_from: Dict[Tuple[int, int], Tuple[int, int]], current: Tuple[int, int]) -> List[Tuple[int, int]]:
+        """
+        Reconstructs the path from the end to the start using the came_from dictionary.
+        :param came_from: A dictionary mapping each position to its predecessor.
+        :param current: Tuple representing the current position (x, z).
+        :return: A list of tuples representing the path from start to end.
+        """
         path = [current]
         self.cost = 0
 

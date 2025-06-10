@@ -12,6 +12,13 @@ import json
 
 class Agent:
     def __init__(self, sim, x, z, name):
+        """
+        Initializes an Agent instance.
+        :param sim: Simulation object that this agent belongs to.
+        :param x: Coordinate X of the agent
+        :param z: Coordinate Z of the agent
+        :param name: Name of the agent
+        """
         self.simulation = sim
         self.id = str(uuid.uuid4())
         self.name = name
@@ -70,6 +77,11 @@ class Agent:
         self.book = {"title": f"The life of {self.name}", "author": self.name, "pages": [json.dumps([{"text": f"My life - {self.name}\n{__import__('datetime').datetime.now().strftime('%Y/%m/%d %H:%M')}"}])]}
 
     def set_velocity(self, vx, vz):
+        """
+        Sets the velocity of the agent, ensuring it does not exceed the maximum speed.
+        :param vx: New velocity in the X direction
+        :param vz: New velocity in the Z direction
+        """
         speed = math.sqrt(vx * vx + vz * vz)
         if speed > self.max_speed:
             vx = (vx / speed) * self.max_speed
@@ -78,6 +90,11 @@ class Agent:
         self.velocity_z = vz
 
     def apply_force(self, fx, fz):
+        """
+        Applies a force to the agent, adjusting its velocity accordingly.
+        :param fx: Force in the X direction
+        :param fz: Force in the Z direction
+        """
         force_magnitude = math.sqrt(fx * fx + fz * fz)
         if force_magnitude > self.max_force:
             fx = (fx / force_magnitude) * self.max_force
@@ -87,12 +104,15 @@ class Agent:
         self.velocity_z += fz
 
     def update_position(self):
+        """
+        Updates the agent's position based on its velocity, ensuring it stays within the bounds of the simulation's walkable area.
+        """
         min_x, min_z = 0, 0
         max_x = self.simulation.walkable.shape[0] - 1
         max_z = self.simulation.walkable.shape[1] - 1
         new_x = self.x + self.velocity_x
         new_z = self.z + self.velocity_z
-        if min_x <= new_x <= max_x and min_z <= new_z <= max_z:
+        if min_x <= new_x <= max_x and min_z <= new_z <= max_z and self.simulation.walkable[int(new_x), int(new_z)]:
             self.x = new_x
             self.z = new_z
         else:
@@ -100,6 +120,9 @@ class Agent:
             self.z = max(min_z, min(new_z, max_z))
 
     def force_constraints_on_attributes(self):
+        """
+        Ensures that the agent's attributes remain within defined bounds.
+        """
         self.attributes["social"] = max(0, min(1, self.attributes["social"]))
         self.attributes["health"] = max(0, min(1, self.attributes["health"]))
         self.attributes["hunger"] = max(0, min(1, self.attributes["hunger"]))
@@ -108,6 +131,9 @@ class Agent:
         self.happiness = max(-1, min(1, self.happiness))
 
     def apply_decay(self):
+        """
+        Applies decay to the agent's attributes based on their current state and decay rates.
+        """
         if self.attributes["hunger"] + self.attributes_mod["hunger"] > 0:
             multiply = 1 + self.attributes["strength"] + self.attributes_mod["strength"]
             self.attributes["hunger"] -= self.decay_rates["hunger"] * multiply
@@ -144,6 +170,10 @@ class Agent:
             self.die()
 
     def determine_priority(self):
+        """
+        Determines the priority of the agent's next action based on its current attributes.
+        :return: The attribute that has the lowest value, indicating the most urgent need.
+        """
         tmp = {
             "hunger": self.attributes["hunger"],
             "energy": self.attributes["energy"],
@@ -152,6 +182,9 @@ class Agent:
         return min(tmp.keys(), key=lambda k: tmp[k])
 
     def fulfill_needs(self):
+        """
+        Fulfills the agent's needs based on its current state and environment.
+        """
         if self.simulation.hasfarmer:
             self.attributes["hunger"] = 1
             self.happiness += 0.01
@@ -162,11 +195,17 @@ class Agent:
             self.attributes["energy"] += self.decay_rates["energy"] - 0.1
 
     def move(self):
+        """
+        Moves the agent based on the boids behavior applied to it, which considers the positions and velocities of other agents.
+        """
         (fx, fz) = self.simulation.boids.apply_boids_behavior(self, self.simulation.agents)
         self.apply_force(fx, fz)
         self.update_position()
 
     def observe_environment(self):
+        """
+        Observes the environment around the agent and updates its scores based on the presence of resources, water, lava, and buildings.
+        """
         x, z = int(self.x), int(self.z)
 
         if str((x, z)) in self.scores:
@@ -180,9 +219,10 @@ class Agent:
 
         self.scores[str((x, z))] = score
 
-        return
-
     def place_house(self):
+        """
+        Places a house for the agent if it does not already have one and if it has enough scores to build.
+        """
         if isinstance(self.home, House):
             print(f"{self.name} already has a home")
             return
@@ -220,6 +260,9 @@ class Agent:
             f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE} built a new house!{ANSIColors.ENDC}")
 
     def update_book(self):
+        """
+        Updates the agent's book with the current state of the agent, including attributes, job, home, and relationships.
+        """
         if self.dead:
             return
         attributes = self.attributes
@@ -333,6 +376,9 @@ class Agent:
         self.book["pages"].append(json.dumps(page_lines))
 
     def die(self):
+        """
+        Marks the agent as dead and updates the happiness of other agents based on their relationships with this agent.
+        """
         self.dead = True
         for agent in self.simulation.agents:
             if agent != self:
@@ -342,6 +388,9 @@ class Agent:
                     agent.happiness -= 0.1 * multiply
 
     def tick(self):
+        """
+        Executes a single tick of the agent's behavior, applying decay, fulfilling needs, moving, observing the environment,
+        """
         if self.dead:
             self.logfile.addLine(self, "DEAD")
             return

@@ -251,11 +251,12 @@ class AbstractionLayer:
                         if random.randint(0, 10) <= 8:
                             flower = random.choice(flowers)
                             blocks[fx, fz, 1] = flower
+                            blocks[fx, fz, 0] = "minecraft:grass_block"
         editor = Editor(buffering=True)
         for mx in range(blocks.shape[0]):
             for mz in range(blocks.shape[1]):
                 for my in range(blocks.shape[2]):
-                    if "house" in meta["name"].lower() and meta["happiness"] < -0.5 and "sign" not in str(blocks[mx, mz, my]) and random.randint(0, 100) < 5:
+                    if "house" in meta["name"].lower() and meta["happiness"] < -0.5 and "sign" not in str(blocks[mx, mz, my]) and random.randint(0, 100) < 5 and my != 0:
                             gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block("minecraft:cobweb")))
                     else:
                         if "oak" in str(blocks[mx, mz, my]):
@@ -360,7 +361,8 @@ class AbstractionLayer:
                     mcy = hmapwater[x, z]
                     gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
                     gdpcblocks.append(((mcx + x, mcy, mcz + z), Block("air")))
-                    gdpcblocks.append(((mcx + x, 200, mcz + z), Block("minecraft:oak_planks")))
+                    if debug:
+                        gdpcblocks.append(((mcx + x, 200, mcz + z), Block("minecraft:oak_planks")))
                 if bridgemap[x,z] != 1 and pathmap[x,z] != -1:
                     b = random.choice(blocks["default"])
                     if "minecraft:beach" in biomemap[x, z].lower() or "desert" in biomemap[x, z].lower():

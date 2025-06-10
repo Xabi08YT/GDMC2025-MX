@@ -5,15 +5,27 @@ import random
 
 class Firecamp(Building):
     def __init__(self, simulation):
+        """
+        Firecamp building, used to create a central plaza in the village.
+        :param simulation: The current simulation instance.
+        """
         self.simulation = simulation
         super().__init__(None, None, "Firecamp", width=5, height=2, depth=5, bupdates=False)
         fx,fy,fz = self.get_best_location()
         self.place((fx,fz),self.simulation)
 
     def get_coords(self) -> ivec3:
+        """
+        Get the coordinates of the firecamp building.
+        :return: The coordinates of the firecamp as an ivec3.
+        """
         return self.center_point
 
     def get_best_location(self) -> tuple[int,int,int]:
+        """
+        Find the best location for the firecamp building in the village.
+        :return: The best location as a tuple (x, y, z).
+        """
         best_spot = None
         best_score = -inf
 
@@ -45,6 +57,9 @@ class Firecamp(Building):
         return best_spot
 
     def build(self):
+        """
+        Build the firecamp building at the best location found.
+        """
         plaza_floor = self.simulation.params["centerPlazaFloor"]
         y = 0
         for dx in range(-1, 2):

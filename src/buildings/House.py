@@ -6,8 +6,16 @@ from utils.ANSIColors import ANSIColors
 from simLogic.Job import JobBlock
 
 class House(Building):
-    def __init__(self, center_point: tuple[int,int] | None, agent, name: str, orientation: str = "south",
-                 built: bool = False, folder="generated"):
+    def __init__(self, center_point: tuple[int,int] | None, agent, name: str, built: bool = False, folder="generated"):
+        """
+        Initializes a House object.
+        :param center_point: The center point of the house in the format (x, z).
+        :param agent: The agent who is building the house.
+        :param name: The name of the house.
+        :param built: True if the house is already built, False otherwise.
+        :param folder: Folder where the house data will be stored.
+        """
+        orientation = random.choice(["south", "north", "east", "west"])
         super().__init__(center_point, agent, name, orientation, built, folder, height=random.randint(6, 7), width=7, depth=7)
         self.construction_phase = 0
         self.construction_progress = 0
@@ -20,8 +28,8 @@ class House(Building):
         self.materials = self.choose_materials()
 
         self.phase_times = {
-            "foundation": 16,
-            "walls": 8,
+            "foundation": 15,
+            "walls": 5,
             "roof": 2
         }
 
@@ -31,8 +39,13 @@ class House(Building):
             [self.width - 2, 1],
             [self.width - 2, self.depth - 2]
         ]
+        self.clear()
 
     def choose_materials(self):
+        """
+        Chooses materials for the house based on predefined options.
+        :return: Materials dictionary containing floor, wall, log, door, and bed.
+        """
         bed_options = ["minecraft:red_bed", "minecraft:blue_bed", "minecraft:green_bed", "minecraft:yellow_bed", "minecraft:black_bed"]
         wall_options = {
             "stone": ["minecraft:stone", "minecraft:stone_bricks", "minecraft:cracked_stone_bricks", "minecraft:mossy_stone_bricks"],
@@ -51,6 +64,10 @@ class House(Building):
         }
 
     def get_construction_status(self) -> str:
+        """
+        Returns the current construction status of the house.
+        :return: The current construction phase and progress as a string.
+        """
         phases = ["foundation", "walls", "roof"]
         if self.construction_phase >= len(phases):
             return "Completed"
@@ -61,6 +78,11 @@ class House(Building):
         return f"{current_phase} ({progress}%)"
 
     def add_helping_agent(self, agent, strength: float):
+        """
+        Adds a helping agent to the house construction.
+        :param agent: Agent who is helping with the construction.
+        :param strength: The strength of the helping agent, which affects construction speed.
+        """
         if agent not in self.helping_agents:
             self.helping_agents[agent] = strength
             if agent.id in self.agent.relationships:
@@ -68,11 +90,19 @@ class House(Building):
             print(f"{agent.name} started helping {self.agent.name} build their house")
 
     def remove_helping_agent(self, agent):
+        """
+        Removes a helping agent from the house construction.
+        :param agent: Agent who is no longer helping with the construction.
+        """
         if agent in self.helping_agents:
             del self.helping_agents[agent]
             print(f"{agent.name} stopped helping {self.agent.name} build their house")
 
     def calculate_construction_speed(self) -> float:
+        """
+        Calculates the construction speed based on the agent's strength and the helping agents' contributions.
+        :return: The construction speed as a float.
+        """
         base_speed = 0.3 + self.agent.attributes["strength"]
 
         helper_speed = 0
@@ -85,6 +115,9 @@ class House(Building):
         return base_speed + (helper_speed * 0.5)
 
     def build(self):
+        """
+        Builds the house by constructing its foundation, walls, and roof in phases.
+        """
         if self.center_point is None or self.built:
             return
 
@@ -120,6 +153,10 @@ class House(Building):
         print(f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.agent.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE}'s house: {ANSIColors.ENDC}{ANSIColors.OKCYAN}{status}{helpers}{ANSIColors.ENDC}")
 
     def build_foundation(self, progress):
+        """
+        Builds the foundation of the house.
+        :param progress: Progress ratio (0.0 to 1.0) indicating how much of the foundation has been built.
+        """
         y = 0
         floor = self.materials["floor"]
         total_blocks = (self.width) * (self.depth)
@@ -141,6 +178,10 @@ class House(Building):
                 placed += 1
 
     def build_walls(self, progress):
+        """
+        Builds the walls of the house.
+        :param progress: Progress ratio (0.0 to 1.0) indicating how much of the foundation has been built.
+        """
         wall_blocks = []
         for dy in range(1, self.height-1):
             for dx in range(1, self.width-1):
@@ -179,6 +220,11 @@ class House(Building):
             self.door = (door_x, 1, door_z)
 
     def build_roof(self, progress):
+        """
+        Builds the roof of the house.
+        :param progress: Progress ratio (0.0 to 1.0) indicating how much of the foundation has been built.
+        :return:
+        """
         roof_material = "oak_planks"
         roof_blocks = []
         if self.roof_style == "pyramid":
@@ -223,6 +269,9 @@ class House(Building):
             super().add_block_to_matrix(x, y, z, block)
 
     def build_furniture(self):
+        """
+        Builds furniture inside the house, including a bed and a container.
+        """
         patterns = []
         if self.orientation in ["east", "west"]:
             patterns = [

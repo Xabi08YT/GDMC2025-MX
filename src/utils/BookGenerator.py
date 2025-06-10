@@ -16,6 +16,12 @@ class BookGenerator:
               "dark_aqua", "dark_blue", "blue", "light_purple", "dark_purple"]
 
     def generate_buildings_book(self, title="Simulation's Book", author="MX"):
+        """
+        Generates a book containing information about the buildings and agents in the simulation.
+        :param title: The title of the book
+        :param author: The author of the book
+        :return: The book formatted for Minecraft
+        """
         pages = []
         current_page_content = []
         sorted_buildings = sorted(Building.BUILDINGS,
@@ -127,6 +133,10 @@ class BookGenerator:
         return book_data
 
     def give_village_book_to_players(self, editor = Editor(buffering=True)):
+        """
+        Gives the generated book to all players in the simulation.
+        :param editor: The GDPC editor instance to run commands
+        """
         book_data = self.generate_buildings_book()
         command = f'give @a written_book[written_book_content={{title:"{book_data["title"]}",author:"{book_data["author"]}",pages:{book_data["pages"]}}}]'
         editor.runCommand(command)
