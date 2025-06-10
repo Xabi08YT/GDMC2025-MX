@@ -387,7 +387,6 @@ class AbstractionLayer:
         :param folder: The folder containing the generated buildings and paths.
         :return: None
         """
-        global gdpcblocks
         for building in Building.BUILDINGS:
             building.matrix_to_files()
 
