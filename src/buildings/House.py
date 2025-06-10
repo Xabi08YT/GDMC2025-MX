@@ -20,9 +20,9 @@ class House(Building):
         self.materials = self.choose_materials()
 
         self.phase_times = {
-            "foundation": 20,
-            "walls": 10,
-            "roof": 3
+            "foundation": 16,
+            "walls": 8,
+            "roof": 2
         }
 
         self.corners = [
@@ -154,9 +154,12 @@ class House(Building):
                     if not is_corner and is_wall and not is_door:
                         wall_blocks.append((dx, dy, dz))
         total_blocks = len(wall_blocks)
-        blocks_to_place = int(total_blocks * progress)
+        if progress > 0.9:
+            blocks_to_place = total_blocks
+        else:
+            blocks_to_place = int(total_blocks * progress)
         for idx, (dx, dy, dz) in enumerate(wall_blocks):
-            if idx >= blocks_to_place:
+            if progress < 1.0 and idx >= blocks_to_place:
                 break
             wall_block = random.choice(self.materials["wall"])
             super().add_block_to_matrix(dx, dy, dz, wall_block)

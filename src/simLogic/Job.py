@@ -58,7 +58,7 @@ class JobItems(Enum):
     FLETCHER = ["minecraft:arrow", "minecraft:bow", "minecraft:crossbow", "minecraft:flint", "minecraft:feather", "minecraft:string", "minecraft:tripwire_hook"]
     LEATHERWORKER = ["minecraft:leather", "minecraft:leather_helmet", "minecraft:leather_chestplate", "minecraft:leather_leggings", "minecraft:leather_boots", "minecraft:item_frame", "minecraft:painting", "minecraft:writable_book"]
     LIBRARIAN = ["minecraft:book", "minecraft:enchanted_book", "minecraft:written_book", "minecraft:bookshelf", "minecraft:lectern"]
-    MASON = ["minecraft:stone", "minecraft:stone_bricks", "minecraft:brick", "minecraft:clay_ball", "minecraft:terracotta", "minecraft:glazed_terracotta", "minecraft:concrete_powder"]
+    MASON = ["minecraft:stone", "minecraft:stone_bricks", "minecraft:brick", "minecraft:clay_ball", "minecraft:terracotta", "minecraft:white_glazed_terracotta", "minecraft:red_glazed_terracotta", "minecraft:blue_glazed_terracotta", "minecraft:green_glazed_terracotta"]
     SHEPHERD = ["minecraft:white_wool", "minecraft:gray_wool", "minecraft:light_gray_wool", "minecraft:black_wool", "minecraft:brown_wool", "minecraft:orange_wool", "minecraft:yellow_wool", "minecraft:lime_wool", "minecraft:pink_wool", "minecraft:blue_dye", "minecraft:green_dye", "minecraft:cyan_dye", "minecraft:light_blue_dye", "minecraft:purple_dye", "minecraft:magenta_dye"]
     TOOLSMITH = ["minecraft:iron_pickaxe", "minecraft:iron_axe", "minecraft:iron_shovel", "minecraft:iron_hoe", "minecraft:golden_pickaxe", "minecraft:golden_axe", "minecraft:golden_shovel", "minecraft:golden_hoe"]
     WEAPONSMITH = ["minecraft:iron_sword", "minecraft:iron_axe", "minecraft:golden_sword", "minecraft:golden_axe", "minecraft:diamond_sword", "minecraft:diamond_axe"]

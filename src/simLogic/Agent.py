@@ -349,7 +349,7 @@ class Agent:
         self.fulfill_needs()
         self.move()
         self.observe_environment()
-        self.job.work()
+
         priority = self.determine_priority()
 
         if self.job.job_type == JobType.UNEMPLOYED:
@@ -361,7 +361,7 @@ class Agent:
             self.home.build()
 
         if self.job.job_type != JobType.UNEMPLOYED:
-            self.job.job_building.build()
+            self.job.work()
 
         self.force_constraints_on_attributes()
         self.logfile.addLine(self, priority)
