@@ -68,13 +68,34 @@
     "grove": "spruce",
     "cherry_grove": "cherry"
   },
-  "path_blocks": [
-    "minecraft:path",
-    "minecraft:gravel",
-    "minecraft:cobblestone",
-    "minecraft:coarse_dirt",
-    "minecraft:dirt_path"
-  ],
+  "path_blocks": {
+    "default": [
+      "minecraft:gravel",
+      "minecraft:cobblestone",
+      "minecraft:coarse_dirt",
+      "minecraft:dirt_path"
+    ],
+    "desert": [
+      "minecraft:sandstone",
+      "minecraft:pale_moss_block",
+      "minecraft:terracotta",
+      "minecraft:cobblestone"
+    ]
+  },
+  "lightposts": {
+    "default": ["minecraft:oak_fence", "minecraft:lantern"],
+    "desert": ["sandstone_wall", "minecraft:lantern"],
+    "taiga": ["spruce_fence", "minecraft:lantern"],
+    "jungle": ["jungle_fence", "minecraft:lantern"],
+    "mangrove_swamp": ["mangrove_fence", "minecraft:lantern"],
+    "cherry_grove": ["cherry_fence", "minecraft:lantern"],
+    "birch_forest": ["birch_fence", "minecraft:lantern"],
+    "dark_forest": ["dark_oak_fence", "minecraft:lantern"],
+    "savanna": ["acacia_fence", "minecraft:lantern"],
+    "grove": ["spruce_fence", "minecraft:lantern"],
+    "stony_shore": ["stone_wall", "minecraft:lantern"],
+    "hills": ["stone_wall", "minecraft:lantern"]
+  },
   "foundations": {
     "main_blocks": [
       "minecraft:stone",
