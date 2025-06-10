@@ -314,7 +314,7 @@ class AbstractionLayer:
             f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
         interface.placeBlocks(gdpcblocks, doBlockUpdates=meta["bupdates"])
 
-    def push_paths(self, folder, hmap, hmapwater, biomemap, debug = False):
+    def push_paths(self, folder, hmap, hmapwater, biomemap, debug =False):
         """
         Pushes paths to the Minecraft world based on the path map and bridge map stored in the specified folder.
         :param folder: The folder containing the path and bridge maps.
