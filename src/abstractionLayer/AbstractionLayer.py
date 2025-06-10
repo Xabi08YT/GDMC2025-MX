@@ -291,7 +291,7 @@ class AbstractionLayer:
             f'{ANSIColors.OKCYAN}[GDPC INFO] Generated {ANSIColors.ENDC}{ANSIColors.OKGREEN}{meta["name"]}{ANSIColors.ENDC}{ANSIColors.OKCYAN} at {ANSIColors.ENDC}{ANSIColors.OKGREEN}{mcx, mcy, mcz}{ANSIColors.ENDC}')
         interface.placeBlocks(gdpcblocks, doBlockUpdates=meta["bupdates"])
 
-    def push_paths(self, folder, hmap, hmapwater):
+    def push_paths(self, folder, hmap, hmapwater, debug):
         if not os.path.isdir(os.path.join(folder, 'path')):
             return
 
@@ -314,16 +314,18 @@ class AbstractionLayer:
                     b = random.choice(blocks)
                     mcy = hmap[x, z]
                     gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
-                    gdpcblocks.append(((mcx + x, 200, mcz + z), Block(AbstractionLayer.wools[pathmap[x, z] % len(AbstractionLayer.wools)])))
+                    if debug:
+                        gdpcblocks.append(((mcx + x, 200, mcz + z), Block(AbstractionLayer.wools[pathmap[x, z] % len(AbstractionLayer.wools)])))
                 else:
                     b = "oak_planks"
                     mcy = hmapwater[x, z]
                     gdpcblocks.append(((mcx + x, mcy - 1, mcz + z), Block(b)))
-                    gdpcblocks.append(((mcx + x, 200, mcz + z), Block("minecraft:oak_planks")))
+                    if debug:
+                        gdpcblocks.append(((mcx + x, 200, mcz + z), Block("minecraft:oak_planks")))
 
         interface.placeBlocks(gdpcblocks, doBlockUpdates=False)
 
-    def push(self, agents, folder="generated"):
+    def push(self, agents, debug:bool, folder="generated", ):
         global gdpcblocks
         for building in Building.BUILDINGS:
             building.matrix_to_files()
@@ -333,7 +335,7 @@ class AbstractionLayer:
 
         self.clear_trees_for_buildings(folder)
 
-        self.push_paths(folder, hmap,self.get_height_map_excluding("air,%23leaves,%23logs,%23flowers,sugar_cane"))
+        self.push_paths(folder, hmap,self.get_height_map_excluding("air,%23leaves,%23logs,%23flowers,sugar_cane"), debug)
         p = Pool(cpu_count())
         p.map_async(self.push_building,
                     [(folder, target, hmap, hmapsolid) for target in os.listdir(folder) if target != "path"]).get()
