@@ -71,6 +71,7 @@ class Agent:
         self.nb_turn_hungry = 0
         self.nb_turn_sleepy = 0
         self.nb_turn_fulfilled = 0
+        self.visited = []
         self.scores = {}
         self.radius = self.simulation.config["observationRange"]
         self.last_page_book = ""
@@ -207,17 +208,20 @@ class Agent:
         Observes the environment around the agent and updates its scores based on the presence of resources, water, lava, and buildings.
         """
         x, z = int(self.x), int(self.z)
-
-        if str((x, z)) in self.scores:
+        if (x,z) in self.visited:
             return
+        self.visited.append((x,z))
+        return
 
-        score = self.simulation.wood[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
-        score -= 5 * self.simulation.water[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
-        score -= 5 * self.simulation.lava[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
-        score -= 100 * self.simulation.buildings[x - self.radius:x + self.radius,
-                 z - self.radius:z + self.radius].sum().item()
-
-        self.scores[str((x, z))] = score
+    def compute_scores(self):
+        for x,z in self.visited:
+            score = self.simulation.wood[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
+            score -= 5 * self.simulation.water[x - self.radius:x + self.radius,
+                         z - self.radius:z + self.radius].sum().item()
+            score -= 5 * self.simulation.lava[x - self.radius:x + self.radius,
+                         z - self.radius:z + self.radius].sum().item()
+            if self.simulation.buildings[x - self.radius:x + self.radius,z - self.radius:z + self.radius].sum().item() == 0:
+                self.scores[str((x,z))] = score
 
     def place_house(self):
         """
@@ -227,9 +231,13 @@ class Agent:
             print(f"{self.name} already has a home")
             return
 
+        self.compute_scores()
+        if len(self.scores) == 0:
+            print(f"{ANSIColors.FAIL}[SIMULATION INFO] {ANSIColors.BOLD}{self.name}{ANSIColors.ENDC}{ANSIColors.FAIL} could not place his house: no valid locations.{ANSIColors.ENDC}")
+            return
+
         threshold = int(10 + 30 * self.attributes["adventurous"])
-        if len(self.scores) < threshold:
-            print(f"{self.name} has not enough scores to build a house ({len(self.scores)}/{threshold})")
+        if len(self.visited) < threshold:
             return
 
         best_spot = max(self.scores, key=self.scores.get)

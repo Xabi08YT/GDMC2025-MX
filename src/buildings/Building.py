@@ -31,7 +31,7 @@ class Building:
         self.height = height
         self.depth = depth
         self.radius = 10
-        self.center_point = center_point
+        self.center_point = center_point if center_point is not None else None
         if agent is not None and center_point is not None:
             placement_success = self.place(center_point, agent.simulation)
             if placement_success and hasattr(self, "center_point") and self.center_point is not None:
