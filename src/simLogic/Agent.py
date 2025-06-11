@@ -233,12 +233,11 @@ class Agent:
 
         self.compute_scores()
         if len(self.scores) == 0:
-            print(f"{ANSIColors.FAIL}[SIMULATION INFO]{ANSIColors.BOLD}{self.name}{ANSIColors.ENDC} could not place his house: no valid locations.{ANSIColors.ENDC}")
+            print(f"{ANSIColors.FAIL}[SIMULATION INFO] {ANSIColors.BOLD}{self.name}{ANSIColors.ENDC}{ANSIColors.FAIL} could not place his house: no valid locations.{ANSIColors.ENDC}")
             return
 
         threshold = int(10 + 30 * self.attributes["adventurous"])
-        if len(self.scores) < threshold:
-            print(f"{self.name} has not enough scores to build a house ({len(self.scores)}/{threshold})")
+        if len(self.visited) < threshold:
             return
 
         best_spot = max(self.scores, key=self.scores.get)
