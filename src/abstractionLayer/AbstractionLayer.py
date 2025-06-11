@@ -269,12 +269,11 @@ class AbstractionLayer:
                                 wood = "oak"
                             block = blocks[mx, mz, my].replace("oak", wood)
                             if "sign" in str(blocks[mx, mz, my]):
-                                block = signBlock(wood=wood, facing=meta["orientation"], wall=True, frontLine2=meta["name"].replace(" House", ""), frontLine3="Happiness: " + str(round(meta["happiness"], 2)))
+                                block = signBlock(wood=wood, facing=meta["orientation"], wall=True, frontLine2=meta["name"].replace(" House", ""))
                                 gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), block))
                             else:
                                 gdpcblocks.append(((mcx + mx, mcy + my, mcz + mz), Block(block)))
-                        elif "house" in meta["name"].lower() and "container" in meta and meta["container"]:
-                            if mx == meta["container"][0] and my == meta["container"][1] and mz == meta["container"][2]:
+                        elif "house" in meta["name"].lower() and "container" in meta and meta["container"] and mx == meta["container"][0] and my == meta["container"][1] and mz == meta["container"][2]:
                                 pos = (mcx + mx, mcy + my, mcz + mz)
                                 block = Block(random.choice(["minecraft:chest", "minecraft:barrel"]))
                                 placeContainerBlock(editor, pos, block)

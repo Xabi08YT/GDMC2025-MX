@@ -77,27 +77,6 @@ class House(Building):
 
         return f"{current_phase} ({progress}%)"
 
-    def add_helping_agent(self, agent, strength: float):
-        """
-        Adds a helping agent to the house construction.
-        :param agent: Agent who is helping with the construction.
-        :param strength: The strength of the helping agent, which affects construction speed.
-        """
-        if agent not in self.helping_agents:
-            self.helping_agents[agent] = strength
-            if agent.id in self.agent.relationships:
-                self.agent.relationships[agent.id].improve(0.1)
-            print(f"{agent.name} started helping {self.agent.name} build their house")
-
-    def remove_helping_agent(self, agent):
-        """
-        Removes a helping agent from the house construction.
-        :param agent: Agent who is no longer helping with the construction.
-        """
-        if agent in self.helping_agents:
-            del self.helping_agents[agent]
-            print(f"{agent.name} stopped helping {self.agent.name} build their house")
-
     def calculate_construction_speed(self) -> float:
         """
         Calculates the construction speed based on the agent's strength and the helping agents' contributions.
@@ -200,7 +179,7 @@ class House(Building):
         else:
             blocks_to_place = int(total_blocks * progress)
         for idx, (dx, dy, dz) in enumerate(wall_blocks):
-            if progress < 1.0 and idx >= blocks_to_place:
+            if idx >= blocks_to_place:
                 break
             wall_block = random.choice(self.materials["wall"])
             super().add_block_to_matrix(dx, dy, dz, wall_block)
@@ -208,15 +187,15 @@ class House(Building):
         if self.door is None:
             door_x, door_z = x, z
             if self.orientation == "north":
-                door_z = 0
+                door_z = 1
             elif self.orientation == "south":
                 door_z = self.depth - 2
             elif self.orientation == "east":
                 door_x = self.width - 2
             elif self.orientation == "west":
-                door_x = 0
-            super().add_block_to_matrix(door_x, 1, door_z, f'{self.materials["door"]}[half=lower]')
-            super().add_block_to_matrix(door_x, 2, door_z, f'{self.materials["door"]}[half=upper]')
+                door_x = 1
+            super().add_block_to_matrix(door_x, 1, door_z, f'{self.materials["door"]}[half=lower,facing={self.orientation}]')
+            super().add_block_to_matrix(door_x, 2, door_z, f'{self.materials["door"]}[half=upper,facing={self.orientation}]')
             self.door = (door_x, 1, door_z)
 
     def build_roof(self, progress):
@@ -271,51 +250,45 @@ class House(Building):
     def build_furniture(self):
         """
         Builds furniture inside the house, including a bed and a container.
+        :return:
         """
-        patterns = []
-        if self.orientation in ["east", "west"]:
-            patterns = [
-                {
-                    (2, 2): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (3, 2): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-                {
-                    (2, 4): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (3, 4): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-                {
-                    (4, 2): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (3, 2): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-                {
-                    (4, 4): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (3, 4): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-            ]
+        facing = self.orientation
+        if facing == "north":
+            corners = [((2, 2), (2, 3)), ((4, 2), (4, 3))]
+            bed_facing = "south"
+        elif facing == "south":
+            corners = [((2, 4), (2, 3)), ((4, 4), (4, 3))]
+            bed_facing = "north"
+        elif facing == "east":
+            corners = [((4, 2), (3, 2)), ((4, 4), (3, 4))]
+            bed_facing = "west"
+        elif facing == "west":
+            corners = [((2, 2), (3, 2)), ((2, 4), (3, 4))]
+            bed_facing = "east"
         else:
-            patterns = [
-                {
-                    (2, 2): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (2, 3): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-                {
-                    (2, 4): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (2, 3): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-                {
-                    (4, 2): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (4, 3): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-                {
-                    (4, 4): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (4, 3): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-            ]
-        selected_pattern = random.choice(patterns)
-        for (x, z), block in selected_pattern.items():
+            corners = [((2, 2), (2, 3)), ((4, 2), (4, 3))]
+            bed_facing = "south"
+        foot, head = random.choice(corners)
+        bed_pattern = {foot: self.materials["bed"] + f"[part=foot,facing={bed_facing}]",
+                       head: self.materials["bed"] + f"[part=head,facing={bed_facing}]"}
+        for (x, z), block in bed_pattern.items():
             super().add_block_to_matrix(x, 1, z, block)
-        bed_positions = list(selected_pattern.keys())
-        forbidden_positions = [(3, 3), (3, 4)] + bed_positions
+        bed_positions = list(bed_pattern.keys())
+        forbidden_positions = [(3, 3)] + bed_positions
+        if self.door is not None:
+            door_x, _, door_z = self.door
+            if self.orientation == "north":
+                front_pos = (door_x, door_z + 1)
+            elif self.orientation == "south":
+                front_pos = (door_x, door_z - 1)
+            elif self.orientation == "east":
+                front_pos = (door_x - 1, door_z)
+            elif self.orientation == "west":
+                front_pos = (door_x + 1, door_z)
+            else:
+                front_pos = None
+            if front_pos and 2 <= front_pos[0] <= 4 and 2 <= front_pos[1] <= 4:
+                forbidden_positions.append(front_pos)
         possible_positions = [(x, z) for x in range(2, 5) for z in range(2, 5)
                                   if (x, z) not in forbidden_positions]
         if possible_positions:
@@ -329,13 +302,13 @@ class House(Building):
         if self.door is not None:
             door_x, _, door_z = self.door
             if self.orientation == "north":
-                sign_x, sign_z = door_x - 1, door_z + 1
+                sign_x, sign_z = door_x - 1, door_z - 1
             elif self.orientation == "south":
                 sign_x, sign_z = door_x + 1, door_z + 1
             elif self.orientation == "east":
                 sign_x, sign_z = door_x + 1, door_z - 1
             elif self.orientation == "west":
-                sign_x, sign_z = door_x + 1, door_z + 1
+                sign_x, sign_z = door_x - 1, door_z + 1
             else:
                 sign_x, sign_z = door_x, door_z
             super().add_block_to_matrix(sign_x, 2, sign_z, f'minecraft:oak_sign')
