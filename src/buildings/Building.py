@@ -31,14 +31,21 @@ class Building:
         self.height = height
         self.depth = depth
         self.radius = 10
+        self.invalid = False
         self.center_point = center_point if center_point is not None else None
         if agent is not None and center_point is not None:
             placement_success = self.place(center_point, agent.simulation)
             if placement_success and hasattr(self, "center_point") and self.center_point is not None:
-                self.lowest_y = agent.simulation.heightmap[self.center_point[0] - width:self.center_point[0] + width,
-                                self.center_point[1] - depth:self.center_point[1] + depth].min().item() - 1
-                self.highest_y = agent.simulation.heightmap[self.center_point[0] - width:self.center_point[0] + width,
-                                 self.center_point[1] - depth:self.center_point[1] + depth].max().item() - 1
+                hmap = agent.simulation.heightmap
+                x0 = max(0, self.center_point[0] - width)
+                x1 = min(hmap.shape[0], self.center_point[0] + width)
+                z0 = max(0, self.center_point[1] - depth)
+                z1 = min(hmap.shape[1], self.center_point[1] + depth)
+                if x1 > x0 and z1 > z0:
+                    self.lowest_y = hmap[x0:x1, z0:z1].min().item() - 1
+                    self.highest_y = hmap[x0:x1, z0:z1].max().item() - 1
+                else:
+                    self.invalid = True
         self.name = name
         self.folder = folder
         self.matrix = np.zeros((self.width, self.depth, self.height), dtype=object)
@@ -120,14 +127,7 @@ class Building:
     def check_collision(self, center_point, min_distance=2):
         """
         Checks if placing a building at the given center_point would result in a collision
-        with any existing buildings.
-
-        Args:
-            :param center_point: (tuple[int, int]): The (x, z) coordinates for the proposed building center.
-            :param min_distance: (int, optional): Minimum allowed distance between buildings. Defaults to 2.
-
-        Returns:
-            bool: True if a collision is detected, False otherwise.
+        with any existing buildings, including a buffer zone.
         """
         x_min = center_point[0] - self.width // 2 - min_distance
         x_max = center_point[0] + self.width // 2 + min_distance
@@ -140,25 +140,33 @@ class Building:
             bx_max = b.center_point[0] + b.width // 2 + min_distance
             bz_min = b.center_point[1] - b.depth // 2 - min_distance
             bz_max = b.center_point[1] + b.depth // 2 + min_distance
+            # Check for overlap
             if not (x_max < bx_min or x_min > bx_max or z_max < bz_min or z_min > bz_max):
                 return True
         return False
 
-    def place(self, center_point: tuple[int, int], sim=None):
+    def place(self, center_point: tuple[int, int], sim):
         """
         Attempts to place the building at the specified center_point in the simulation.
-        :param center_point: The (x, z) coordinates for the building's center.
-        :param sim: The current simulation instance, used to check for collisions and update the heightmap.
+        Ensures no overlap in the sim.buildings matrix, including a buffer.
         """
-        if self.check_collision(center_point, min_distance=2):
+        min_distance = 2
+        if self.check_collision(center_point, min_distance=min_distance):
             return False
-        center_point = (max(center_point[0], self.width), max(center_point[1], self.depth))
-        center_point = (min(center_point[0], sim.heightmap.shape[0] - self.width),
-                        min(center_point[1], sim.heightmap.shape[1] - self.depth))
-        x_min = center_point[0] - self.width // 2 - 2
-        x_max = center_point[0] + self.width // 2 + 2
-        z_min = center_point[1] - self.depth // 2 - 2
-        z_max = center_point[1] + self.depth // 2 + 2
+        # Clamp center_point to valid area
+        center_point = (
+            max(center_point[0], self.width // 2 + min_distance),
+            max(center_point[1], self.depth // 2 + min_distance)
+        )
+        center_point = (
+            min(center_point[0], sim.heightmap.shape[0] - self.width // 2 - min_distance - 1),
+            min(center_point[1], sim.heightmap.shape[1] - self.depth // 2 - min_distance - 1)
+        )
+        x_min = center_point[0] - self.width // 2 - min_distance
+        x_max = center_point[0] + self.width // 2 + min_distance
+        z_min = center_point[1] - self.depth // 2 - min_distance
+        z_max = center_point[1] + self.depth // 2 + min_distance
+        # Check sim.buildings for any occupied space in the full area
         if np.any(sim.buildings[x_min:x_max, z_min:z_max]):
             return False
         self.center_point = center_point
@@ -191,7 +199,7 @@ class Building:
         """
         Exports the building's metadata and matrix to files in the specified folder.
         """
-        if not hasattr(self, "center_point") or self.center_point is None:
+        if not hasattr(self, "center_point") or self.center_point is None or self.invalid:
             return
         if type(self.center_point[0]) is not int:
             self.center_point = self.center_point[0].item(), self.center_point[1]

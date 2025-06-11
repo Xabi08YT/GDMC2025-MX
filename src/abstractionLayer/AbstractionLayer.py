@@ -391,13 +391,13 @@ class AbstractionLayer:
         for building in Building.BUILDINGS:
             building.matrix_to_files()
 
-        hmap = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,sugar_cane")
-        hmapsolid = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,%23dirt,sugar_cane")
+        hmap = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,sugar_cane,bamboo,pumpkin,melon")
+        hmapsolid = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,%23dirt,sugar_cane,bamboo,pumpkin,melon")
         biomemap = self.get_biome_map()
 
         self.clear_trees_for_buildings(folder)
 
-        self.push_paths(folder, hmap, self.get_height_map_excluding("air,%23leaves,%23logs,%23flowers,sugar_cane"),
+        self.push_paths(folder, hmap, self.get_height_map_excluding("air,%23leaves,%23logs,%23flowers,sugar_cane,bamboo,pumpkin,melon"),
                         biomemap, debug)
         p = Pool(cpu_count())
         p.map_async(self.push_building,
@@ -497,7 +497,7 @@ class AbstractionLayer:
 
                     if 0 <= rel_x < hmap.shape[0] and 0 <= rel_z < hmap.shape[1]:
                         y_base = hmap[rel_x, rel_z]
-                        for y in range(y_base, y_base + 20):
+                        for y in range(y_base, 320):
                             gdpcblocks.append(((x, y, z), Block("minecraft:air")))
 
             trees_cleared += 1

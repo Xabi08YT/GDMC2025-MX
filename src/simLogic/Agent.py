@@ -216,11 +216,10 @@ class Agent:
     def compute_scores(self):
         for x,z in self.visited:
             score = self.simulation.wood[x - self.radius:x + self.radius, z - self.radius:z + self.radius].sum().item()
-            score -= 5 * self.simulation.water[x - self.radius:x + self.radius,
-                         z - self.radius:z + self.radius].sum().item()
             score -= 5 * self.simulation.lava[x - self.radius:x + self.radius,
                          z - self.radius:z + self.radius].sum().item()
-            if self.simulation.buildings[x - self.radius:x + self.radius,z - self.radius:z + self.radius].sum().item() == 0:
+            if self.simulation.buildings[x - self.radius:x + self.radius,z - self.radius:z + self.radius].sum().item() == 0 and  self.simulation.water[x - self.radius:x + self.radius,
+                         z - self.radius:z + self.radius].sum().item() == 0:
                 self.scores[str((x,z))] = score
 
     def place_house(self):
@@ -242,27 +241,7 @@ class Agent:
 
         best_spot = max(self.scores, key=self.scores.get)
         spot_tuple = eval(best_spot)
-        temp_house = House(spot_tuple, self, self.name + " House")
-        temp_house.clear()
-        x0, z0 = temp_house.center_point
-        width, depth = temp_house.width, temp_house.depth
-        building_matrix = self.simulation.buildings
-        trespass = False
-        for dx in range(width):
-            for dz in range(depth):
-                x = x0 + dx
-                z = z0 + dz
-                if 0 <= x < building_matrix.shape[0] and 0 <= z < building_matrix.shape[1]:
-                    if building_matrix[x, z] != 0:
-                        trespass = True
-                        break
-            if trespass:
-                break
-        if trespass:
-            Building.BUILDINGS.remove(temp_house)
-            self.scores.pop(best_spot)
-            return
-        self.home = temp_house
+        self.home = House(spot_tuple, self, self.name + " House")
         self.home.build()
         print(
             f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE} built a new house!{ANSIColors.ENDC}")
