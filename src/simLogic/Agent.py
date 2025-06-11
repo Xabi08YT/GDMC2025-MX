@@ -220,9 +220,8 @@ class Agent:
                          z - self.radius:z + self.radius].sum().item()
             score -= 5 * self.simulation.lava[x - self.radius:x + self.radius,
                          z - self.radius:z + self.radius].sum().item()
-            score -= 100 * self.simulation.buildings[x - self.radius:x + self.radius,
-                           z - self.radius:z + self.radius].sum().item()
-            self.scores[str((x,z))] = score
+            if self.simulation.buildings[x - self.radius:x + self.radius,z - self.radius:z + self.radius].sum().item() == 0:
+                self.scores[str((x,z))] = score
 
     def place_house(self):
         """
@@ -233,6 +232,9 @@ class Agent:
             return
 
         self.compute_scores()
+        if len(self.scores) == 0:
+            print(f"{ANSIColors.FAIL}[SIMULATION INFO]{ANSIColors.BOLD}{self.name}{ANSIColors.ENDC} could not place his house: no valid locations.{ANSIColors.ENDC}")
+            return
 
         threshold = int(10 + 30 * self.attributes["adventurous"])
         if len(self.scores) < threshold:
