@@ -155,10 +155,10 @@ class Building:
         center_point = (max(center_point[0], self.width), max(center_point[1], self.depth))
         center_point = (min(center_point[0], sim.heightmap.shape[0] - self.width),
                         min(center_point[1], sim.heightmap.shape[1] - self.depth))
-        x_min = center_point[0] - self.width // 2 - 2
-        x_max = center_point[0] + self.width // 2 + 2
-        z_min = center_point[1] - self.depth // 2 - 2
-        z_max = center_point[1] + self.depth // 2 + 2
+        x_min = center_point[0] - self.width // 2 - 10
+        x_max = center_point[0] + self.width // 2 + 10
+        z_min = center_point[1] - self.depth // 2 - 10
+        z_max = center_point[1] + self.depth // 2 + 10
         if np.any(sim.buildings[x_min:x_max, z_min:z_max]):
             return False
         self.center_point = center_point
