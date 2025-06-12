@@ -242,12 +242,15 @@ class Agent:
 
         best_spot = max(self.scores, key=self.scores.get)
         spot_tuple = eval(best_spot)
-        temp_house = House(spot_tuple, self, self.name + " House")
-        temp_house.clear()
-        x0, z0 = temp_house.center_point
-        width, depth = temp_house.width, temp_house.depth
+
+        # Vérifier d'abord si l'emplacement est valide sans créer la maison
+        x0, z0 = spot_tuple
+        # Utiliser les dimensions standard d'une maison sans en créer une
+        width, depth = House.DEFAULT_WIDTH if hasattr(House, 'DEFAULT_WIDTH') else 5, House.DEFAULT_DEPTH if hasattr(
+            House, 'DEFAULT_DEPTH') else 5
         building_matrix = self.simulation.buildings
         trespass = False
+
         for dx in range(width):
             for dz in range(depth):
                 x = x0 + dx
@@ -258,11 +261,14 @@ class Agent:
                         break
             if trespass:
                 break
+
         if trespass:
-            Building.BUILDINGS.remove(temp_house)
             self.scores.pop(best_spot)
             return
-        self.home = temp_house
+
+        # Créer et configurer la maison seulement si l'emplacement est valide
+        self.home = House(spot_tuple, self, self.name + " House")
+        self.home.clear()
         self.home.build()
         print(
             f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE} built a new house!{ANSIColors.ENDC}")

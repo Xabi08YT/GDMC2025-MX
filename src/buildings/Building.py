@@ -152,13 +152,15 @@ class Building:
         """
         if self.check_collision(center_point, min_distance=2):
             return False
-        center_point = (max(center_point[0], self.width), max(center_point[1], self.depth))
-        center_point = (min(center_point[0], sim.heightmap.shape[0] - self.width),
-                        min(center_point[1], sim.heightmap.shape[1] - self.depth))
-        x_min = center_point[0] - self.width // 2 - 10
-        x_max = center_point[0] + self.width // 2 + 10
-        z_min = center_point[1] - self.depth // 2 - 10
-        z_max = center_point[1] + self.depth // 2 + 10
+        # Calcul des bornes exactes pour la zone du bâtiment
+        x_min = center_point[0] - self.width // 2
+        x_max = center_point[0] + (self.width + 1) // 2
+        z_min = center_point[1] - self.depth // 2
+        z_max = center_point[1] + (self.depth + 1) // 2
+        # Vérification des limites de la map
+        if x_min < 0 or z_min < 0 or x_max > sim.buildings.shape[0] or z_max > sim.buildings.shape[1]:
+            return False
+        # Vérifie si la zone est déjà occupée
         if np.any(sim.buildings[x_min:x_max, z_min:z_max]):
             return False
         self.center_point = center_point
