@@ -35,10 +35,10 @@ class Building:
         if agent is not None and center_point is not None:
             placement_success = self.place(center_point, agent.simulation)
             if placement_success and hasattr(self, "center_point") and self.center_point is not None:
-                self.lowest_y = agent.simulation.heightmap[self.center_point[0] - width:self.center_point[0] + width,
-                                self.center_point[1] - depth:self.center_point[1] + depth].min().item() - 1
-                self.highest_y = agent.simulation.heightmap[self.center_point[0] - width:self.center_point[0] + width,
-                                 self.center_point[1] - depth:self.center_point[1] + depth].max().item() - 1
+                self.lowest_y = agent.simulation.heightmap[self.center_point[0] - width//2:self.center_point[0] + width//2,
+                                self.center_point[1] - depth//2:self.center_point[1] + depth//2].min().item() - 1
+                self.highest_y = agent.simulation.heightmap[self.center_point[0] - width//2:self.center_point[0] + width//2,
+                                 self.center_point[1] - depth//2:self.center_point[1] + depth//2].max().item() - 1
         self.name = name
         self.folder = folder
         self.matrix = np.zeros((self.width, self.depth, self.height), dtype=object)

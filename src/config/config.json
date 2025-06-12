@@ -1,5 +1,5 @@
 {
-  "nodeAgents": 20,
+  "nodeAgents": 128,
   "GDMC_HTTP_URL": null,
   "radius": 7,
   "nbTurns": 100,
