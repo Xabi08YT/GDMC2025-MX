@@ -21,9 +21,11 @@ This project is based on multi-agent system simulation to procedurally generate 
     
 5. Open a minecraft world, and run the `setbuildarea <x0> <y0> <z0> <x1> <y1> <z1>` command
 
-6. Finally, run the main script:
+6. Go to the srv folder
+
+7. Finally, run the main script:
    ```bash
-    python main.py
+    python Simulation.py
     ```
    
 ## Dockerfile
