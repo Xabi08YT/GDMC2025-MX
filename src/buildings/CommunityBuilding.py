@@ -12,6 +12,12 @@ class CommunityBuilding(JobBuilding):
     INSTANCE = None
 
     def __init__(self, center_point: tuple[int, int, int] | None, agent, orientation: str = "north"):
+        """
+        Initializes a CommunityBuilding instance.
+        :param center_point: The center point of the building.
+        :param agent: The agent responsible for the building.
+        :param orientation: The orientation of the building.
+        """
         width = 11
         depth = random.choice([13, 15, 17])
         if orientation in ['east', 'west']:
@@ -53,6 +59,12 @@ class CommunityBuilding(JobBuilding):
                     and self.orientation in ['east', 'west']))
 
     def need_big_window(self, x, z):
+        """
+        Returns True if the block at (x,z) needs to be a big window, False otherwise.
+        :param x: The x-coordinate of the block.
+        :param z: The z-coordinate of the block.
+        :return: True if the block needs to be a big window, False otherwise.
+        """
         conditions = {
             "north": (x == 1 and 4 < z < self.depth - 5),
             "south": (x == self.depth - 2 and 4 < z < self.depth - 5),
@@ -62,6 +74,12 @@ class CommunityBuilding(JobBuilding):
         return conditions[self.orientation]
 
     def is_door(self, x, z):
+        """
+        Returns True if the block at (x,z) is a door, False otherwise.
+        :param x: The x-coordinate of the block.
+        :param z: The z-coordinate of the block.
+        :return: True if the block is a door, False otherwise.
+        """
         conditions = {
             "south": (x == 1 and z == self.depth//2),
             "north": (x == self.width - 2 and z == self.depth//2),
@@ -71,6 +89,10 @@ class CommunityBuilding(JobBuilding):
         return conditions[self.orientation]
 
     def get_door_orientation(self):
+        """
+        Returns the orientation of the door based on the building's orientation.
+        :return: The orientation of the door.
+        """
         orientations = {
             "north": "south",
             "south": "north",
@@ -80,6 +102,10 @@ class CommunityBuilding(JobBuilding):
         return orientations[self.orientation]
 
     def define_roof_outline(self):
+        """
+        Defines the roof outline for the community building based on its orientation.
+        :return: A tuple containing the roof blocks, upper roof blocks, and their respective mods.
+        """
         rwidth = self.width // 2 if self.orientation in ["north", "south"] else self.depth // 2
         rblocks = []
         rublocks = []
@@ -125,6 +151,9 @@ class CommunityBuilding(JobBuilding):
         return rblocks, rublocks,mods, umods
 
     def build(self):
+        """
+        Builds the community building by adding blocks to the matrix based on its dimensions and orientation.
+        """
         if self.built:
             return
         for x in range(1, self.width - 1):
@@ -249,6 +278,12 @@ class CommunityBuilding(JobBuilding):
         return
 
     def best_spot(self, nbtry, simulation):
+        """
+        Finds the best spot for the community building based on walkability, distance to firecamp, and building presence.
+        :param nbtry: Number of attempts to find a suitable spot.
+        :param simulation: The current simulation instance.
+        :return: The best spot.
+        """
         best_spot = None
         best_score = - inf
         t = 0
@@ -281,6 +316,13 @@ class CommunityBuilding(JobBuilding):
 
     @staticmethod
     def get_instance(center_point: tuple[int, int, int] | None, agent, orientation: str = "north"):
+        """
+        Returns an instance of CommunityBuilding. If an instance already exists, it returns that instance.
+        :param center_point: The center point of the building.
+        :param agent: The agent responsible for the building.
+        :param orientation: The orientation of the building.
+        :return The instance of CommunityBuilding.
+        """
         if CommunityBuilding.INSTANCE is None:
             return CommunityBuilding(center_point, agent, orientation)
         return CommunityBuilding.INSTANCE

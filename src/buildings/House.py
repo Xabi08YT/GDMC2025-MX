@@ -6,8 +6,16 @@ from utils.ANSIColors import ANSIColors
 from simLogic.Job import JobBlock
 
 class House(Building):
-    def __init__(self, center_point: tuple[int,int] | None, agent, name: str, orientation: str = "south",
-                 built: bool = False, folder="generated"):
+    def __init__(self, center_point: tuple[int,int] | None, agent, name: str, built: bool = False, folder="generated"):
+        """
+        Initializes a House object.
+        :param center_point: The center point of the house in the format (x, z).
+        :param agent: The agent who is building the house.
+        :param name: The name of the house.
+        :param built: True if the house is already built, False otherwise.
+        :param folder: Folder where the house data will be stored.
+        """
+        orientation = random.choice(["south", "north", "east", "west"])
         super().__init__(center_point, agent, name, orientation, built, folder, height=random.randint(6, 7), width=7, depth=7)
         self.construction_phase = 0
         self.construction_progress = 0
@@ -20,8 +28,8 @@ class House(Building):
         self.materials = self.choose_materials()
 
         self.phase_times = {
-            "foundation": 16,
-            "walls": 8,
+            "foundation": 15,
+            "walls": 5,
             "roof": 2
         }
 
@@ -31,8 +39,13 @@ class House(Building):
             [self.width - 2, 1],
             [self.width - 2, self.depth - 2]
         ]
+        self.clear()
 
     def choose_materials(self):
+        """
+        Chooses materials for the house based on predefined options.
+        :return: Materials dictionary containing floor, wall, log, door, and bed.
+        """
         bed_options = ["minecraft:red_bed", "minecraft:blue_bed", "minecraft:green_bed", "minecraft:yellow_bed", "minecraft:black_bed"]
         wall_options = {
             "stone": ["minecraft:stone", "minecraft:stone_bricks", "minecraft:cracked_stone_bricks", "minecraft:mossy_stone_bricks"],
@@ -51,6 +64,10 @@ class House(Building):
         }
 
     def get_construction_status(self) -> str:
+        """
+        Returns the current construction status of the house.
+        :return: The current construction phase and progress as a string.
+        """
         phases = ["foundation", "walls", "roof"]
         if self.construction_phase >= len(phases):
             return "Completed"
@@ -60,19 +77,11 @@ class House(Building):
 
         return f"{current_phase} ({progress}%)"
 
-    def add_helping_agent(self, agent, strength: float):
-        if agent not in self.helping_agents:
-            self.helping_agents[agent] = strength
-            if agent.id in self.agent.relationships:
-                self.agent.relationships[agent.id].improve(0.1)
-            print(f"{agent.name} started helping {self.agent.name} build their house")
-
-    def remove_helping_agent(self, agent):
-        if agent in self.helping_agents:
-            del self.helping_agents[agent]
-            print(f"{agent.name} stopped helping {self.agent.name} build their house")
-
     def calculate_construction_speed(self) -> float:
+        """
+        Calculates the construction speed based on the agent's strength and the helping agents' contributions.
+        :return: The construction speed as a float.
+        """
         base_speed = 0.3 + self.agent.attributes["strength"]
 
         helper_speed = 0
@@ -85,6 +94,9 @@ class House(Building):
         return base_speed + (helper_speed * 0.5)
 
     def build(self):
+        """
+        Builds the house by constructing its foundation, walls, and roof in phases.
+        """
         if self.center_point is None or self.built:
             return
 
@@ -112,7 +124,7 @@ class House(Building):
                 self.build_furniture()
                 super().built()
                 self.helping_agents.clear()
-                print(f"{ANSIColors.OKBLUE}[SIMULATION INFO]{ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.agent.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE}'s house is complete!{ANSIColors.ENDC}")
+                print(f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.agent.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE}'s house is complete!{ANSIColors.ENDC}")
                 return
 
         status = self.get_construction_status()
@@ -120,6 +132,10 @@ class House(Building):
         print(f"{ANSIColors.OKBLUE}[SIMULATION INFO] {ANSIColors.ENDC}{ANSIColors.OKGREEN}{self.agent.name}{ANSIColors.ENDC}{ANSIColors.OKBLUE}'s house: {ANSIColors.ENDC}{ANSIColors.OKCYAN}{status}{helpers}{ANSIColors.ENDC}")
 
     def build_foundation(self, progress):
+        """
+        Builds the foundation of the house.
+        :param progress: Progress ratio (0.0 to 1.0) indicating how much of the foundation has been built.
+        """
         y = 0
         floor = self.materials["floor"]
         total_blocks = (self.width) * (self.depth)
@@ -141,6 +157,10 @@ class House(Building):
                 placed += 1
 
     def build_walls(self, progress):
+        """
+        Builds the walls of the house.
+        :param progress: Progress ratio (0.0 to 1.0) indicating how much of the foundation has been built.
+        """
         wall_blocks = []
         for dy in range(1, self.height-1):
             for dx in range(1, self.width-1):
@@ -159,7 +179,7 @@ class House(Building):
         else:
             blocks_to_place = int(total_blocks * progress)
         for idx, (dx, dy, dz) in enumerate(wall_blocks):
-            if progress < 1.0 and idx >= blocks_to_place:
+            if idx >= blocks_to_place:
                 break
             wall_block = random.choice(self.materials["wall"])
             super().add_block_to_matrix(dx, dy, dz, wall_block)
@@ -167,18 +187,23 @@ class House(Building):
         if self.door is None:
             door_x, door_z = x, z
             if self.orientation == "north":
-                door_z = 0
+                door_z = 1
             elif self.orientation == "south":
                 door_z = self.depth - 2
             elif self.orientation == "east":
                 door_x = self.width - 2
             elif self.orientation == "west":
-                door_x = 0
-            super().add_block_to_matrix(door_x, 1, door_z, f'{self.materials["door"]}[half=lower]')
-            super().add_block_to_matrix(door_x, 2, door_z, f'{self.materials["door"]}[half=upper]')
+                door_x = 1
+            super().add_block_to_matrix(door_x, 1, door_z, f'{self.materials["door"]}[half=lower,facing={self.orientation}]')
+            super().add_block_to_matrix(door_x, 2, door_z, f'{self.materials["door"]}[half=upper,facing={self.orientation}]')
             self.door = (door_x, 1, door_z)
 
     def build_roof(self, progress):
+        """
+        Builds the roof of the house.
+        :param progress: Progress ratio (0.0 to 1.0) indicating how much of the foundation has been built.
+        :return:
+        """
         roof_material = "oak_planks"
         roof_blocks = []
         if self.roof_style == "pyramid":
@@ -223,50 +248,47 @@ class House(Building):
             super().add_block_to_matrix(x, y, z, block)
 
     def build_furniture(self):
-        patterns = []
-        if self.orientation in ["east", "west"]:
-            patterns = [
-                {
-                    (2, 2): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (3, 2): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-                {
-                    (2, 4): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (3, 4): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-                {
-                    (4, 2): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (3, 2): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-                {
-                    (4, 4): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (3, 4): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-            ]
+        """
+        Builds furniture inside the house, including a bed and a container.
+        :return:
+        """
+        facing = self.orientation
+        if facing == "north":
+            corners = [((2, 2), (2, 3)), ((4, 2), (4, 3))]
+            bed_facing = "south"
+        elif facing == "south":
+            corners = [((2, 4), (2, 3)), ((4, 4), (4, 3))]
+            bed_facing = "north"
+        elif facing == "east":
+            corners = [((4, 2), (3, 2)), ((4, 4), (3, 4))]
+            bed_facing = "west"
+        elif facing == "west":
+            corners = [((2, 2), (3, 2)), ((2, 4), (3, 4))]
+            bed_facing = "east"
         else:
-            patterns = [
-                {
-                    (2, 2): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (2, 3): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-                {
-                    (2, 4): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (2, 3): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-                {
-                    (4, 2): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (4, 3): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-                {
-                    (4, 4): self.materials["bed"] + f"[part=foot,facing={self.orientation}]",
-                    (4, 3): self.materials["bed"] + f"[part=head,facing={self.orientation}]",
-                },
-            ]
-        selected_pattern = random.choice(patterns)
-        for (x, z), block in selected_pattern.items():
+            corners = [((2, 2), (2, 3)), ((4, 2), (4, 3))]
+            bed_facing = "south"
+        foot, head = random.choice(corners)
+        bed_pattern = {foot: self.materials["bed"] + f"[part=foot,facing={bed_facing}]",
+                       head: self.materials["bed"] + f"[part=head,facing={bed_facing}]"}
+        for (x, z), block in bed_pattern.items():
             super().add_block_to_matrix(x, 1, z, block)
-        bed_positions = list(selected_pattern.keys())
-        forbidden_positions = [(3, 3), (3, 4)] + bed_positions
+        bed_positions = list(bed_pattern.keys())
+        forbidden_positions = [(3, 3)] + bed_positions
+        if self.door is not None:
+            door_x, _, door_z = self.door
+            if self.orientation == "north":
+                front_pos = (door_x, door_z + 1)
+            elif self.orientation == "south":
+                front_pos = (door_x, door_z - 1)
+            elif self.orientation == "east":
+                front_pos = (door_x - 1, door_z)
+            elif self.orientation == "west":
+                front_pos = (door_x + 1, door_z)
+            else:
+                front_pos = None
+            if front_pos and 2 <= front_pos[0] <= 4 and 2 <= front_pos[1] <= 4:
+                forbidden_positions.append(front_pos)
         possible_positions = [(x, z) for x in range(2, 5) for z in range(2, 5)
                                   if (x, z) not in forbidden_positions]
         if possible_positions:
@@ -280,13 +302,13 @@ class House(Building):
         if self.door is not None:
             door_x, _, door_z = self.door
             if self.orientation == "north":
-                sign_x, sign_z = door_x - 1, door_z + 1
+                sign_x, sign_z = door_x - 1, door_z - 1
             elif self.orientation == "south":
                 sign_x, sign_z = door_x + 1, door_z + 1
             elif self.orientation == "east":
                 sign_x, sign_z = door_x + 1, door_z - 1
             elif self.orientation == "west":
-                sign_x, sign_z = door_x + 1, door_z + 1
+                sign_x, sign_z = door_x - 1, door_z + 1
             else:
                 sign_x, sign_z = door_x, door_z
             super().add_block_to_matrix(sign_x, 2, sign_z, f'minecraft:oak_sign')

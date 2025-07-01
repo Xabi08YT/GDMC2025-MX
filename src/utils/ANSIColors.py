@@ -1,4 +1,7 @@
 class ANSIColors:
+    """
+    A class to hold ANSI color codes for terminal text formatting.
+    """
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKCYAN = '\033[96m'
