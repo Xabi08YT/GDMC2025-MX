@@ -391,8 +391,8 @@ class AbstractionLayer:
         for building in Building.BUILDINGS:
             building.matrix_to_files()
 
-        hmap = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,sugar_cane,vine,lillypad")
-        hmapsolid = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,%23dirt,sugar_cane,vine,lillypad")
+        hmap = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,sugar_cane,vine,lily_pad")
+        hmapsolid = self.get_height_map_excluding(f"air,%23leaves,%23logs,%23replaceable,%23flowers,%23dirt,sugar_cane,vine,lily_pad")
         biomemap = self.get_biome_map()
 
         self.clear_trees_for_buildings(folder)
